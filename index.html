@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Un Check-in por la Vida · Aeroambulancias Silva</title>
-<meta name="description" content="Adopta un Héroe de Rescate y financia kilómetros de vuelo para que una persona con cáncer llegue a su tratamiento. Campaña solidaria de Aeroambulancias Silva.">
+<meta name="description" content="Adopta un Héroe de Rescate y financia kilómetros de vuelo para que personas con cáncer lleguen a su tratamiento. Campaña solidaria de Aeroambulancias Silva.">
 <meta name="theme-color" content="#29b9e9">
 <!-- Los navegadores de Xiaomi, Samsung y Chrome Android reescriben los colores de
      una página que no declara esquema: el celeste se ensucia y el blanco se apaga.
@@ -87,6 +87,18 @@
   .cab[data-fija]{background:var(--celeste-hondo);box-shadow:0 1px 0 rgba(14,42,92,.18);}
   .cab-marca{display:flex;align-items:center;gap:.5rem;margin-right:auto;text-decoration:none;}
   .cab-marca img.silva{height:1.75rem;width:auto;}
+  @media (min-width:64rem){
+    /* En computadora la marca entra grande y se compacta al scrollear. Escala con
+       transform y no con height ni padding: así la cabecera conserva su alto —que
+       es lo que se pidió— y no hay un reflow por cada fotograma. Crece desde el
+       borde izquierdo para no correrse de lugar, y entra en el alto de la barra. */
+    .cab-marca img.silva{transform-origin:left center;transform:scale(1.9);
+                         transition:transform var(--dur-2) var(--ease);}
+    .cab[data-fija] .cab-marca img.silva{transform:scale(1);}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .cab-marca img.silva{transition:none;}
+  }
   .cab-btn{display:inline-flex;align-items:center;gap:.4rem;font:600 .82rem/1 var(--sans);
            text-decoration:none;padding:.6rem .9rem;border-radius:999px;min-height:44px;}
   .cab-icono{background:none;border:1.5px solid rgba(14,42,92,.4);color:var(--navy);cursor:pointer;
@@ -130,16 +142,17 @@
     .hero-acciones{max-width:28rem;}
   }
 
-  .troquel{height:22px;background:var(--paper);
-    -webkit-mask-image:radial-gradient(circle at 11px 0,transparent 11px,#000 11.5px);
-    mask-image:radial-gradient(circle at 11px 0,transparent 11px,#000 11.5px);
-    -webkit-mask-size:22px 22px;mask-size:22px 22px;-webkit-mask-repeat:repeat-x;mask-repeat:repeat-x;}
-  .troquel--mision{background:var(--celeste-papel);
-    -webkit-mask-image:radial-gradient(circle at 11px 22px,transparent 11px,#000 11.5px);
-    mask-image:radial-gradient(circle at 11px 22px,transparent 11px,#000 11.5px);}
-  .troquel--sube{background:var(--celeste);
-    -webkit-mask-image:radial-gradient(circle at 11px 22px,transparent 11px,#000 11.5px);
-    mask-image:radial-gradient(circle at 11px 22px,transparent 11px,#000 11.5px);}
+  /* El corte perforado del ticket. Antes era una máscara, y los agujeros dejaban
+     ver el fondo del body: al darle color al body, el troquel de la misión pasó a
+     mostrar celeste fuerte donde arriba hay crema. Ahora cada troquel declara sus
+     dos colores y no depende de nada que tenga detrás. Los festones son siempre
+     del color de la sección de ARRIBA, mordidos desde abajo. */
+  .troquel{height:22px;background-color:var(--tr-abajo,var(--paper));
+    background-image:radial-gradient(circle at 11px 22px,transparent 11px,var(--tr-arriba,var(--celeste)) 11.5px);
+    background-size:22px 22px;background-repeat:repeat-x;}
+  .troquel--sube{--tr-arriba:var(--paper);--tr-abajo:var(--celeste);}
+  .troquel--mision{--tr-arriba:var(--paper);--tr-abajo:var(--celeste-papel);}
+  .troquel--desde-mision{--tr-arriba:var(--celeste-papel);--tr-abajo:var(--paper);}
 
   .papel{background:var(--paper);color:var(--navy);}
   .bloque{max-width:64rem;margin:0 auto;padding:3rem var(--gutter);}
@@ -201,6 +214,8 @@
   .cupon p{color:var(--ink);font-size:1.04rem;font-weight:500;}
   .cupon-foto{grid-column:1/-1;border-radius:10px;overflow:hidden;background:var(--paper-edge);margin-top:.8rem;}
   .cupon-foto img{width:100%;aspect-ratio:16/10;object-fit:cover;}
+  /* Esta foto es vertical y el ticket está abajo: centrado, el recorte se lo comía. */
+  .cupon-foto img.foto-baja{object-position:center 68%;}
   @media (min-width:52rem){
     .cupon{grid-template-columns:auto 1fr 17rem;gap:1.6rem;align-items:center;}
     .cupon-foto{grid-column:auto;margin-top:0;}
@@ -448,7 +463,7 @@
       </picture>
     </h1>
     <div class="hero-texto">
-      <p class="hero-bajada">Adopta un <b>Héroe de Rescate</b> y financia <b>kilómetros de vuelo</b> para que una persona con cáncer llegue a su tratamiento.</p>
+      <p class="hero-bajada">Adopta un <b>Héroe de Rescate</b> y financia <b>kilómetros de vuelo</b> para que personas con cáncer lleguen a su tratamiento.</p>
       <div class="hero-acciones" id="hero-acciones">
         <a class="btn btn-1" data-wa="general" href="https://wa.me/584241466595" target="_blank" rel="noopener">Adopta un héroe</a>
         <a class="btn btn-2" href="#como-funciona">Ver cómo funciona</a>
@@ -522,7 +537,7 @@
         <div class="cupon-foto">
           <picture>
             <source srcset="img/galeria/05-600.avif" type="image/avif">
-            <img src="img/galeria/05-600.webp" width="600" height="450" loading="lazy" decoding="async"
+            <img class="foto-baja" src="img/galeria/05-600.webp" width="600" height="797" loading="lazy" decoding="async"
                  alt="Boarding pass solidario en mano, en el stand de la campaña">
           </picture>
         </div>
@@ -532,7 +547,7 @@
         <span class="cupon-n" aria-hidden="true">03</span>
         <div>
           <h3>Tu aporte financia horas de vuelo</h3>
-          <p>Para trasladar a una persona con cáncer desde su región <b>hasta Caracas</b>, con <b>tripulación médica a bordo</b>.</p>
+          <p>Para trasladar a personas con cáncer desde su región <b>hasta Caracas</b>, con <b>tripulación médica a bordo</b>.</p>
         </div>
         <div class="cupon-foto">
           <picture>
@@ -621,6 +636,30 @@
         </article>
       </div>
       <p class="envio">Coordina el <b>envío</b> y la <b>forma de pago</b> por WhatsApp al adoptar tu héroe.</p>
+    </div>
+  </section>
+
+  <section class="papel" id="empresas" aria-labelledby="t-empresas">
+    <div class="bloque">
+      <h2 id="t-empresas">Para empresas</h2>
+      <p class="bajada">Formas de apoyar la campaña con <b>retorno reputacional</b> para la organización.</p>
+      <div class="niveles">
+        <article class="nivel">
+          <p class="nivel-precio">$15 000</p>
+          <p>Financia <b>un vuelo completo</b>. Incluye el nombre de la empresa asociado a la ruta y material audiovisual del abordaje para informes de responsabilidad social.</p>
+          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Padrino de Ruta</a></h3>
+        </article>
+        <article class="nivel">
+          <p class="nivel-precio nivel-precio--texto">Variable</p>
+          <p>Compra de <b>horas de vuelo o bloques fraccionados</b>, con exposición proporcional al aporte.</p>
+          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Copiloto Solidario</a></h3>
+        </article>
+        <article class="nivel">
+          <p class="nivel-precio">$20 – $40</p>
+          <p>Adquisición de Héroes de Rescate <b>por unidad</b>, como obsequio corporativo o material de responsabilidad social.</p>
+          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Lotes institucionales</a></h3>
+        </article>
+      </div>
     </div>
   </section>
 
@@ -737,31 +776,8 @@
     </div>
   </section>
 
-  <div class="troquel" aria-hidden="true"></div>
+  <div class="troquel troquel--desde-mision" aria-hidden="true"></div>
 
-  <section class="papel" id="empresas" aria-labelledby="t-empresas">
-    <div class="bloque">
-      <h2 id="t-empresas">Para empresas</h2>
-      <p class="bajada">Formas de apoyar la campaña con <b>retorno reputacional</b> para la organización.</p>
-      <div class="niveles">
-        <article class="nivel">
-          <p class="nivel-precio">$15 000</p>
-          <p>Financia <b>un vuelo completo</b>. Incluye el nombre de la empresa asociado a la ruta y material audiovisual del abordaje para informes de responsabilidad social.</p>
-          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Padrino de Ruta</a></h3>
-        </article>
-        <article class="nivel">
-          <p class="nivel-precio nivel-precio--texto">Variable</p>
-          <p>Compra de <b>horas de vuelo o bloques fraccionados</b>, con exposición proporcional al aporte.</p>
-          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Copiloto Solidario</a></h3>
-        </article>
-        <article class="nivel">
-          <p class="nivel-precio">$20 – $40</p>
-          <p>Adquisición de Héroes de Rescate <b>por unidad</b>, como obsequio corporativo o material de responsabilidad social.</p>
-          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Lotes institucionales</a></h3>
-        </article>
-      </div>
-    </div>
-  </section>
 
   <section class="papel" id="preguntas" aria-labelledby="t-faq">
     <div class="bloque">
@@ -925,6 +941,35 @@ document.addEventListener('DOMContentLoaded', function () {
     obsPista.observe(document.getElementById('pista'));
 
     if (!reduce) {
+      // ── Las cifras grandes suben desde cero al llegar a ellas ──
+      // Se lee el texto ya pintado (el HTML trae los valores del evento y datos.js
+      // los pisa si carga), así que la animación no necesita saber de dónde salen.
+      var subirCifra = function (el) {
+        var fin = el.textContent;
+        var n = parseFloat(fin.replace(/[^0-9]/g, ''));
+        if (!isFinite(n) || n <= 0) return;
+        var pre = fin.slice(0, fin.search(/[0-9]/));
+        var t0 = 0, dur = 1100;
+        var paso = function (t) {
+          if (!t0) t0 = t;
+          var p = Math.min((t - t0) / dur, 1);
+          // easeOutCubic: arranca rápido y frena sobre el final
+          var v = Math.round(n * (1 - Math.pow(1 - p, 3)));
+          el.textContent = pre + v.toLocaleString('es-VE').replace(/\./g, ' ');
+          if (p < 1) requestAnimationFrame(paso);
+          else el.textContent = fin;   // cierra con el texto exacto, sin reformatear
+        };
+        requestAnimationFrame(paso);
+      };
+      var obsCifras = new IntersectionObserver(function (e) {
+        e.forEach(function (x) {
+          if (!x.isIntersecting) return;
+          x.target.querySelectorAll('.cifra b').forEach(subirCifra);
+          obsCifras.disconnect();
+        });
+      }, { threshold: .4 });
+      obsCifras.observe(document.getElementById('datos'));
+
       var obsGraf = new IntersectionObserver(function (e) {
         e.forEach(function (x) {
           if (!x.isIntersecting) return;
@@ -946,7 +991,10 @@ document.addEventListener('DOMContentLoaded', function () {
           x.target.setAttribute('data-ver', '');
           obsCup.unobserve(x.target);
         });
-      }, { threshold: .25 });
+      // Dispara ANTES de que el cupón entre en pantalla: con threshold .25 el
+      // elemento ya se estaba viendo, la animación lo mandaba a opacity 0 y se
+      // veía parpadear. Con el margen de abajo la entrada ocurre fuera de vista.
+      }, { threshold: 0, rootMargin: '0px 0px 18% 0px' });
       document.querySelectorAll('.cupon').forEach(function (c) { obsCup.observe(c); });
     }
 
@@ -996,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // así están siempre: los navegadores incrustados de Instagram y Facebook los
   // niegan a veces. De ahí el respaldo con textarea + execCommand, y si tampoco,
   // mostrar el enlace para copiar a mano.
-  var TEXTO = 'Este oso puede salvar vidas \uD83E\uDDF8\u2708\uFE0F Adopta un Héroe de Rescate y ayuda a que una persona con cáncer llegue a su tratamiento:';
+  var TEXTO = 'Este oso puede salvar vidas \uD83E\uDDF8\u2708\uFE0F Adopta un Héroe de Rescate y ayuda a que personas con cáncer lleguen a su tratamiento:';
   var aviso = document.getElementById('aviso-copia');
   var avisar = function (texto) {
     aviso.textContent = texto;
