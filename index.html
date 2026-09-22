@@ -194,7 +194,9 @@
     background-size:22px 22px;background-repeat:repeat-x;}
   .troquel--sube{--tr-arriba:var(--paper);--tr-abajo:var(--celeste-papel);}
   .troquel--mision{--tr-arriba:var(--paper);--tr-abajo:var(--celeste-papel);}
-  .troquel--desde-mision{--tr-arriba:var(--celeste-papel);--tr-abajo:var(--paper);}
+  /* Sale de una sección celeste de papel hacia una crema: la usan el boarding
+     pass y la misión. */
+  .troquel--desde-celeste{--tr-arriba:var(--celeste-papel);--tr-abajo:var(--paper);}
 
   .papel{background:var(--paper);color:var(--navy);}
   .bloque{max-width:64rem;margin:0 auto;padding:3rem var(--gutter);}
@@ -308,12 +310,16 @@
   .barra-prod[data-agotado] .barra-prod-valor{background:var(--orange);}
   .grafico-nota{max-width:62ch;margin-top:1.2rem;font-size:1rem;font-weight:400;color:var(--ink);}
 
-  .catalogo{position:relative;overflow:hidden;}
-  .catalogo-oso{position:absolute;right:-12%;bottom:-6%;width:min(70%,30rem);opacity:.12;
-                pointer-events:none;filter:saturate(.3);
-                -webkit-mask-image:linear-gradient(#000 55%,transparent 92%);
-                mask-image:linear-gradient(#000 55%,transparent 92%);}
-  .catalogo .bloque{position:relative;z-index:1;}
+  /* Corte entre secciones del mismo color: el troquel sólo entra donde cambia el
+     fondo, y el catálogo y empresas son las dos crema. La línea punteada es el
+     mismo recurso del cupón y de las preguntas frecuentes. */
+  /* El contenedor va a todo el ancho y CON fondo: al limitarlo a 64rem, por sus
+     costados asomaba el celeste del body en una línea de 1 px de borde a borde.
+     El punteado se centra dentro. */
+  .corte{background:var(--paper);}
+  .corte::before{content:"";display:block;box-sizing:border-box;
+                 width:min(64rem,100%);margin:0 auto;padding:0 var(--gutter);
+                 border-top:1.5px dashed var(--paper-edge);}
   .productos{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;}
   .prod{background:#fffdf8;border:1.5px solid var(--paper-edge);border-radius:12px;padding:1.3rem;
         display:flex;flex-direction:column;}
@@ -658,11 +664,7 @@
     </div>
   </section>
 
-  <section class="papel catalogo" id="catalogo" aria-labelledby="t-catalogo">
-    <picture class="catalogo-oso" aria-hidden="true">
-      <source srcset="img/oso-catalogo.avif" type="image/avif">
-      <img src="img/oso-catalogo.webp" width="620" height="642" loading="lazy" decoding="async" alt="">
-    </picture>
+  <section class="papel" id="catalogo" aria-labelledby="t-catalogo">
     <div class="bloque">
       <h2 id="t-catalogo">Adopta tu Héroe de Rescate</h2>
       <p class="bajada"><b>Edición limitada.</b> El pedido y el pago se coordinan por WhatsApp.</p>
@@ -695,6 +697,8 @@
       <p class="envio">Coordina el <b>envío</b> y la <b>forma de pago</b> por WhatsApp al adoptar tu héroe.</p>
     </div>
   </section>
+
+  <div class="corte" aria-hidden="true"></div>
 
   <section class="papel" id="empresas" aria-labelledby="t-empresas">
     <div class="bloque">
@@ -741,7 +745,7 @@
     </div>
   </section>
 
-  <div class="troquel" aria-hidden="true"></div>
+  <div class="troquel troquel--desde-celeste" aria-hidden="true"></div>
 
   <section class="papel" id="compartir" aria-labelledby="t-compartir">
     <div class="bloque">
@@ -836,7 +840,7 @@
     </div>
   </section>
 
-  <div class="troquel troquel--desde-mision" aria-hidden="true"></div>
+  <div class="troquel troquel--desde-celeste" aria-hidden="true"></div>
 
 
   <section class="papel" id="preguntas" aria-labelledby="t-faq">
