@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Un Check-in por la Vida · Aeroambulancias Silva</title>
-<meta name="description" content="Adopta un Héroe de Rescate y financia kilómetros de vuelo para que personas con cáncer lleguen a su tratamiento. Campaña solidaria de Aeroambulancias Silva.">
+<meta name="description" content="Adopta un Héroe de Rescate y financia horas de vuelo para que personas con cáncer lleguen a su tratamiento. Campaña solidaria de Aeroambulancias Silva.">
 <meta name="theme-color" content="#29b9e9">
 <!-- Los navegadores de Xiaomi, Samsung y Chrome Android reescriben los colores de
      una página que no declara esquema: el celeste se ensucia y el blanco se apaga.
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Aeroambulancias Silva">
 <meta property="og:title" content="Un Check-in por la Vida">
-<meta property="og:description" content="Adopta un Héroe de Rescate y financia vuelos solidarios para pacientes con cáncer.">
+<meta property="og:description" content="Adopta un Héroe de Rescate y financia horas de vuelo para que personas con cáncer lleguen a su tratamiento.">
 <meta property="og:url" content="https://uncheckinporlavida.aeroambulanciasilva.com/">
 <meta property="og:locale" content="es_VE">
 <meta property="og:image" content="https://uncheckinporlavida.aeroambulanciasilva.com/img/og-v1.jpg">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Un Check-in por la Vida: el Héroe de Rescate, el oso de peluche de la campaña de Aeroambulancias Silva">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Un Check-in por la Vida">
-<meta name="twitter:description" content="Adopta un Héroe de Rescate y financia vuelos solidarios para pacientes con cáncer.">
+<meta name="twitter:description" content="Adopta un Héroe de Rescate y financia horas de vuelo para que personas con cáncer lleguen a su tratamiento.">
 <meta name="twitter:image" content="https://uncheckinporlavida.aeroambulanciasilva.com/img/og-v1.jpg">
 <meta name="twitter:image:alt" content="Un Check-in por la Vida: el Héroe de Rescate, el oso de peluche de la campaña de Aeroambulancias Silva">
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
@@ -41,6 +41,8 @@
   @font-face{font-family:'Martian';src:url('fonts/MartianMono-700-cifras.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;}
   @font-face{font-family:'Source Sans';src:url('fonts/SourceSans3-400-latin.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
   @font-face{font-family:'Source Sans';src:url('fonts/SourceSans3-600-latin.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
+  /* Sólo hay 400 y 600: pedir 500 en el CSS no dibuja un peso intermedio, el
+     navegador lo resuelve como 400. Por eso el cuerpo va 400 y el énfasis 600. */
 
   :root{
     /* only light, no light a secas: frena el modo oscuro automático del navegador */
@@ -74,7 +76,13 @@
   p{margin:0;}
   img{max-width:100%;height:auto;display:block;}
   a{color:inherit;}
-  :focus-visible{outline:2.5px solid var(--orange);outline-offset:3px;border-radius:2px;}
+  /* El anillo iba en naranja y los dos CTA principales son naranjas: el indicador
+     tenía exactamente el color del elemento que señalaba (1,00:1 medido). Ahora va
+     en navy, con un halo de papel entre el control y el anillo: sobre naranja,
+     celeste y crema se ve el navy (6,4 a 7,9:1); sobre los botones navy se ve el
+     halo. Un solo token que funciona en los cuatro fondos de la página. */
+  :focus-visible{outline:3px solid var(--navy);outline-offset:3px;
+                 box-shadow:0 0 0 3px var(--paper);border-radius:3px;}
   .salto{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
   .salto:focus{position:fixed;width:auto;height:auto;clip-path:none;left:1rem;top:1rem;z-index:99;
     background:var(--paper);color:var(--navy);padding:.7rem 1rem;border-radius:6px;font-weight:600;}
@@ -87,23 +95,46 @@
   .cab[data-fija]{background:var(--celeste-hondo);box-shadow:0 1px 0 rgba(14,42,92,.18);}
   .cab-marca{display:flex;align-items:center;gap:.5rem;margin-right:auto;text-decoration:none;}
   .cab-marca img.silva{height:1.75rem;width:auto;}
+  /* Los media query van de menor a mayor: al estar este después del de 64rem,
+     su max-width y su margin auto ganaban por orden y descentraban la grilla
+     3,5 px respecto del resto de la columna. */
+  @media (min-width:56rem){
+    .hero{padding-top:1.5rem;}
+    .hero-acciones{max-width:34rem;margin-left:auto;margin-right:auto;gap:.7rem;}
+    .hero-acciones .btn{padding:.85rem 1.2rem;}
+  }
   @media (min-width:64rem){
-    /* En computadora la marca entra grande y se compacta al scrollear. Escala con
-       transform y no con height ni padding: así la cabecera conserva su alto —que
-       es lo que se pidió— y no hay un reflow por cada fotograma. Crece desde el
-       borde izquierdo para no correrse de lugar, y entra en el alto de la barra. */
-    .cab-marca img.silva{transform-origin:left center;transform:scale(1.9);
-                         transition:transform var(--dur-2) var(--ease);}
-    .cab[data-fija] .cab-marca img.silva{transform:scale(1);}
+    /* En computadora la marca del cliente arranca grande DENTRO del hero, encima
+       del texto, y sólo se muda a la esquina de la cabecera cuando el hero queda
+       atrás. Son dos imágenes que se turnan por opacidad, no una que viaja: un
+       elemento que se desplaza entre dos contenedores necesita medir y recolocar
+       en cada scroll, y esto se resuelve con una propiedad compuesta.
+       La de la cabecera sigue en el DOM desde el principio, así que el lector de
+       pantalla y el buscador siempre encuentran el nombre. */
+    /* Se oculta sólo si el JS llegó a marcar el documento: si falla, la marca del
+       cliente queda visible en la cabecera como siempre, en vez de desaparecer.
+       Va visibility y no sólo opacity porque un enlace con opacity 0 sigue
+       recibiendo el foco del teclado, y el usuario no ve dónde está parado. */
+    .js .cab-marca{opacity:0;visibility:hidden;pointer-events:none;
+                   transition:opacity var(--dur-2) var(--ease),visibility 0s linear var(--dur-2);}
+    .js .cab[data-fija] .cab-marca{opacity:1;visibility:visible;pointer-events:auto;
+                                   transition:opacity var(--dur-2) var(--ease);}
   }
   @media (prefers-reduced-motion:reduce){
-    .cab-marca img.silva{transition:none;}
+    /* El JS ya consulta el flag; el CSS lo hacía sólo para la marca. Acá se
+       apagan las transiciones y el scroll suave que quedaban sueltos. */
+    html{scroll-behavior:auto;}
+    .cab,.cab-marca,.btn,.barra,.pista-avance,.barra-avance,.barra-prod-valor,
+    .faq-cuerpo,.cupon-foto img,.hero-silva img{transition:none!important;animation:none!important;}
   }
   .cab-btn{display:inline-flex;align-items:center;gap:.4rem;font:600 .82rem/1 var(--sans);
            text-decoration:none;padding:.6rem .9rem;border-radius:999px;min-height:44px;}
-  .cab-icono{background:none;border:1.5px solid rgba(14,42,92,.4);color:var(--navy);cursor:pointer;
-             padding:0;width:44px;height:44px;border-radius:999px;display:grid;place-items:center;}
-  @media (hover:hover){.cab-icono:hover{border-color:var(--navy);}}
+  /* Lleva la palabra al lado del ícono: los tres nodos del símbolo de compartir
+     no se leen solos, y quien no lo conoce no toca un botón que no entiende.
+     El texto va en navy-deep y no en navy: al scrollear, la cabecera pasa a
+     celeste-hondo y ahí el navy se quedaba en 4,1:1 para un texto de 13 px. */
+  .cab-compartir{background:none;border:1.5px solid rgba(9,29,64,.45);color:var(--navy-deep);cursor:pointer;}
+  @media (hover:hover){.cab-compartir:hover{border-color:var(--navy-deep);background:rgba(9,29,64,.09);}}
   .cab-wa{background:var(--navy);color:var(--paper);}
   @media (max-width:520px){
     .cab-wa span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
@@ -114,7 +145,15 @@
         align-items:center;max-width:56rem;margin:0 auto;}
   .hero-marca{margin:0;width:100%;}
   .hero-marca img{width:100%;height:auto;filter:drop-shadow(0 18px 34px rgba(8,50,70,.28));}
+  /* Mientras el hero va apilado, el oso lleva techo: a 985x800 medía 1198 px de
+     alto, el hero entero 1485, y la bajada arrancaba fuera de pantalla. La
+     primera pantalla quedaba siendo sólo el peluche, sin una palabra de qué es
+     la campaña. */
+  .hero-marca img{max-height:56vh;width:auto;margin-inline:auto;}
   .hero-texto{width:100%;text-align:center;}
+  /* Sólo en computadora: en celular el logo se queda en la cabecera, donde hay
+     poco alto y el hero ya está bastante cargado. */
+  .hero-silva{display:none;}
   .hero-bajada{margin:0 auto;font-size:clamp(1.02rem,2.8vw,1.2rem);color:var(--navy);max-width:40ch;}
   /* Cuatro accesos en grilla 2x2: la acción principal arriba a la izquierda */
   .hero-acciones{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.4rem;}
@@ -127,7 +166,7 @@
   .btn-3{background:var(--navy);color:var(--paper);}
   @media (hover:hover){.btn-1:hover{background:#ffab2e;}.btn-2:hover{background:rgba(14,42,92,.08);}.btn-3:hover{background:var(--navy-soft);}}
   .btn:active{transform:scale(.97);}
-  .hero-prueba{margin-top:1.3rem;font-size:1rem;font-weight:500;color:#0a3c57;}
+  .hero-prueba{margin-top:1.3rem;font-size:1rem;font-weight:400;color:#0a3c57;}
   .hero-prueba b{color:var(--navy);}
   @media (min-width:64rem){
     /* En computadora sobra ancho y falta alto: apilado, los accesos caían a
@@ -137,9 +176,12 @@
     /* row-reverse y no reordenar el HTML: el h1 sigue siendo el primer elemento
        que leen el lector de pantalla y el buscador. */
     .hero-marca{flex:0 1 44%;min-width:0;}
+    .hero-marca img{max-height:none;}
     .hero-texto{flex:1 1 56%;min-width:0;text-align:left;}
+    .hero-silva{display:block;width:auto;margin:0 0 1.6rem;}
+    .hero-silva img{display:block;height:7.5rem;width:auto;}
     .hero-bajada{margin-inline:0;font-size:1.22rem;}
-    .hero-acciones{max-width:28rem;}
+    .hero-acciones{max-width:28rem;margin-inline:0;}
   }
 
   /* El corte perforado del ticket. Antes era una máscara, y los agujeros dejaban
@@ -150,7 +192,7 @@
   .troquel{height:22px;background-color:var(--tr-abajo,var(--paper));
     background-image:radial-gradient(circle at 11px 22px,transparent 11px,var(--tr-arriba,var(--celeste)) 11.5px);
     background-size:22px 22px;background-repeat:repeat-x;}
-  .troquel--sube{--tr-arriba:var(--paper);--tr-abajo:var(--celeste);}
+  .troquel--sube{--tr-arriba:var(--paper);--tr-abajo:var(--celeste-papel);}
   .troquel--mision{--tr-arriba:var(--paper);--tr-abajo:var(--celeste-papel);}
   .troquel--desde-mision{--tr-arriba:var(--celeste-papel);--tr-abajo:var(--paper);}
 
@@ -160,16 +202,19 @@
      título de la sección debajo de ella. Se nota en los accesos del hero. */
   section[id],div[id]{scroll-margin-top:4.6rem;}
   .bloque h2{font-size:clamp(2.2rem,7vw,3.4rem);margin-bottom:.6rem;}
-  .bajada{color:var(--ink);max-width:48ch;margin-bottom:2rem;font-size:1.08rem;font-weight:500;}
+  .bajada{color:var(--ink);max-width:48ch;margin-bottom:2rem;font-size:1.08rem;font-weight:600;}
   .rotulo{font:600 .8rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);}
 
   .datos-cifras{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;}
+  /* A partir de tablet se juntan: separadas por todo el ancho del bloque
+     dejaban de leerse como dos caras del mismo dato. */
+  @media (min-width:48rem){.datos-cifras{justify-content:flex-start;gap:5rem;}
+    .datos-cifras .cifra--der{text-align:left;align-items:flex-start;}}
   .cifra{display:flex;flex-direction:column;}
   .cifra--der{text-align:right;align-items:flex-end;}
   .cifra b{font-family:var(--cifra);font-weight:700;font-size:clamp(2rem,7vw,3rem);line-height:1;
            font-variant-numeric:tabular-nums;letter-spacing:-.05em;}
   .cifra span{font:600 .8rem/1.4 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-top:.6rem;}
-  .datos-nota{font-size:.95rem;color:var(--ink);margin-top:1rem;}
 
   .pista{margin-top:2.5rem;}
   .pista-cabeza{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;}
@@ -211,15 +256,18 @@
            font-size:clamp(4.6rem,17vw,7.5rem);line-height:.7;letter-spacing:-.05em;
            transform:scaleY(1.5);transform-origin:top left;display:block;align-self:start;}
   .cupon h3{font-family:var(--sans);font-weight:600;font-size:clamp(1.25rem,4vw,1.6rem);margin-bottom:.4rem;}
-  .cupon p{color:var(--ink);font-size:1.04rem;font-weight:500;}
+  .cupon p{color:var(--ink);font-size:1.04rem;font-weight:400;}
   .cupon-foto{grid-column:1/-1;border-radius:10px;overflow:hidden;background:var(--paper-edge);margin-top:.8rem;}
   .cupon-foto img{width:100%;aspect-ratio:16/10;object-fit:cover;}
-  /* Esta foto es vertical y el ticket está abajo: centrado, el recorte se lo comía. */
-  .cupon-foto img.foto-baja{object-position:center 68%;}
+  /* Esta foto es vertical (600x797) y el ticket ocupa el tercio de abajo. A 16/10
+     el recorte se lo comía. En celular, donde la foto va a todo el ancho, se le da
+     alto cuadrado y entra entera; en computadora alcanza con correr el encuadre. */
+  .cupon-foto img.foto-baja{aspect-ratio:1/1;object-position:center 62%;}
   @media (min-width:52rem){
     .cupon{grid-template-columns:auto 1fr 17rem;gap:1.6rem;align-items:center;}
     .cupon-foto{grid-column:auto;margin-top:0;}
     .cupon-foto img{aspect-ratio:4/3;}
+    .cupon-foto img.foto-baja{aspect-ratio:4/3;object-position:center 72%;}
   }
 
   /* Mosaico calculado para las SIETE figuras que hay. Si se agrega o quita una
@@ -258,10 +306,13 @@
   .barra-prod-valor{height:100%;background:var(--celeste);border-radius:3px;
     transform:scaleX(var(--v,0));transform-origin:left center;transition:transform var(--dur-3) var(--ease);}
   .barra-prod[data-agotado] .barra-prod-valor{background:var(--orange);}
-  .grafico-nota{margin-top:1.2rem;font-size:1rem;font-weight:500;color:var(--ink);}
+  .grafico-nota{max-width:62ch;margin-top:1.2rem;font-size:1rem;font-weight:400;color:var(--ink);}
 
   .catalogo{position:relative;overflow:hidden;}
-  .catalogo-oso{position:absolute;right:-12%;bottom:-6%;width:min(70%,30rem);opacity:.12;pointer-events:none;filter:saturate(.3);}
+  .catalogo-oso{position:absolute;right:-12%;bottom:-6%;width:min(70%,30rem);opacity:.12;
+                pointer-events:none;filter:saturate(.3);
+                -webkit-mask-image:linear-gradient(#000 55%,transparent 92%);
+                mask-image:linear-gradient(#000 55%,transparent 92%);}
   .catalogo .bloque{position:relative;z-index:1;}
   .productos{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;}
   .prod{background:#fffdf8;border:1.5px solid var(--paper-edge);border-radius:12px;padding:1.3rem;
@@ -269,20 +320,22 @@
   /* La descripción y el precio comparten renglón; el nombre del producto vive
      dentro del botón, que es lo que se toca. */
   .prod-cab{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex:1;}
-  .prod p.desc{margin:0;color:var(--ink);font-size:1rem;font-weight:500;}
+  .prod p.desc{margin:0;color:var(--ink);font-size:1rem;font-weight:400;}
   .prod .prod-precio{margin:0;flex:none;font-family:var(--cifra);font-weight:700;font-size:1.75rem;
                      color:var(--navy);letter-spacing:-.05em;line-height:1;}
   .prod-accion{margin:1.1rem 0 0;}
   .prod-accion .btn{width:100%;font-size:1rem;min-height:50px;}
   .ico-btn{flex:none;opacity:.9;}
-  .envio{margin-top:1.5rem;font-size:1.02rem;font-weight:500;color:var(--ink);}
+  .envio{max-width:62ch;margin-top:1.5rem;font-size:1.02rem;font-weight:400;color:var(--ink);}
 
-  .pase{background:var(--celeste);color:var(--navy);}
+  /* Mismo criterio que .mision: navy sobre el celeste fuerte da 6,1:1 —pasa AA—
+     pero se lee apagado porque es el mismo matiz de los dos lados. Sobre el
+     celeste de papel el mismo texto da 12,3:1. Dos secciones celestes, un
+     solo tratamiento. */
+  .pase{background:var(--celeste-papel);color:var(--navy);}
   .pase .bloque{display:grid;gap:1.8rem;align-items:center;}
   .pase h2{color:var(--navy);}
-  .pase h2,.pase h3{color:var(--navy);}
-  .pase p{color:var(--navy);font-weight:500;}
-  .pase .bajada{font-weight:500;font-size:1.1rem;}
+  .pase p{color:var(--navy);font-weight:400;}
   .pase-img{border-radius:12px;overflow:hidden;}
   @media (min-width:52rem){.pase .bloque{grid-template-columns:1fr 1fr;}}
 
@@ -292,14 +345,14 @@
   .red{width:46px;height:46px;border-radius:999px;border:1.5px solid var(--paper-edge);
        display:grid;place-items:center;color:var(--navy);text-decoration:none;background:#fffdf8;}
   @media (hover:hover){.red:hover{border-color:var(--navy);}}
-  .qr-intro{margin-top:2.2rem;font-size:1.04rem;font-weight:500;color:var(--ink);text-align:center;}
+  .qr-intro{max-width:62ch;margin-inline:auto;margin-top:2.2rem;font-size:1.04rem;font-weight:400;color:var(--ink);text-align:center;}
   .qr-caja{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:.9rem;
     padding:1.4rem;border:1.5px dashed var(--paper-edge);border-radius:12px;background:#fffdf8;}
   .qr-pieza{margin:0;display:flex;flex-direction:column;align-items:center;gap:.9rem;}
   /* El QR y el oso, del mismo alto para que lean como un par */
   .qr-pieza img{height:clamp(9rem,34vw,13rem);width:auto;max-width:100%;}
   .qr-pieza figcaption{display:flex;flex-direction:column;align-items:center;gap:.4rem;
-    text-align:center;font-size:1rem;font-weight:500;color:var(--ink);}
+    text-align:center;font-size:1rem;font-weight:400;color:var(--ink);}
   .enlace-boton{background:none;border:0;padding:0;cursor:pointer;font:inherit;font-weight:700;
     color:var(--orange-papel);text-decoration:underline;}
   .enlace-fuerte{color:var(--orange-papel);font-weight:700;}
@@ -314,7 +367,9 @@
   .mision{background:var(--celeste-papel);color:var(--navy);position:relative;overflow:hidden;}
   .mision .bloque{position:relative;z-index:1;}
   .mision h2,.mision h3{color:var(--navy);}
-  .mision p,.mision li{color:var(--navy);font-weight:500;}
+  .mision p,.mision li{color:var(--navy);font-weight:400;}
+  /* .mision p le gana por especificidad a .bajada, así que hay que repetir el
+     peso: sin esto esta bajada quedaba en 400 y sus cinco hermanas en 600. */
   .mision .bajada{color:var(--ink);font-weight:600;font-size:1.14rem;}
   .rotulo--claro{display:flex;align-items:center;gap:.9rem;color:var(--navy);font-weight:700;margin:2.6rem 0 1rem;}
   .rotulo--claro::after{content:"";flex:1;height:2px;background:rgba(14,42,92,.22);border-radius:2px;}
@@ -326,7 +381,7 @@
   .mision-meta .meta-cifra{font-family:var(--cifra);font-weight:700;font-size:clamp(2.2rem,9vw,3rem);
     letter-spacing:-.05em;display:block;margin-bottom:.5rem;color:var(--navy);line-height:1;}
   .mision-meta p b{font-family:inherit;font-size:inherit;font-weight:700;display:inline;}
-  .mision-meta p{color:var(--ink);}
+  .mision-meta p{max-width:62ch;color:var(--ink);}
 
   .tablero{margin-top:1rem;border-radius:12px;overflow:hidden;background:#fff;
     box-shadow:0 10px 22px rgba(6,42,62,.14);}
@@ -337,7 +392,7 @@
   .tablero-cod{font-family:var(--cifra);font-weight:700;font-size:.94rem;letter-spacing:-.03em;color:var(--navy);}
   .tablero-fila:not(:first-child) .tablero-cod:last-child{color:var(--orange-papel);}
   .tablero-linea{height:2px;background:repeating-linear-gradient(90deg,var(--paper-edge) 0 5px,transparent 5px 11px);}
-  .nota-rutas{margin-top:.9rem;font-size:.96rem;font-weight:500;color:#07364f;}
+  .nota-rutas{max-width:62ch;margin-top:.9rem;font-size:.96rem;font-weight:400;color:#07364f;}
 
   .columnas{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;margin-top:1rem;}
   .columna{background:#fff;border-radius:12px;padding:1.3rem;
@@ -345,7 +400,7 @@
   .columna-n{font-family:var(--titulo);font-weight:700;font-size:2.2rem;line-height:1;
     color:var(--orange-papel);display:block;margin-bottom:.2rem;}
   .columna h3{font-family:var(--sans);font-weight:700;font-size:1.22rem;margin-bottom:.45rem;color:var(--navy);}
-  .columna p{font-size:1.02rem;font-weight:500;color:var(--ink);}
+  .columna p{font-size:1.02rem;font-weight:400;color:var(--ink);}
 
   .credenciales{list-style:none;margin:2.6rem 0 0;padding:0;
     display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:.8rem;}
@@ -360,8 +415,8 @@
   /* Igual que el catálogo, salvo que acá el precio manda y va arriba, centrado. */
   .nivel .nivel-precio{margin:0 0 .9rem;text-align:center;font-family:var(--cifra);font-weight:700;
                        font-size:1.6rem;color:var(--navy);letter-spacing:-.05em;line-height:1;}
-  .nivel p:not(.nivel-precio){flex:1;margin:0;color:var(--ink);font-size:1rem;font-weight:500;}
-  .nivel-precio--texto{font-family:var(--titulo);font-size:1.75rem;letter-spacing:0;}
+  .nivel p:not(.nivel-precio){flex:1;margin:0;color:var(--ink);font-size:1rem;font-weight:400;}
+  .nivel .nivel-precio--texto{font-family:var(--titulo);font-size:1.75rem;letter-spacing:0;}
   .nivel-accion{margin:1.1rem 0 0;}
   .nivel-accion .btn{width:100%;font-size:1rem;min-height:50px;}
 
@@ -375,10 +430,10 @@
   .faq-cuerpo{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--dur-2) var(--ease);}
   .faq-cuerpo[data-abierto]{grid-template-rows:1fr;}
   .faq-clip{overflow:hidden;min-height:0;}
-  .faq-clip p{color:var(--ink);padding-bottom:1.1rem;font-size:1.03rem;font-weight:500;}
+  .faq-clip p{max-width:62ch;color:var(--ink);padding-bottom:1.1rem;font-size:1.03rem;font-weight:400;}
   .faq h3{margin:0;font-family:var(--sans);font-size:1rem;}
 
-  .pie{background:var(--navy-deep);color:#d3dcee;font-size:.98rem;font-weight:500;}
+  .pie{background:var(--navy-deep);color:#d3dcee;font-size:.98rem;font-weight:400;}
   .pie .bloque{padding-top:2.5rem;padding-bottom:2.5rem;}
   .pie-marca img{height:3.8rem;width:auto;margin-bottom:1.6rem;}
   .pie-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.8rem;}
@@ -390,28 +445,22 @@
   .pie-red{width:42px;height:42px;border-radius:999px;border:1px solid rgba(246,241,231,.25);
     display:grid;place-items:center;color:#d6ddec;}
   @media (hover:hover){.pie-red:hover{border-color:#d6ddec;}}
-  .pie-legal{margin-top:2rem;padding-top:1.4rem;border-top:1px solid rgba(246,241,231,.14);font-size:.9rem;font-weight:400;color:#aab6ce;}
+  .pie-legal{max-width:70ch;margin-top:2rem;padding-top:1.4rem;border-top:1px solid rgba(246,241,231,.14);font-size:.9rem;font-weight:400;color:#aab6ce;}
   .pie-dato{font-family:var(--cifra);font-weight:700;font-size:.78rem;letter-spacing:-.03em;}
 
-  @media (min-width:56rem){
-    .hero{padding-top:1.5rem;}
-    .hero-acciones{max-width:34rem;margin-left:auto;margin-right:auto;gap:.7rem;}
-    .hero-acciones .btn{padding:.85rem 1.2rem;}
-  }
 
   @media (prefers-reduced-motion:no-preference){
     @keyframes entra{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
     @keyframes sello{from{opacity:0;transform:scale(1.05);}to{opacity:1;transform:none;}}
     @keyframes despega{0%{transform:translateY(0) rotate(0);}45%{transform:translateY(-8px) rotate(-8deg);}100%{transform:translateY(0) rotate(0);}}
-    @keyframes respira{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
     .hero-texto>*{animation:entra var(--dur-2) var(--ease) backwards;}
-    .hero-texto>*:nth-child(1){animation-delay:180ms;}
-    .hero-texto>*:nth-child(2){animation-delay:280ms;}
-    .hero-texto>*:nth-child(3){animation-delay:380ms;}
+    .hero-texto>*:nth-child(1){animation-delay:140ms;}
+    .hero-texto>*:nth-child(2){animation-delay:220ms;}
+    .hero-texto>*:nth-child(3){animation-delay:310ms;}
+    .hero-texto>*:nth-child(4){animation-delay:400ms;}
     .hero-marca{animation:sello var(--dur-3) var(--ease) backwards;}
     .cupon[data-ver]{animation:entra var(--dur-2) var(--ease) backwards;}
-    .pista-avion[data-vuela] svg{animation:despega 1.2s var(--ease) var(--dur-3);}
-    .barra[data-ver] .barra-wa{animation:respira 5s var(--ease) 1.2s infinite;}
+    .pista-avion[data-vuela] svg{animation:despega .6s var(--ease) var(--dur-3);}
   }
 </style>
 <script type="application/ld+json">
@@ -439,13 +488,14 @@
 
 <header class="cab" id="cab">
   <a class="cab-marca" href="#inicio">
-    <img class="silva" src="img/logo-silva-blanco-180.webp" width="90" height="46" alt="Aeroambulancias Silva">
+    <img class="silva" src="img/logo-silva-blanco-180.webp" width="180" height="236" alt="Aeroambulancias Silva">
   </a>
-  <button class="cab-icono" id="btn-compartir-cab" type="button" aria-label="Compartir esta página">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <button class="cab-btn cab-compartir" id="btn-compartir-cab" type="button">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
       <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>
     </svg>
+    <span>Compartir</span>
   </button>
   <a class="cab-btn cab-wa" data-wa="general" href="https://wa.me/584241466595" target="_blank" rel="noopener">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
@@ -463,7 +513,11 @@
       </picture>
     </h1>
     <div class="hero-texto">
-      <p class="hero-bajada">Adopta un <b>Héroe de Rescate</b> y financia <b>kilómetros de vuelo</b> para que personas con cáncer lleguen a su tratamiento.</p>
+      <picture class="hero-silva">
+        <source srcset="img/logo-silva-blanco-400.avif" type="image/avif">
+        <img src="img/logo-silva-blanco-400.webp" width="305" height="400" alt="" aria-hidden="true">
+      </picture>
+      <p class="hero-bajada">Adopta un <b>Héroe de Rescate</b> y financia <b>horas de vuelo</b> para que personas con cáncer lleguen a su tratamiento.</p>
       <div class="hero-acciones" id="hero-acciones">
         <a class="btn btn-1" data-wa="general" href="https://wa.me/584241466595" target="_blank" rel="noopener">Adopta un héroe</a>
         <a class="btn btn-2" href="#como-funciona">Ver cómo funciona</a>
@@ -511,7 +565,7 @@
   <section class="papel" id="como-funciona" aria-labelledby="t-pasos">
     <div class="bloque">
       <h2 id="t-pasos">Cómo funciona</h2>
-      <p class="bajada">Tres pasos, lo mismo que hicieron las 44 personas que se sumaron en el congreso de Oncoaliado.</p>
+      <p class="bajada">Tres pasos, los mismos que siguieron quienes ya son <b data-cifra="pasajeros-texto">44</b> pasajeros de honor.</p>
 
       <div class="cupon">
         <span class="cupon-n" aria-hidden="true">01</span>
@@ -567,37 +621,37 @@
       <h3 class="rotulo">Así se vivió</h3>
 
       <div class="galeria">
-        <figure><picture><source srcset="img/galeria/02-600.avif" type="image/avif"><img src="img/galeria/02-600.webp" width="600" height="300" loading="lazy" decoding="async" alt="El equipo de la campaña frente a la imagen del avión en el stand"></picture></figure>
-        <figure><picture><source srcset="img/galeria/04-600.avif" type="image/avif"><img src="img/galeria/04-600.webp" width="600" height="600" loading="lazy" decoding="async" alt="Dos integrantes del equipo con el Héroe de Rescate gigante"></picture></figure>
-        <figure><picture><source srcset="img/galeria/05-600.avif" type="image/avif"><img src="img/galeria/05-600.webp" width="600" height="600" loading="lazy" decoding="async" alt="Boarding pass solidario en mano, en el stand de la campaña"></picture></figure>
-        <figure><picture><source srcset="img/galeria/06-600.avif" type="image/avif"><img src="img/galeria/06-600.webp" width="600" height="300" loading="lazy" decoding="async" alt="Persona mostrando su boarding pass recién adoptado"></picture></figure>
-        <figure><picture><source srcset="img/galeria/07-600.avif" type="image/avif"><img src="img/galeria/07-600.webp" width="600" height="600" loading="lazy" decoding="async" alt="Asistentes del congreso con sus Héroes de Rescate recién adoptados"></picture></figure>
-        <figure><picture><source srcset="img/galeria/08-600.avif" type="image/avif"><img src="img/galeria/08-600.webp" width="600" height="600" loading="lazy" decoding="async" alt="Grupo de asistentes con sus bolsas de la campaña y el Héroe de Rescate gigante"></picture></figure>
-        <figure><picture><source srcset="img/galeria/09-600.avif" type="image/avif"><img src="img/galeria/09-600.webp" width="600" height="600" loading="lazy" decoding="async" alt="Salón del Congreso Científico Internacional de Oncología en el Hotel Eurobuilding de Caracas"></picture></figure>
+        <figure><picture><source srcset="img/galeria/02-600.avif" type="image/avif"><img src="img/galeria/02-600.webp" width="600" height="450" loading="lazy" decoding="async" alt="El equipo de la campaña frente a la imagen del avión en el stand"></picture></figure>
+        <figure><picture><source srcset="img/galeria/04-600.avif" type="image/avif"><img src="img/galeria/04-600.webp" width="600" height="797" loading="lazy" decoding="async" alt="Dos integrantes del equipo con el Héroe de Rescate gigante"></picture></figure>
+        <figure><picture><source srcset="img/galeria/05-600.avif" type="image/avif"><img src="img/galeria/05-600.webp" width="600" height="797" loading="lazy" decoding="async" alt="Boarding pass solidario en mano, en el stand de la campaña"></picture></figure>
+        <figure><picture><source srcset="img/galeria/06-600.avif" type="image/avif"><img src="img/galeria/06-600.webp" width="600" height="797" loading="lazy" decoding="async" alt="Persona mostrando su boarding pass recién adoptado"></picture></figure>
+        <figure><picture><source srcset="img/galeria/07-600.avif" type="image/avif"><img src="img/galeria/07-600.webp" width="600" height="797" loading="lazy" decoding="async" alt="Asistentes del congreso con sus Héroes de Rescate recién adoptados"></picture></figure>
+        <figure><picture><source srcset="img/galeria/08-600.avif" type="image/avif"><img src="img/galeria/08-600.webp" width="600" height="452" loading="lazy" decoding="async" alt="Grupo de asistentes con sus bolsas de la campaña y el Héroe de Rescate gigante"></picture></figure>
+        <figure><picture><source srcset="img/galeria/09-600.avif" type="image/avif"><img src="img/galeria/09-600.webp" width="600" height="452" loading="lazy" decoding="async" alt="Salón del Congreso Científico Internacional de Oncología en el Hotel Eurobuilding de Caracas"></picture></figure>
       </div>
 
       <div class="grafico" id="grafico">
         <h3>Lo que vendimos en esos dos días</h3>
-        <div class="barra-prod" style="--v:.675">
-          <div class="barra-prod-cabeza"><b>Toallas</b><span>27 / 40</span></div>
+        <div class="barra-prod" data-prod="toalla" style="--v:.675">
+          <div class="barra-prod-cabeza"><b>Toallas</b><span data-prod-cifra>27 / 40</span></div>
           <div class="barra-prod-riel"><div class="barra-prod-valor"></div></div>
         </div>
-        <div class="barra-prod" style="--v:.684">
-          <div class="barra-prod-cabeza"><b>Llaveros</b><span>13 / 19</span></div>
+        <div class="barra-prod" data-prod="llavero" style="--v:.684">
+          <div class="barra-prod-cabeza"><b>Llaveros</b><span data-prod-cifra>13 / 19</span></div>
           <div class="barra-prod-riel"><div class="barra-prod-valor"></div></div>
         </div>
-        <div class="barra-prod" data-agotado style="--v:1">
-          <div class="barra-prod-cabeza"><b>Osos grandes</b><span>4 / 4</span></div>
+        <div class="barra-prod" data-prod="oso" data-agotado style="--v:1">
+          <div class="barra-prod-cabeza"><b>Osos grandes</b><span data-prod-cifra>4 / 4</span></div>
           <div class="barra-prod-riel"><div class="barra-prod-valor"></div></div>
         </div>
         <p class="grafico-nota">Los osos grandes <b>se agotaron el segundo día</b>.</p>
         <table class="sr">
           <caption>Unidades vendidas por producto en el evento</caption>
-          <thead><tr><th scope="col">Producto</th><th scope="col">Vendidas</th><th scope="col">Disponibles</th></tr></thead>
+          <thead><tr><th scope="col">Producto</th><th scope="col">Vendidas</th><th scope="col">Total del lote</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Toallas</th><td>27</td><td>40</td></tr>
-            <tr><th scope="row">Llaveros</th><td>13</td><td>19</td></tr>
-            <tr><th scope="row">Osos grandes</th><td>4</td><td>4</td></tr>
+            <tr data-prod-fila="toalla"><th scope="row">Toallas</th><td>27</td><td>40</td></tr>
+            <tr data-prod-fila="llavero"><th scope="row">Llaveros</th><td>13</td><td>19</td></tr>
+            <tr data-prod-fila="oso"><th scope="row">Osos grandes</th><td>4</td><td>4</td></tr>
           </tbody>
         </table>
       </div>
@@ -614,25 +668,28 @@
       <p class="bajada"><b>Edición limitada.</b> El pedido y el pago se coordinan por WhatsApp.</p>
       <div class="productos">
         <article class="prod">
+          <h3 class="sr">Toalla tipo oso</h3>
           <div class="prod-cab">
             <p class="desc">Ideal para <b>empezar a colaborar</b>; el mismo personaje, en formato toalla.</p>
             <p class="prod-precio" data-precio="toalla">$10</p>
           </div>
-          <h3 class="prod-accion"><a class="btn btn-3" data-wa="toalla" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Toalla tipo oso</a></h3>
+          <p class="prod-accion"><a class="btn btn-3" data-wa="toalla" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Toalla tipo oso</a></p>
         </article>
         <article class="prod">
+          <h3 class="sr">Llavero articulado</h3>
           <div class="prod-cab">
             <p class="desc">Oso articulado de bolsillo, entregado en su <b>caja Kraft</b>.</p>
             <p class="prod-precio" data-precio="llavero">$20</p>
           </div>
-          <h3 class="prod-accion"><a class="btn btn-3" data-wa="llavero" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Llavero articulado</a></h3>
+          <p class="prod-accion"><a class="btn btn-3" data-wa="llavero" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Llavero articulado</a></p>
         </article>
         <article class="prod">
+          <h3 class="sr">Oso grande</h3>
           <div class="prod-cab">
             <p class="desc">El Héroe de Rescate <b>completo</b>, para tener en casa o regalar.</p>
             <p class="prod-precio" data-precio="oso">$40</p>
           </div>
-          <h3 class="prod-accion"><a class="btn btn-3" data-wa="oso" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Oso grande</a></h3>
+          <p class="prod-accion"><a class="btn btn-3" data-wa="oso" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Oso grande</a></p>
         </article>
       </div>
       <p class="envio">Coordina el <b>envío</b> y la <b>forma de pago</b> por WhatsApp al adoptar tu héroe.</p>
@@ -645,19 +702,22 @@
       <p class="bajada">Formas de apoyar la campaña con <b>retorno reputacional</b> para la organización.</p>
       <div class="niveles">
         <article class="nivel">
+          <h3 class="sr">Padrino de Ruta</h3>
           <p class="nivel-precio">$15 000</p>
           <p>Financia <b>un vuelo completo</b>. Incluye el nombre de la empresa asociado a la ruta y material audiovisual del abordaje para informes de responsabilidad social.</p>
-          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Padrino de Ruta</a></h3>
+          <p class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Padrino de Ruta</a></p>
         </article>
         <article class="nivel">
+          <h3 class="sr">Copiloto Solidario</h3>
           <p class="nivel-precio nivel-precio--texto">Variable</p>
           <p>Compra de <b>horas de vuelo o bloques fraccionados</b>, con exposición proporcional al aporte.</p>
-          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Copiloto Solidario</a></h3>
+          <p class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Copiloto Solidario</a></p>
         </article>
         <article class="nivel">
-          <p class="nivel-precio">$20 – $40</p>
+          <h3 class="sr">Lotes institucionales</h3>
+          <p class="nivel-precio">$10 – $40</p>
           <p>Adquisición de Héroes de Rescate <b>por unidad</b>, como obsequio corporativo o material de responsabilidad social.</p>
-          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Lotes institucionales</a></h3>
+          <p class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Lotes institucionales</a></p>
         </article>
       </div>
     </div>
@@ -674,7 +734,7 @@
       <div class="pase-img">
         <picture>
           <source srcset="img/galeria/05-1200.avif" type="image/avif">
-          <img src="img/galeria/05-1200.webp" width="1200" height="900" loading="lazy" decoding="async"
+          <img src="img/galeria/05-1200.webp" width="1200" height="1594" loading="lazy" decoding="async"
                alt="Boarding pass solidario: check-in por la vida, pasajero de honor, vuelo ONCO 001">
         </picture>
       </div>
@@ -704,7 +764,7 @@
       <p class="qr-intro"><b>Escanea o descarga el código</b> para llevar la campaña a otra pantalla.</p>
       <div class="qr-caja">
         <figure class="qr-pieza">
-          <img src="img/qr.svg" width="260" height="260" loading="lazy" alt="Código QR de la campaña Un Check-in por la Vida">
+          <img src="img/qr.svg" width="588" height="588" loading="lazy" alt="Código QR de la campaña Un Check-in por la Vida">
           <figcaption>
             <a class="enlace-fuerte" href="img/qr-1024.png" download>Descargar código QR</a>
             <span class="o-separador">o</span>
@@ -865,6 +925,11 @@
 
 <script src="datos.js" defer></script>
 <script defer>
+// Marca el documento antes que nada: el CSS cuelga de esta clase lo que sólo
+// tiene sentido si el script corre, como esconder la marca de la cabecera
+// mientras el hero muestra la suya. Si algo falla más abajo, el sitio se ve
+// como si nunca hubiera habido JS, no roto a medias.
+document.documentElement.classList.add('js');
 document.addEventListener('DOMContentLoaded', function () {
   var d = window.CAMPANA || {};
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -878,7 +943,6 @@ document.addEventListener('DOMContentLoaded', function () {
   var respaldo = { toalla: 10, llavero: 20, oso: 40 };
   var mensajes = {
     general: '¡Hola! Vengo de la web de la campaña Un Check-in por la Vida y quiero adoptar un Héroe de Rescate. ¿Me puedes dar más información?',
-    empresas: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero información sobre apadrinar una ruta solidaria.',
     padrino: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Padrino de Ruta ($15.000), para financiar un vuelo completo. ¿Me pueden enviar la información?',
     copiloto: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, con compra de horas de vuelo fraccionadas. ¿Cómo se calcula el aporte?',
     lotes: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero cotizar un lote institucional de Héroes de Rescate. ¿Cuál es el mínimo y los precios por cantidad?'
@@ -896,18 +960,47 @@ document.addEventListener('DOMContentLoaded', function () {
   var pon = function (clave, texto) {
     document.querySelectorAll('[data-cifra="' + clave + '"]').forEach(function (el) { el.textContent = texto; });
   };
-  var pasajeros = 0, pct = 4.6;
-  if (d.productos) pasajeros = d.productos.reduce(function (s, p) { return s + (p.vendidas || 0); }, 0);
-  if (d.recaudado && d.meta) pct = Math.round(d.recaudado / d.meta * 1000) / 10;
-  if (d.recaudado) pon('recaudado', money(d.recaudado));
-  if (pasajeros) { pon('pasajeros', String(pasajeros)); pon('pasajeros-texto', String(pasajeros)); }
-  if (d.meta) pon('meta', money(d.meta));
+  // Se pregunta por el TIPO y no por el valor: con `if (d.recaudado)` un cero
+  // —el arranque de una campaña, que es un dato tan real como cualquier otro—
+  // no se publicaba y la página seguía mostrando las cifras viejas del evento.
+  var num = function (v) { return typeof v === 'number' && isFinite(v) && v >= 0; };
+  var pasajeros = null, pct = 4.6;
+  if (Array.isArray(d.productos)) pasajeros = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
+  if (num(d.recaudado) && num(d.meta) && d.meta > 0) pct = Math.round(d.recaudado / d.meta * 1000) / 10;
+  if (num(d.recaudado)) pon('recaudado', money(d.recaudado));
+  if (pasajeros !== null) { pon('pasajeros', String(pasajeros)); pon('pasajeros-texto', String(pasajeros)); }
+  if (num(d.meta)) pon('meta', money(d.meta));
+
+  // El gráfico del evento también sale de datos.js. Antes estaba duro en el HTML:
+  // el cliente editaba `vendidas` —que es justo lo que el archivo le pide— y la
+  // cifra grande cambiaba mientras el gráfico, quince líneas más abajo, seguía
+  // sumando otra cosa. La página se contradecía sola.
+  (Array.isArray(d.productos) ? d.productos : []).forEach(function (pr) {
+    var total = Number(pr.total != null ? pr.total : pr.disponibles);
+    var vend = Number(pr.vendidas);
+    if (!isFinite(total) || !isFinite(vend) || total <= 0) return;
+    var caja = document.querySelector('.barra-prod[data-prod="' + pr.id + '"]');
+    if (caja) {
+      caja.style.setProperty('--v', Math.min(vend / total, 1));
+      var cifra = caja.querySelector('[data-prod-cifra]');
+      if (cifra) cifra.textContent = vend + ' / ' + total;
+      caja.toggleAttribute('data-agotado', vend >= total);
+    }
+    var fila = document.querySelector('[data-prod-fila="' + pr.id + '"]');
+    if (fila) {
+      var celdas = fila.querySelectorAll('td');
+      if (celdas.length >= 2) { celdas[0].textContent = vend; celdas[1].textContent = total; }
+    }
+  });
   pon('porcentaje-texto', String(pct).replace('.', ',') + ' % de la meta');
   pon('progreso-sr', 'Progreso hacia el primer vuelo solidario: ' + String(pct).replace('.', ',') + ' por ciento de la meta.');
-  if (d.actualizado) {
+  // Sólo se acepta AAAA-MM-DD. El cliente edita datos.js a mano desde la web de
+  // GitHub, y con «19/09/2026» esto publicaba «Actualizado el NaN de undefined».
+  if (/^\d{4}-\d{2}-\d{2}$/.test(d.actualizado || '')) {
     var f = d.actualizado.split('-');
     var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    pon('actualizado', 'Actualizado el ' + Number(f[2]) + ' de ' + meses[Number(f[1]) - 1] + ' de ' + f[0]);
+    var mes = meses[Number(f[1]) - 1];
+    if (mes) pon('actualizado', 'Actualizado el ' + Number(f[2]) + ' de ' + mes + ' de ' + f[0]);
   }
   (d.productos || []).forEach(function (p) {
     var el = document.querySelector('[data-precio="' + p.id + '"]');
@@ -1030,10 +1123,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }, { threshold: 0 }).observe(document.querySelector('.pie'));
     verBarra();
 
+    // La cabecera se marca como fija cuando el hero queda atrás, no a los 60 px:
+    // en computadora la marca del cliente vive dentro del hero y con el umbral
+    // viejo se veían las dos a la vez durante más de 600 px de scroll.
     var cab = document.getElementById('cab');
+    var hero = document.querySelector('.hero');
     var centinela = document.createElement('div');
-    centinela.style.cssText = 'position:absolute;top:60px;height:1px;width:1px;';
-    document.body.prepend(centinela);
+    centinela.setAttribute('aria-hidden', 'true');
+    centinela.style.cssText = 'position:absolute;bottom:0;height:1px;width:1px;pointer-events:none;';
+    hero.style.position = 'relative';
+    hero.appendChild(centinela);
     new IntersectionObserver(function (e) {
       cab.toggleAttribute('data-fija', !e[0].isIntersecting);
     }).observe(centinela);
