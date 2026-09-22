@@ -6,6 +6,10 @@
 <title>Un Check-in por la Vida · Aeroambulancias Silva</title>
 <meta name="description" content="Adopta un Héroe de Rescate y financia kilómetros de vuelo para que una persona con cáncer llegue a su tratamiento. Campaña solidaria de Aeroambulancias Silva.">
 <meta name="theme-color" content="#29b9e9">
+<!-- Los navegadores de Xiaomi, Samsung y Chrome Android reescriben los colores de
+     una página que no declara esquema: el celeste se ensucia y el blanco se apaga.
+     Declarar el esquema desactiva esa inversión automática. -->
+<meta name="color-scheme" content="light">
 <link rel="canonical" href="https://uncheckinporlavida.aeroambulanciasilva.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Aeroambulancias Silva">
@@ -39,8 +43,13 @@
   @font-face{font-family:'Source Sans';src:url('fonts/SourceSans3-600-latin.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
 
   :root{
+    /* only light, no light a secas: frena el modo oscuro automático del navegador */
+    color-scheme:only light;
     /* Tonos de marca (2026-09-22): celeste y naranja */
     --celeste:#29b9e9; --celeste-hondo:#1596c2;
+    /* Celeste de papel: la misión iba azul oscuro sobre azul claro y, aunque el
+       contraste daba 6:1, se leía apagada. Sobre este fondo el navy da 12:1. */
+    --celeste-papel:#e2f3fc;
     --navy:#0e2a5c; --navy-deep:#091d40; --navy-soft:#1e4ba8;
     --paper:#f6f1e7; --paper-edge:#e7ddc8; --ink:#3d4a66; --ink-soft:#5c6883;
     /* El naranja de marca sobre papel da 1,9:1; para texto va su versión honda */
@@ -57,7 +66,9 @@
   }
   *,*::before,*::after{box-sizing:border-box;}
   html{background:var(--celeste);-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
-  body{margin:0;font-family:var(--sans);color:var(--navy);font-size:1.06rem;line-height:1.62;font-weight:400;overflow-x:clip;padding-bottom:var(--barra);}
+  /* El fondo del body sólo se ve al rebotar el scroll: va el celeste del hero,
+     que es lo que hay arriba de todo. Cada sección declara el suyo. */
+  body{margin:0;background:var(--celeste);font-family:var(--sans);color:var(--navy);font-size:1.06rem;line-height:1.62;font-weight:400;overflow-x:clip;padding-bottom:var(--barra);}
   h2{font-family:var(--titulo);font-weight:700;letter-spacing:.005em;}
   h1,h2,h3{line-height:1.02;margin:0;letter-spacing:.005em;text-wrap:balance;}
   p{margin:0;}
@@ -110,9 +121,11 @@
     /* En computadora sobra ancho y falta alto: apilado, los accesos caían a
        1327 px y había que bajar pantalla y media para ver el primer botón.
        Lado a lado entran en la primera pantalla de una laptop de 900 px. */
-    .hero{flex-direction:row;align-items:center;gap:3rem;max-width:72rem;padding:1.5rem var(--gutter) 3rem;}
-    .hero-marca{flex:1 1 54%;min-width:0;}
-    .hero-texto{flex:1 1 46%;min-width:0;text-align:left;}
+    .hero{flex-direction:row-reverse;align-items:center;gap:3.5rem;max-width:72rem;padding:1.5rem var(--gutter) 3rem;}
+    /* row-reverse y no reordenar el HTML: el h1 sigue siendo el primer elemento
+       que leen el lector de pantalla y el buscador. */
+    .hero-marca{flex:0 1 44%;min-width:0;}
+    .hero-texto{flex:1 1 56%;min-width:0;text-align:left;}
     .hero-bajada{margin-inline:0;font-size:1.22rem;}
     .hero-acciones{max-width:28rem;}
   }
@@ -121,12 +134,18 @@
     -webkit-mask-image:radial-gradient(circle at 11px 0,transparent 11px,#000 11.5px);
     mask-image:radial-gradient(circle at 11px 0,transparent 11px,#000 11.5px);
     -webkit-mask-size:22px 22px;mask-size:22px 22px;-webkit-mask-repeat:repeat-x;mask-repeat:repeat-x;}
+  .troquel--mision{background:var(--celeste-papel);
+    -webkit-mask-image:radial-gradient(circle at 11px 22px,transparent 11px,#000 11.5px);
+    mask-image:radial-gradient(circle at 11px 22px,transparent 11px,#000 11.5px);}
   .troquel--sube{background:var(--celeste);
     -webkit-mask-image:radial-gradient(circle at 11px 22px,transparent 11px,#000 11.5px);
     mask-image:radial-gradient(circle at 11px 22px,transparent 11px,#000 11.5px);}
 
   .papel{background:var(--paper);color:var(--navy);}
   .bloque{max-width:64rem;margin:0 auto;padding:3rem var(--gutter);}
+  /* La cabecera es sticky y mide 63 px: sin esto, saltar a un ancla deja el
+     título de la sección debajo de ella. Se nota en los accesos del hero. */
+  section[id],div[id]{scroll-margin-top:4.6rem;}
   .bloque h2{font-size:clamp(2.2rem,7vw,3.4rem);margin-bottom:.6rem;}
   .bajada{color:var(--ink);max-width:48ch;margin-bottom:2rem;font-size:1.08rem;font-weight:500;}
   .rotulo{font:600 .8rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);}
@@ -231,11 +250,16 @@
   .catalogo .bloque{position:relative;z-index:1;}
   .productos{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;}
   .prod{background:#fffdf8;border:1.5px solid var(--paper-edge);border-radius:12px;padding:1.3rem;
-        display:flex;flex-direction:column;gap:.5rem;}
-  .prod .prod-precio{font-family:var(--cifra);font-weight:700;font-size:1.75rem;color:var(--navy);letter-spacing:-.05em;line-height:1;}
-  .prod h3{font-family:var(--sans);font-weight:600;font-size:1.3rem;}
-  .prod p.desc{color:var(--ink);font-size:1rem;font-weight:500;flex:1;}
-  .prod .btn{margin-top:.6rem;font-size:.95rem;min-height:48px;}
+        display:flex;flex-direction:column;}
+  /* La descripción y el precio comparten renglón; el nombre del producto vive
+     dentro del botón, que es lo que se toca. */
+  .prod-cab{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex:1;}
+  .prod p.desc{margin:0;color:var(--ink);font-size:1rem;font-weight:500;}
+  .prod .prod-precio{margin:0;flex:none;font-family:var(--cifra);font-weight:700;font-size:1.75rem;
+                     color:var(--navy);letter-spacing:-.05em;line-height:1;}
+  .prod-accion{margin:1.1rem 0 0;}
+  .prod-accion .btn{width:100%;font-size:1rem;min-height:50px;}
+  .ico-btn{flex:none;opacity:.9;}
   .envio{margin-top:1.5rem;font-size:1.02rem;font-weight:500;color:var(--ink);}
 
   .pase{background:var(--celeste);color:var(--navy);}
@@ -267,20 +291,21 @@
   .o-separador{font-size:.92rem;font-weight:400;color:var(--ink-soft);font-style:italic;}
   .aviso-copia{margin-top:.9rem;font-size:.95rem;color:var(--verde-wa);font-weight:600;text-align:center;}
 
-  /* La misión sobre celeste: el relieve lo dan tarjetas de papel y un rótulo
-     con línea, no más color; el azul a 500-600 porque a 400 se leía delgado. */
-  .mision{background:var(--celeste);color:var(--navy);position:relative;overflow:hidden;}
-  .mision::before{content:"";position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(120% 90% at 50% -10%,rgba(255,255,255,.35),transparent 60%);}
+  /* La misión va sobre celeste de papel, no sobre el celeste fuerte: azul oscuro
+     sobre azul claro daba 6:1 —pasa AA— pero se leía apagado, porque es el mismo
+     matiz en los dos lados. Sobre este fondo el mismo navy da 12:1 y el naranja
+     y el tablero navy por fin resaltan. La sección sigue siendo celeste: no se
+     volvió crema como las demás. */
+  .mision{background:var(--celeste-papel);color:var(--navy);position:relative;overflow:hidden;}
   .mision .bloque{position:relative;z-index:1;}
   .mision h2,.mision h3{color:var(--navy);}
   .mision p,.mision li{color:var(--navy);font-weight:500;}
-  .mision .bajada{color:var(--navy);font-weight:600;font-size:1.12rem;}
-  .rotulo--claro{display:flex;align-items:center;gap:.9rem;color:#07364f;margin:2.6rem 0 1rem;}
-  .rotulo--claro::after{content:"";flex:1;height:2px;background:rgba(14,42,92,.28);border-radius:2px;}
+  .mision .bajada{color:var(--ink);font-weight:600;font-size:1.14rem;}
+  .rotulo--claro{display:flex;align-items:center;gap:.9rem;color:var(--navy);font-weight:700;margin:2.6rem 0 1rem;}
+  .rotulo--claro::after{content:"";flex:1;height:2px;background:rgba(14,42,92,.22);border-radius:2px;}
 
-  .mision-meta{margin-top:2rem;padding:1.5rem;border-radius:14px;background:var(--paper);
-    border:0;box-shadow:0 12px 26px rgba(6,42,62,.18);}
+  .mision-meta{margin-top:2rem;padding:1.5rem;border-radius:14px;background:#fff;
+    border:1.5px solid rgba(14,42,92,.1);box-shadow:0 10px 24px rgba(6,42,62,.1);}
   .mision-meta-rotulo{font:700 .76rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;
     color:var(--orange-papel);margin-bottom:.5rem;}
   .mision-meta .meta-cifra{font-family:var(--cifra);font-weight:700;font-size:clamp(2.2rem,9vw,3rem);
@@ -288,7 +313,7 @@
   .mision-meta p b{font-family:inherit;font-size:inherit;font-weight:700;display:inline;}
   .mision-meta p{color:var(--ink);}
 
-  .tablero{margin-top:1rem;border-radius:12px;overflow:hidden;background:var(--paper);
+  .tablero{margin-top:1rem;border-radius:12px;overflow:hidden;background:#fff;
     box-shadow:0 10px 22px rgba(6,42,62,.14);}
   .tablero-fila{display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;
     padding:.8rem 1.1rem;border-top:1px solid var(--paper-edge);font-size:.98rem;}
@@ -300,7 +325,7 @@
   .nota-rutas{margin-top:.9rem;font-size:.96rem;font-weight:500;color:#07364f;}
 
   .columnas{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;margin-top:1rem;}
-  .columna{background:var(--paper);border-radius:12px;padding:1.3rem;
+  .columna{background:#fff;border-radius:12px;padding:1.3rem;
     box-shadow:0 10px 22px rgba(6,42,62,.14);}
   .columna-n{font-family:var(--titulo);font-weight:700;font-size:2.2rem;line-height:1;
     color:var(--orange-papel);display:block;margin-bottom:.2rem;}
@@ -310,18 +335,20 @@
   .credenciales{list-style:none;margin:2.6rem 0 0;padding:0;
     display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:.8rem;}
   .credenciales li{display:flex;flex-direction:column;gap:.15rem;padding:.9rem 1rem;
-    border-radius:10px;background:rgba(255,255,255,.35);border:1.5px solid rgba(255,255,255,.55);}
+    border-radius:10px;background:#fff;border:1.5px solid rgba(14,42,92,.1);}
   .credenciales b{font-family:var(--titulo);font-weight:700;font-size:1.35rem;line-height:1.05;color:var(--navy);}
-  .credenciales span{font-size:.86rem;font-weight:600;color:#07364f;}
+  .credenciales span{font-size:.86rem;font-weight:600;color:var(--ink);}
 
   .niveles{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;}
   .nivel{background:#fffdf8;border:1.5px solid var(--paper-edge);border-radius:12px;padding:1.3rem;
     display:flex;flex-direction:column;}
-  .nivel p:not(.nivel-precio){flex:1;}
-  .nivel .btn{margin-top:1rem;font-size:.95rem;min-height:48px;}
-  .nivel .nivel-precio{font-family:var(--cifra);font-weight:700;font-size:1.35rem;color:var(--navy);letter-spacing:-.05em;margin:.35rem 0 .7rem;line-height:1;}
-  .nivel h3{font-family:var(--sans);font-weight:600;font-size:1.25rem;}
-  .nivel p:not(.nivel-precio){color:var(--ink);font-size:1rem;font-weight:500;}
+  /* Igual que el catálogo, salvo que acá el precio manda y va arriba, centrado. */
+  .nivel .nivel-precio{margin:0 0 .9rem;text-align:center;font-family:var(--cifra);font-weight:700;
+                       font-size:1.6rem;color:var(--navy);letter-spacing:-.05em;line-height:1;}
+  .nivel p:not(.nivel-precio){flex:1;margin:0;color:var(--ink);font-size:1rem;font-weight:500;}
+  .nivel-precio--texto{font-family:var(--titulo);font-size:1.75rem;letter-spacing:0;}
+  .nivel-accion{margin:1.1rem 0 0;}
+  .nivel-accion .btn{width:100%;font-size:1rem;min-height:50px;}
 
   .faq-item{border-top:1.5px dashed var(--paper-edge);}
   .faq-item:last-child{border-bottom:1.5px dashed var(--paper-edge);}
@@ -572,22 +599,25 @@
       <p class="bajada"><b>Edición limitada.</b> El pedido y el pago se coordinan por WhatsApp.</p>
       <div class="productos">
         <article class="prod">
-          <h3>Toalla tipo oso</h3>
-          <p class="prod-precio" data-precio="toalla">$10</p>
-          <p class="desc">Ideal para <b>empezar a colaborar</b>; el mismo personaje, en formato toalla.</p>
-          <a class="btn btn-3" data-wa="toalla" href="https://wa.me/584241466595" target="_blank" rel="noopener">Lo quiero</a>
+          <div class="prod-cab">
+            <p class="desc">Ideal para <b>empezar a colaborar</b>; el mismo personaje, en formato toalla.</p>
+            <p class="prod-precio" data-precio="toalla">$10</p>
+          </div>
+          <h3 class="prod-accion"><a class="btn btn-3" data-wa="toalla" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Toalla tipo oso</a></h3>
         </article>
         <article class="prod">
-          <h3>Llavero articulado</h3>
-          <p class="prod-precio" data-precio="llavero">$20</p>
-          <p class="desc">Oso articulado de bolsillo, entregado en su <b>caja Kraft</b>.</p>
-          <a class="btn btn-3" data-wa="llavero" href="https://wa.me/584241466595" target="_blank" rel="noopener">Lo quiero</a>
+          <div class="prod-cab">
+            <p class="desc">Oso articulado de bolsillo, entregado en su <b>caja Kraft</b>.</p>
+            <p class="prod-precio" data-precio="llavero">$20</p>
+          </div>
+          <h3 class="prod-accion"><a class="btn btn-3" data-wa="llavero" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Llavero articulado</a></h3>
         </article>
         <article class="prod">
-          <h3>Oso grande</h3>
-          <p class="prod-precio" data-precio="oso">$40</p>
-          <p class="desc">El Héroe de Rescate <b>completo</b>, para tener en casa o regalar.</p>
-          <a class="btn btn-3" data-wa="oso" href="https://wa.me/584241466595" target="_blank" rel="noopener">Lo quiero</a>
+          <div class="prod-cab">
+            <p class="desc">El Héroe de Rescate <b>completo</b>, para tener en casa o regalar.</p>
+            <p class="prod-precio" data-precio="oso">$40</p>
+          </div>
+          <h3 class="prod-accion"><a class="btn btn-3" data-wa="oso" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Oso grande</a></h3>
         </article>
       </div>
       <p class="envio">Coordina el <b>envío</b> y la <b>forma de pago</b> por WhatsApp al adoptar tu héroe.</p>
@@ -654,7 +684,7 @@
     </div>
   </section>
 
-  <div class="troquel troquel--sube" aria-hidden="true"></div>
+  <div class="troquel troquel--mision" aria-hidden="true"></div>
 
   <section class="mision" id="mision" aria-labelledby="t-mision">
     <div class="bloque">
@@ -715,22 +745,19 @@
       <p class="bajada">Formas de apoyar la campaña con <b>retorno reputacional</b> para la organización.</p>
       <div class="niveles">
         <article class="nivel">
-          <h3>Padrino de Ruta</h3>
           <p class="nivel-precio">$15 000</p>
           <p>Financia <b>un vuelo completo</b>. Incluye el nombre de la empresa asociado a la ruta y material audiovisual del abordaje para informes de responsabilidad social.</p>
-          <a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Padrino de Ruta</a></h3>
         </article>
         <article class="nivel">
-          <h3>Copiloto Solidario</h3>
-          <p class="nivel-precio">Variable</p>
+          <p class="nivel-precio nivel-precio--texto">Variable</p>
           <p>Compra de <b>horas de vuelo o bloques fraccionados</b>, con exposición proporcional al aporte.</p>
-          <a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Copiloto Solidario</a></h3>
         </article>
         <article class="nivel">
-          <h3>Lotes institucionales</h3>
           <p class="nivel-precio">$20 – $40</p>
           <p>Adquisición de Héroes de Rescate <b>por unidad</b>, como obsequio corporativo o material de responsabilidad social.</p>
-          <a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+          <h3 class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Lotes institucionales</a></h3>
         </article>
       </div>
     </div>
