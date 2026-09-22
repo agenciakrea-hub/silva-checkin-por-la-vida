@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un Check-in por la Vida · Aeroambulancias Silva</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Campaña solidaria de Aeroambulancias Silva: adopta un Héroe de Rescate y financia kilómetros de vuelo para que un niño con cáncer llegue a su tratamiento.">
+<meta name="theme-color" content="#0e2a5c">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon-180.png">
+<style>
+  :root { --navy: #0e2a5c; --paper: #f6f1e7; --ink: #3d4a66; --orange: #e8792b; }
+  html { background: var(--navy); color-scheme: light; }
+  body { margin: 0; min-height: 100svh; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--paper); }
+
+  /* Cabecera mínima: logo blanco de Silva + el oso chico como insignia */
+  header { display: flex; align-items: center; justify-content: center; gap: .6rem; padding: 1.25rem 1rem; }
+  header img.marca { height: 1.8rem; width: auto; }
+  header img.oso-chico { height: 2.6rem; width: auto; }
+
+  /* Sección principal: el oso GRANDE de fondo, muy tenue, detrás del mensaje */
+  main { position: relative; min-height: 70svh; display: grid; place-items: center; padding: 2rem 1.5rem 3rem; overflow: hidden; }
+  main .fondo-oso { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 0; }
+  main .fondo-oso picture, main .fondo-oso img { width: min(80vw, 34rem); height: auto; opacity: .16; filter: saturate(0) brightness(2.4); }
+  main .contenido { position: relative; z-index: 1; max-width: 34rem; text-align: center; }
+  main .contenido img.ticket { width: min(100%, 26rem); height: auto; display: block; margin: 0 auto 1.5rem; }
+  h1 { font-size: clamp(1.5rem, 5vw, 2.1rem); line-height: 1.2; margin: 0 0 .5rem; font-weight: 600; text-wrap: balance; }
+  p { font-size: 1.05rem; line-height: 1.5; margin: 0 0 1.25rem; opacity: .9; text-wrap: balance; }
+  a { color: var(--paper); }
+</style>
+</head>
+<body>
+<header>
+  <img class="marca" src="img/logo-silva-blanco-180.webp" width="90" height="46" alt="">
+  <img class="oso-chico" src="img/oso-chico.webp" width="52" height="54" alt="Héroe de Rescate, el oso de la campaña">
+</header>
+<main>
+  <div class="fondo-oso" aria-hidden="true">
+    <picture>
+      <source srcset="img/oso-fondo.avif" type="image/avif">
+      <img src="img/oso-fondo.webp" alt="" width="1600" height="1657" loading="lazy">
+    </picture>
+  </div>
+  <div class="contenido">
+    <img class="ticket" src="img/logo-ticket.svg" width="600" height="240" alt="Boarding pass solidario: Un Check-in por la Vida">
+    <h1>Un Check-in por la Vida</h1>
+    <p>Muy pronto. Campaña solidaria de <a href="https://www.aeroambulanciasilva.com" rel="noopener">Aeroambulancias Silva</a>.</p>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# GitHub Pages construye este repo con Jekyll. Estas rutas no se publican en el sitio.
+exclude:
+  - docs
+  - _config.yml
+  - README.md
+  - CLAUDE.md
+  - AGENTS.md
+  - MISTAKES.md
+  - PRODUCT.md
+  - DESIGN.md

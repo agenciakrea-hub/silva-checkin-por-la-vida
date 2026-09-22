@@ -1,0 +1,3 @@
+# Provisional: el sitio no se indexa hasta la publicación (P7 del plan).
+User-agent: *
+Disallow: /
