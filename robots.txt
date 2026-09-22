@@ -1,3 +1,4 @@
-# Provisional: el sitio no se indexa hasta la publicación (P7 del plan).
 User-agent: *
-Disallow: /
+Allow: /
+
+Sitemap: https://uncheckinporlavida.aeroambulanciasilva.com/sitemap.xml
