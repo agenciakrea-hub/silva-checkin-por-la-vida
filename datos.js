@@ -8,8 +8,6 @@ window.CAMPANA = {
   recaudado: 690,
   meta: 15000,
   metaTexto: "un vuelo solidario",
-  // Precio de referencia para calcular "faltan ~N pasajeros de honor" (el del llavero).
-  precioReferencia: 20,
   productos: [
     { id: "toalla",  nombre: "Toalla tipo oso",    precio: 10, vendidas: 27, disponibles: 40 },
     { id: "llavero", nombre: "Llavero articulado", precio: 20, vendidas: 13, disponibles: 19 },
