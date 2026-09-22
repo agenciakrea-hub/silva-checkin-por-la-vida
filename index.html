@@ -117,8 +117,8 @@
        recibiendo el foco del teclado, y el usuario no ve dónde está parado. */
     .js .cab-marca{opacity:0;visibility:hidden;pointer-events:none;
                    transition:opacity var(--dur-2) var(--ease),visibility 0s linear var(--dur-2);}
-    .js .cab[data-fija] .cab-marca{opacity:1;visibility:visible;pointer-events:auto;
-                                   transition:opacity var(--dur-2) var(--ease);}
+    .js .cab[data-marca] .cab-marca{opacity:1;visibility:visible;pointer-events:auto;
+                                    transition:opacity var(--dur-2) var(--ease);}
   }
   @media (prefers-reduced-motion:reduce){
     /* El JS ya consulta el flag; el CSS lo hacía sólo para la marca. Acá se
@@ -179,7 +179,7 @@
     .hero-marca img{max-height:none;}
     .hero-texto{flex:1 1 56%;min-width:0;text-align:left;}
     .hero-silva{display:block;width:auto;margin:0 0 1.6rem;}
-    .hero-silva img{display:block;height:7.5rem;width:auto;}
+    .hero-silva img{display:block;height:11rem;width:auto;}
     .hero-bajada{margin-inline:0;font-size:1.22rem;}
     .hero-acciones{max-width:28rem;margin-inline:0;}
   }
@@ -208,10 +208,6 @@
   .rotulo{font:600 .8rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);}
 
   .datos-cifras{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;}
-  /* A partir de tablet se juntan: separadas por todo el ancho del bloque
-     dejaban de leerse como dos caras del mismo dato. */
-  @media (min-width:48rem){.datos-cifras{justify-content:flex-start;gap:5rem;}
-    .datos-cifras .cifra--der{text-align:left;align-items:flex-start;}}
   .cifra{display:flex;flex-direction:column;}
   .cifra--der{text-align:right;align-items:flex-end;}
   .cifra b{font-family:var(--cifra);font-weight:700;font-size:clamp(2rem,7vw,3rem);line-height:1;
@@ -1140,6 +1136,18 @@ document.addEventListener('DOMContentLoaded', function () {
     new IntersectionObserver(function (e) {
       cab.toggleAttribute('data-fija', !e[0].isIntersecting);
     }).observe(centinela);
+
+    // El relevo de la marca: la de la cabecera entra justo cuando sale de vista
+    // la del hero, no al terminar el hero. Con el disparador anterior quedaban
+    // 451 px de scroll sin ninguna marca a la vista. En celular este elemento
+    // está en display:none y la regla que lo usa vive en min-width:64rem, así
+    // que allá la cabecera muestra su logo siempre, como corresponde.
+    var marcaHero = document.querySelector('.hero-silva');
+    if (marcaHero) {
+      new IntersectionObserver(function (e) {
+        cab.toggleAttribute('data-marca', !e[0].isIntersecting);
+      }, { threshold: 0 }).observe(marcaHero);
+    }
   }
 
   // ── Compartir ──────────────────────────────────────────────────────────
