@@ -5,49 +5,367 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Un Check-in por la Vida · Aeroambulancias Silva</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Campaña solidaria de Aeroambulancias Silva: adopta un Héroe de Rescate y financia kilómetros de vuelo para que un niño con cáncer llegue a su tratamiento.">
+<meta name="description" content="Adopta un Héroe de Rescate y financia kilómetros de vuelo para que un niño con cáncer llegue a su tratamiento. Campaña solidaria de Aeroambulancias Silva.">
 <meta name="theme-color" content="#0e2a5c">
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon-180.png">
+<link rel="preload" href="fonts/Newsreader-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/DMSans-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" as="image" href="img/oso-hero.avif" type="image/avif" fetchpriority="high">
 <style>
-  :root { --navy: #0e2a5c; --paper: #f6f1e7; --ink: #3d4a66; --orange: #e8792b; }
-  html { background: var(--navy); color-scheme: light; }
-  body { margin: 0; min-height: 100svh; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--paper); }
+  @font-face{font-family:'Newsreader';src:url('fonts/Newsreader-600-latin.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
+  @font-face{font-family:'DM Sans';src:url('fonts/DMSans-400-latin.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
+  @font-face{font-family:'DM Sans';src:url('fonts/DMSans-600-latin.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
 
-  /* Cabecera mínima: logo blanco de Silva + el oso chico como insignia */
-  header { display: flex; align-items: center; justify-content: center; gap: .6rem; padding: 1.25rem 1rem; }
-  header img.marca { height: 1.8rem; width: auto; }
-  header img.oso-chico { height: 2.6rem; width: auto; }
+  :root{
+    --navy:#0e2a5c; --navy-deep:#091d40; --navy-soft:#1e4ba8;
+    --paper:#f6f1e7; --paper-edge:#e7ddc8; --ink:#3d4a66; --ink-soft:#5c6883;
+    --orange:#e8792b; --orange-deep:#b9561a; --green:#1f9d55;
+    /* Naranja legible sobre el papel crema: el de marca da 2,59:1, este 5,23:1 */
+    --orange-papel:#a44a12;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --gutter:clamp(1.25rem,5vw,3.5rem);
+    --dur-1:180ms; --dur-2:420ms; --dur-3:620ms; --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{background:var(--navy);-webkit-text-size-adjust:100%;}
+  /* overflow-x:clip y no hidden: hidden crea contexto de scroll y rompe el sticky de la cabecera */
+  body{margin:0;font-family:var(--sans);color:var(--paper);line-height:1.6;overflow-x:clip;}
+  h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.05;margin:0;text-wrap:balance;}
+  p{margin:0;}
+  img{max-width:100%;height:auto;display:block;}
+  a{color:inherit;}
+  :focus-visible{outline:2.5px solid var(--orange);outline-offset:3px;border-radius:2px;}
+  /* Oculto por recorte, no por coordenadas fuera de pantalla: nada desborda el eje x */
+  .salto{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+  .salto:focus{position:fixed;width:auto;height:auto;clip-path:none;left:1rem;top:1rem;z-index:99;
+    background:var(--paper);color:var(--navy);padding:.7rem 1rem;border-radius:6px;font-weight:600;}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 
-  /* Sección principal: el oso GRANDE de fondo, muy tenue, detrás del mensaje */
-  main { position: relative; min-height: 70svh; display: grid; place-items: center; padding: 2rem 1.5rem 3rem; overflow: hidden; }
-  main .fondo-oso { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 0; }
-  main .fondo-oso picture, main .fondo-oso img { width: min(80vw, 34rem); height: auto; opacity: .16; filter: saturate(0) brightness(2.4); }
-  main .contenido { position: relative; z-index: 1; max-width: 34rem; text-align: center; }
-  main .contenido img.ticket { width: min(100%, 26rem); height: auto; display: block; margin: 0 auto 1.5rem; }
-  h1 { font-size: clamp(1.5rem, 5vw, 2.1rem); line-height: 1.2; margin: 0 0 .5rem; font-weight: 600; text-wrap: balance; }
-  p { font-size: 1.05rem; line-height: 1.5; margin: 0 0 1.25rem; opacity: .9; text-wrap: balance; }
-  a { color: var(--paper); }
+  /* ── Cabecera ─────────────────────────────────────────────── */
+  .cab{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.75rem;
+       padding:.6rem var(--gutter);background:transparent;transition:background var(--dur-2) var(--ease);}
+  .cab[data-fija]{background:var(--navy-deep);}
+  .cab-marca{display:flex;align-items:center;gap:.5rem;margin-right:auto;text-decoration:none;}
+  .cab-marca img.silva{height:1.75rem;width:auto;}
+  .cab-btn{display:inline-flex;align-items:center;gap:.4rem;font:600 .82rem/1 var(--sans);
+           text-decoration:none;padding:.6rem .9rem;border-radius:999px;min-height:44px;}
+  .cab-icono{background:none;border:1.5px solid rgba(246,241,231,.35);color:var(--paper);cursor:pointer;
+             padding:0;width:44px;height:44px;border-radius:999px;display:grid;place-items:center;}
+  @media (hover:hover){.cab-icono:hover{border-color:var(--paper);}}
+  .cab-wa{background:var(--paper);color:var(--navy);}
+  /* En móvil el rótulo se recorta, no se borra: display:none deja el enlace sin nombre accesible */
+  @media (max-width:520px){
+    .cab-wa span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+    .cab-wa{padding:.6rem;width:44px;justify-content:center;}
+  }
+
+  /* ── Hero ─────────────────────────────────────────────────── */
+  .hero{position:relative;padding:1rem var(--gutter) 0;display:grid;gap:1.5rem;
+        grid-template-columns:1fr;align-items:end;max-width:78rem;margin:0 auto;}
+  .hero-texto{position:relative;z-index:2;padding-bottom:.5rem;}
+  .kicker{font:600 .72rem/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;
+          color:var(--orange);margin-bottom:.9rem;}
+  .hero h1{font-size:clamp(2.6rem,11vw,5rem);letter-spacing:-.015em;}
+  .hero h1 em{font-style:normal;color:var(--orange);}
+  .hero-bajada{margin-top:1rem;font-size:clamp(1rem,2.6vw,1.15rem);color:#d6ddec;max-width:34ch;}
+  .hero-acciones{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.6rem;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:52px;
+       padding:.85rem 1.5rem;border-radius:999px;font:600 1rem/1 var(--sans);text-decoration:none;
+       transition:transform var(--dur-1) var(--ease),background var(--dur-1) var(--ease);}
+  .btn-1{background:var(--orange);color:#2a1103;}
+  .btn-2{border:1.5px solid rgba(246,241,231,.4);color:var(--paper);}
+  @media (hover:hover){.btn-1:hover{background:#f18c45;}.btn-2:hover{border-color:var(--paper);}}
+  .btn:active{transform:scale(.97);}
+  .hero-oso{position:relative;z-index:1;justify-self:center;width:min(100%,26rem);margin-bottom:-1px;}
+  .hero-oso img{width:100%;max-height:44svh;object-fit:contain;object-position:top;
+    filter:drop-shadow(0 24px 40px rgba(0,0,0,.35));}
+
+  /* ── Borde troquelado: el ticket como estructura ─────────── */
+  .troquel{height:22px;background:var(--paper);
+    -webkit-mask-image:radial-gradient(circle at 11px 0,transparent 11px,#000 11.5px);
+    mask-image:radial-gradient(circle at 11px 0,transparent 11px,#000 11.5px);
+    -webkit-mask-size:22px 22px;mask-size:22px 22px;-webkit-mask-repeat:repeat-x;mask-repeat:repeat-x;}
+
+  /* ── Cinta de datos: el reverso del pase ─────────────────── */
+  .datos{background:var(--paper);color:var(--navy);padding:2.5rem var(--gutter) 3rem;}
+  .datos-caja{max-width:64rem;margin:0 auto;}
+  .datos-cifras{display:flex;flex-wrap:wrap;gap:2rem 3rem;align-items:flex-end;}
+  .cifra{display:flex;flex-direction:column;}
+  .cifra b{font-family:var(--serif);font-weight:600;font-size:clamp(2.6rem,9vw,4rem);line-height:1;
+           font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+  .cifra span{font:600 .78rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-top:.5rem;}
+  .datos-nota{font-size:.95rem;color:var(--ink);margin-top:.9rem;}
+
+  .pista{margin-top:2.5rem;}
+  .pista-cabeza{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+                font:600 .78rem/1.4 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+  .pista-cabeza b{font-family:var(--serif);font-size:1.15rem;letter-spacing:0;text-transform:none;color:var(--navy);}
+  .pista-riel{position:relative;height:38px;margin-top:.9rem;}
+  .pista-linea{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);
+    background:repeating-linear-gradient(90deg,var(--paper-edge) 0 14px,transparent 14px 26px);}
+  .pista-avance{position:absolute;left:0;top:50%;height:2px;transform:translateY(-50%);background:var(--orange);
+    width:var(--avance,4.6%);transition:width var(--dur-3) var(--ease);}
+  .pista-avion{position:absolute;top:50%;left:var(--avance,4.6%);transform:translate(-50%,-50%);color:var(--navy);
+    transition:left var(--dur-3) var(--ease);}
+  .pista-meta{position:absolute;right:0;top:50%;transform:translate(0,-50%);
+    width:14px;height:14px;border:2px solid var(--ink-soft);border-radius:50%;}
+  .pista-pie{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.25rem 1.5rem;margin-top:.7rem;
+             font:400 .82rem/1.5 var(--sans);color:var(--ink-soft);}
+
+  /* ── Cómo funciona: tres cupones del mismo pase ──────────── */
+  .pasos{background:var(--paper);color:var(--navy);padding:0 var(--gutter) 3.5rem;}
+  .pasos-caja{max-width:64rem;margin:0 auto;}
+  .pasos h2{font-size:clamp(1.8rem,5.5vw,2.6rem);margin-bottom:.4rem;}
+  .pasos-bajada{color:var(--ink);margin-bottom:2rem;max-width:46ch;}
+  .cupon{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;align-items:start;
+         padding:1.5rem 0;border-top:1.5px dashed var(--paper-edge);}
+  .cupon:first-of-type{border-top:0;}
+  .cupon-n{font:600 .78rem/1 var(--sans);letter-spacing:.14em;color:var(--orange-papel);
+           padding-top:.45rem;font-variant-numeric:tabular-nums;}
+  .cupon h3{font-size:1.28rem;margin-bottom:.35rem;}
+  .cupon p{color:var(--ink);font-size:.98rem;}
+  .cupon-foto{grid-column:1/-1;margin-top:1rem;border-radius:10px;overflow:hidden;background:var(--paper-edge);}
+  .cupon-foto img{width:100%;aspect-ratio:16/10;object-fit:cover;}
+  @media (min-width:52rem){
+    .cupon{grid-template-columns:auto 1fr 16rem;gap:1.6rem;align-items:center;}
+    .cupon-foto{grid-column:auto;margin-top:0;}
+    .cupon-foto img{aspect-ratio:4/3;}
+  }
+
+  @media (min-width:56rem){
+    .hero{grid-template-columns:1.05fr .95fr;gap:2rem;padding-top:2rem;align-items:center;}
+    .hero-oso{width:100%;justify-self:end;}
+  }
+
+  /* ── Movimiento: nace visible, la animación solo refuerza ── */
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes entra{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+    @keyframes sello{from{opacity:0;transform:scale(1.04);}to{opacity:1;transform:none;}}
+    .hero-texto>*{animation:entra var(--dur-2) var(--ease) backwards;}
+    .hero-texto>*:nth-child(1){animation-delay:60ms;}
+    .hero-texto>*:nth-child(2){animation-delay:140ms;}
+    .hero-texto>*:nth-child(3){animation-delay:220ms;}
+    .hero-texto>*:nth-child(4){animation-delay:300ms;}
+    .hero-oso{animation:sello var(--dur-3) var(--ease) 120ms backwards;}
+    .cupon[data-ver]{animation:entra var(--dur-2) var(--ease) backwards;}
+  }
 </style>
 </head>
 <body>
-<header>
-  <img class="marca" src="img/logo-silva-blanco-180.webp" width="90" height="46" alt="">
-  <img class="oso-chico" src="img/oso-chico.webp" width="52" height="54" alt="Héroe de Rescate, el oso de la campaña">
+<a class="salto" href="#contenido">Saltar al contenido</a>
+
+<header class="cab" id="cab">
+  <a class="cab-marca" href="#inicio">
+    <img class="silva" src="img/logo-silva-blanco-180.webp" width="90" height="46" alt="Aeroambulancias Silva">
+  </a>
+  <button class="cab-icono" id="btn-compartir" type="button" aria-label="Compartir esta página">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+      <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>
+    </svg>
+  </button>
+  <a class="cab-btn cab-wa" href="https://wa.me/584241466595?text=%C2%A1Hola!%20Vengo%20de%20la%20web%20de%20la%20campa%C3%B1a%20Un%20Check-in%20por%20la%20Vida%20y%20quiero%20adoptar%20un%20H%C3%A9roe%20de%20Rescate.%20%C2%BFMe%20puedes%20dar%20m%C3%A1s%20informaci%C3%B3n%3F" target="_blank" rel="noopener">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
+    <span>Adopta un héroe</span>
+  </a>
 </header>
-<main>
-  <div class="fondo-oso" aria-hidden="true">
-    <picture>
-      <source srcset="img/oso-fondo.avif" type="image/avif">
-      <img src="img/oso-fondo.webp" alt="" width="1600" height="1657" loading="lazy">
-    </picture>
-  </div>
-  <div class="contenido">
-    <img class="ticket" src="img/logo-ticket.svg" width="600" height="240" alt="Boarding pass solidario: Un Check-in por la Vida">
-    <h1>Un Check-in por la Vida</h1>
-    <p>Muy pronto. Campaña solidaria de <a href="https://www.aeroambulanciasilva.com" rel="noopener">Aeroambulancias Silva</a>.</p>
-  </div>
+
+<main id="contenido">
+  <section class="hero" id="inicio">
+    <div class="hero-texto">
+      <p class="kicker">Campaña solidaria</p>
+      <h1>Un Check-in<br>por la <em>Vida</em></h1>
+      <p class="hero-bajada">Adopta un Héroe de Rescate y financia kilómetros de vuelo para que un niño con cáncer llegue a su tratamiento.</p>
+      <div class="hero-acciones">
+        <a class="btn btn-1" href="https://wa.me/584241466595?text=%C2%A1Hola!%20Vengo%20de%20la%20web%20de%20la%20campa%C3%B1a%20Un%20Check-in%20por%20la%20Vida%20y%20quiero%20adoptar%20un%20H%C3%A9roe%20de%20Rescate.%20%C2%BFMe%20puedes%20dar%20m%C3%A1s%20informaci%C3%B3n%3F" target="_blank" rel="noopener">Adopta un héroe</a>
+        <a class="btn btn-2" href="#como-funciona">Ver cómo funciona</a>
+      </div>
+    </div>
+    <div class="hero-oso">
+      <picture>
+        <source srcset="img/oso-hero.avif" type="image/avif">
+        <img src="img/oso-hero.webp" width="1100" height="1139" fetchpriority="high" decoding="async"
+             alt="Héroe de Rescate: el oso de peluche de la campaña sosteniendo su boarding pass solidario">
+      </picture>
+    </div>
+  </section>
+
+  <div class="troquel" aria-hidden="true"></div>
+
+  <section class="datos" aria-labelledby="t-datos">
+    <div class="datos-caja">
+      <h2 class="sr" id="t-datos">Lo que lleva la campaña</h2>
+      <div class="datos-cifras">
+        <p class="cifra"><b data-cifra="recaudado">$690</b><span>recaudados</span></p>
+        <p class="cifra"><b data-cifra="pasajeros">44</b><span>pasajeros de honor</span></p>
+      </div>
+      <p class="datos-nota">en los dos días del congreso</p>
+
+      <div class="pista">
+        <div class="pista-cabeza">
+          <span>Meta del primer vuelo</span>
+          <b data-cifra="meta">$15 000</b>
+        </div>
+        <div class="pista-riel">
+          <div class="pista-linea" aria-hidden="true"></div>
+          <div class="pista-avance" id="avance" aria-hidden="true"></div>
+          <span class="pista-avion" id="avion" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M20 4c2 0 3 2 3 5v9l14 8v3l-14-4v8l4 3v3l-7-2-7 2v-3l4-3v-8l-14 4v-3l14-8V9c0-3 1-5 3-5z" transform="rotate(90 20 20)"/></svg>
+          </span>
+          <span class="pista-meta" aria-hidden="true"></span>
+        </div>
+        <div class="pista-pie">
+          <span data-cifra="porcentaje-texto">4,6&nbsp;% de la meta</span>
+          <span data-cifra="actualizado">Actualizado el 19 de septiembre de 2026</span>
+        </div>
+        <p class="sr" data-cifra="progreso-sr">Progreso hacia el primer vuelo solidario: 4,6 por ciento de la meta.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pasos" id="como-funciona" aria-labelledby="t-pasos">
+    <div class="pasos-caja">
+      <h2 id="t-pasos">Cómo funciona</h2>
+      <p class="pasos-bajada">Tres pasos, el mismo que hicieron las 44 personas que se sumaron en el congreso.</p>
+
+      <div class="cupon">
+        <span class="cupon-n" aria-hidden="true">01</span>
+        <div>
+          <h3>Adoptas un Héroe de Rescate</h3>
+          <p>En toalla, llavero u oso grande. Edición limitada, se coordina por WhatsApp.</p>
+        </div>
+        <div class="cupon-foto">
+          <picture>
+            <source srcset="img/galeria/07-600.avif" type="image/avif">
+            <img src="img/galeria/07-600.webp" width="600" height="450" loading="lazy" decoding="async"
+                 alt="Héroe de Rescate sobre la mesa del stand, junto al cartel de la campaña">
+          </picture>
+        </div>
+      </div>
+
+      <div class="cupon">
+        <span class="cupon-n" aria-hidden="true">02</span>
+        <div>
+          <h3>Recibes tu Boarding Pass Solidario</h3>
+          <p>Quedas registrado como pasajero de honor del vuelo ONCO 001.</p>
+        </div>
+        <div class="cupon-foto">
+          <picture>
+            <source srcset="img/galeria/05-600.avif" type="image/avif">
+            <img src="img/galeria/05-600.webp" width="600" height="450" loading="lazy" decoding="async"
+                 alt="Boarding pass solidario en mano, en el stand de la campaña">
+          </picture>
+        </div>
+      </div>
+
+      <div class="cupon">
+        <span class="cupon-n" aria-hidden="true">03</span>
+        <div>
+          <h3>Tu aporte financia horas de vuelo</h3>
+          <p>Para trasladar a un niño con cáncer desde su región hasta Caracas, con tripulación médica a bordo.</p>
+        </div>
+        <div class="cupon-foto">
+          <picture>
+            <source srcset="img/galeria/01-600.avif" type="image/avif">
+            <img src="img/galeria/01-600.webp" width="600" height="450" loading="lazy" decoding="async"
+                 alt="El equipo de Aeroambulancias Silva con el Héroe de Rescate gigante en el stand">
+          </picture>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
+
+<script src="datos.js" defer></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', function () {
+  var d = window.CAMPANA || {};
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── Números: el HTML ya trae los del evento; datos.js manda si está ──
+  var money = function (n) { return '$' + Math.round(n).toLocaleString('es-VE').replace(/\./g, ' '); };
+  var pon = function (clave, texto) {
+    var el = document.querySelector('[data-cifra="' + clave + '"]');
+    if (el && texto != null) el.textContent = texto;
+  };
+  var pasajeros = 0, pct = 0;
+  if (d.productos) pasajeros = d.productos.reduce(function (s, p) { return s + (p.vendidas || 0); }, 0);
+  if (d.recaudado && d.meta) pct = Math.round(d.recaudado / d.meta * 1000) / 10;
+
+  if (d.recaudado) pon('recaudado', money(d.recaudado));
+  if (pasajeros) pon('pasajeros', String(pasajeros));
+  if (d.meta) pon('meta', money(d.meta));
+  if (pct) {
+    pon('porcentaje-texto', String(pct).replace('.', ',') + ' % de la meta');
+    pon('progreso-sr', 'Progreso hacia el primer vuelo solidario: ' + String(pct).replace('.', ',') + ' por ciento de la meta.');
+  }
+  if (d.actualizado) {
+    var p = d.actualizado.split('-');
+    var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    pon('actualizado', 'Actualizado el ' + Number(p[2]) + ' de ' + meses[Number(p[1]) - 1] + ' de ' + p[0]);
+  }
+
+  // ── M2: el avión recorre la pista hasta el porcentaje real ──
+  var avanceReal = (pct || 4.6) + '%';
+  var avance = document.getElementById('avance'), avion = document.getElementById('avion');
+  var pista = document.querySelector('.pista');
+  var arrancarPista = function () {
+    if (reduce) { avance.style.width = avanceReal; avion.style.left = avanceReal; return; }
+    avance.style.width = '0%'; avion.style.left = '0%';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { avance.style.width = avanceReal; avion.style.left = avanceReal; });
+    });
+  };
+  avance.style.width = avanceReal; avion.style.left = avanceReal;
+
+  if ('IntersectionObserver' in window) {
+    var obsPista = new IntersectionObserver(function (e) {
+      e.forEach(function (x) { if (x.isIntersecting) { arrancarPista(); obsPista.disconnect(); } });
+    }, { threshold: .4 });
+    if (pista) obsPista.observe(pista);
+
+    // ── M3: los cupones entran en cascada la primera vez ──
+    if (!reduce) {
+      var i = 0;
+      var obsCup = new IntersectionObserver(function (e) {
+        e.forEach(function (x) {
+          if (!x.isIntersecting) return;
+          x.target.style.animationDelay = (i++ * 70) + 'ms';
+          x.target.setAttribute('data-ver', '');
+          obsCup.unobserve(x.target);
+        });
+      }, { threshold: .25 });
+      document.querySelectorAll('.cupon').forEach(function (c) { obsCup.observe(c); });
+    }
+
+    // ── M10: la cabecera se vuelve opaca al salir del hero ──
+    var cab = document.getElementById('cab');
+    var centinela = document.createElement('div');
+    centinela.style.cssText = 'position:absolute;top:60px;height:1px;width:1px;';
+    document.body.prepend(centinela);
+    new IntersectionObserver(function (e) {
+      cab.toggleAttribute('data-fija', !e[0].isIntersecting);
+    }).observe(centinela);
+  }
+
+  // ── Compartir: hoja nativa donde exista, si no copia el enlace ──
+  var btn = document.getElementById('btn-compartir');
+  btn.addEventListener('click', function () {
+    var url = location.href.split('#')[0];
+    var datos = { title: 'Un Check-in por la Vida', text: 'Este oso puede salvar vidas 🧸✈️ Adopta un Héroe de Rescate y ayuda a que un niño con cáncer llegue a su tratamiento:', url: url };
+    if (navigator.share) { navigator.share(datos).catch(function () {}); return; }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(datos.text + ' ' + url).then(function () {
+        var antes = btn.getAttribute('aria-label');
+        btn.setAttribute('aria-label', 'Enlace copiado');
+        setTimeout(function () { btn.setAttribute('aria-label', antes); }, 2000);
+      });
+    }
+  });
+});
+</script>
 </body>
 </html>
