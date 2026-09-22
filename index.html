@@ -68,8 +68,8 @@
   .hero{position:relative;padding:1rem var(--gutter) 0;display:grid;gap:1.5rem;
         grid-template-columns:1fr;align-items:end;max-width:78rem;margin:0 auto;}
   .hero-texto{position:relative;z-index:2;padding-bottom:.5rem;}
-  .kicker{font:600 .72rem/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;
-          color:var(--orange);margin-bottom:.9rem;}
+  .hero-prueba{margin-top:1.4rem;font-size:.92rem;color:#bcc7de;}
+  .hero-prueba b{color:var(--paper);font-weight:600;}
   .hero h1{font-size:clamp(2.6rem,11vw,5rem);letter-spacing:-.015em;}
   .hero h1 em{font-style:normal;color:var(--orange);}
   .hero-bajada{margin-top:1rem;font-size:clamp(1rem,2.6vw,1.15rem);color:#d6ddec;max-width:34ch;}
@@ -108,8 +108,10 @@
   .pista-riel{position:relative;height:38px;margin-top:.9rem;}
   .pista-linea{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);
     background:repeating-linear-gradient(90deg,var(--paper-edge) 0 14px,transparent 14px 26px);}
-  .pista-avance{position:absolute;left:0;top:50%;height:2px;transform:translateY(-50%);background:var(--orange);
-    width:var(--avance,4.6%);transition:width var(--dur-3) var(--ease);}
+  /* scaleX y no width: animar width provoca reflujo en cada cuadro */
+  .pista-avance{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--orange);
+    transform:translateY(-50%) scaleX(var(--avance,.046));transform-origin:left center;
+    transition:transform var(--dur-3) var(--ease);}
   .pista-avion{position:absolute;top:50%;left:var(--avance,4.6%);transform:translate(-50%,-50%);color:var(--navy);
     transition:left var(--dur-3) var(--ease);}
   .pista-meta{position:absolute;right:0;top:50%;transform:translate(0,-50%);
@@ -148,9 +150,9 @@
     @keyframes sello{from{opacity:0;transform:scale(1.04);}to{opacity:1;transform:none;}}
     .hero-texto>*{animation:entra var(--dur-2) var(--ease) backwards;}
     .hero-texto>*:nth-child(1){animation-delay:60ms;}
-    .hero-texto>*:nth-child(2){animation-delay:140ms;}
-    .hero-texto>*:nth-child(3){animation-delay:220ms;}
-    .hero-texto>*:nth-child(4){animation-delay:300ms;}
+    .hero-texto>*:nth-child(2){animation-delay:150ms;}
+    .hero-texto>*:nth-child(3){animation-delay:240ms;}
+    .hero-texto>*:nth-child(4){animation-delay:330ms;}
     .hero-oso{animation:sello var(--dur-3) var(--ease) 120ms backwards;}
     .cupon[data-ver]{animation:entra var(--dur-2) var(--ease) backwards;}
   }
@@ -178,13 +180,13 @@
 <main id="contenido">
   <section class="hero" id="inicio">
     <div class="hero-texto">
-      <p class="kicker">Campaña solidaria</p>
       <h1>Un Check-in<br>por la <em>Vida</em></h1>
       <p class="hero-bajada">Adopta un Héroe de Rescate y financia kilómetros de vuelo para que un niño con cáncer llegue a su tratamiento.</p>
       <div class="hero-acciones">
         <a class="btn btn-1" href="https://wa.me/584241466595?text=%C2%A1Hola!%20Vengo%20de%20la%20web%20de%20la%20campa%C3%B1a%20Un%20Check-in%20por%20la%20Vida%20y%20quiero%20adoptar%20un%20H%C3%A9roe%20de%20Rescate.%20%C2%BFMe%20puedes%20dar%20m%C3%A1s%20informaci%C3%B3n%3F" target="_blank" rel="noopener">Adopta un héroe</a>
         <a class="btn btn-2" href="#como-funciona">Ver cómo funciona</a>
       </div>
+      <p class="hero-prueba">Ya somos <b>44 pasajeros de honor</b> · Campaña de Aeroambulancias&nbsp;Silva</p>
     </div>
     <div class="hero-oso">
       <picture>
@@ -311,17 +313,21 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ── M2: el avión recorre la pista hasta el porcentaje real ──
-  var avanceReal = (pct || 4.6) + '%';
+  var avanceReal = (pct || 4.6);
   var avance = document.getElementById('avance'), avion = document.getElementById('avion');
   var pista = document.querySelector('.pista');
   var arrancarPista = function () {
-    if (reduce) { avance.style.width = avanceReal; avion.style.left = avanceReal; return; }
-    avance.style.width = '0%'; avion.style.left = '0%';
+    if (reduce) { ponAvance(avanceReal); return; }
+    ponAvance(0);
     requestAnimationFrame(function () {
-      requestAnimationFrame(function () { avance.style.width = avanceReal; avion.style.left = avanceReal; });
+      requestAnimationFrame(function () { ponAvance(avanceReal); });
     });
   };
-  avance.style.width = avanceReal; avion.style.left = avanceReal;
+  var ponAvance = function (p) {
+    avance.style.setProperty('--avance', p / 100);
+    avion.style.left = p + '%';
+  };
+  ponAvance(avanceReal);
 
   if ('IntersectionObserver' in window) {
     var obsPista = new IntersectionObserver(function (e) {
