@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Un Check-in por la Vida · Aeroambulancias Silva</title>
-<meta name="description" content="Adopta un Héroe de Rescate y financia horas de vuelo para que personas con cáncer lleguen a su tratamiento. Campaña solidaria de Aeroambulancias Silva.">
+<meta name="description" content="Adopta un Héroe de Rescate y financia la ruta solidaria para que personas con cáncer lleguen a su tratamiento. Campaña solidaria de Aeroambulancias Silva.">
 <meta name="theme-color" content="#29b9e9">
 <!-- Los navegadores de Xiaomi, Samsung y Chrome Android reescriben los colores de
      una página que no declara esquema: el celeste se ensucia y el blanco se apaga.
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Aeroambulancias Silva">
 <meta property="og:title" content="Un Check-in por la Vida">
-<meta property="og:description" content="Adopta un Héroe de Rescate y financia horas de vuelo para que personas con cáncer lleguen a su tratamiento.">
+<meta property="og:description" content="Adopta un Héroe de Rescate y financia la ruta solidaria para que personas con cáncer lleguen a su tratamiento.">
 <meta property="og:url" content="https://uncheckinporlavida.aeroambulanciasilva.com/">
 <meta property="og:locale" content="es_VE">
 <meta property="og:image" content="https://uncheckinporlavida.aeroambulanciasilva.com/img/og-v1.jpg">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Un Check-in por la Vida: el Héroe de Rescate, el oso de peluche de la campaña de Aeroambulancias Silva">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Un Check-in por la Vida">
-<meta name="twitter:description" content="Adopta un Héroe de Rescate y financia horas de vuelo para que personas con cáncer lleguen a su tratamiento.">
+<meta name="twitter:description" content="Adopta un Héroe de Rescate y financia la ruta solidaria para que personas con cáncer lleguen a su tratamiento.">
 <meta name="twitter:image" content="https://uncheckinporlavida.aeroambulanciasilva.com/img/og-v1.jpg">
 <meta name="twitter:image:alt" content="Un Check-in por la Vida: el Héroe de Rescate, el oso de peluche de la campaña de Aeroambulancias Silva">
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
@@ -206,10 +206,14 @@
   .bloque h2{font-size:clamp(2.2rem,7vw,3.4rem);margin-bottom:.6rem;}
   .bajada{color:var(--ink);max-width:48ch;margin-bottom:2rem;font-size:1.08rem;font-weight:600;}
   .rotulo{font:600 .8rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);}
+  /* La meta ya está arriba en grande: acá va el destino de la ruta, que es lo
+     que le falta a la barra para leerse como un vuelo de origen a destino. */
+  .rotulo-destino{font:600 .8rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);}
 
   .datos-cifras{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;}
   .cifra{display:flex;flex-direction:column;}
   .cifra--der{text-align:right;align-items:flex-end;}
+  .cifra--centro{text-align:center;align-items:center;}
   .cifra b{font-family:var(--cifra);font-weight:700;font-size:clamp(2rem,7vw,3rem);line-height:1;
            font-variant-numeric:tabular-nums;letter-spacing:-.05em;}
   .cifra span{font:600 .8rem/1.4 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-top:.6rem;}
@@ -519,7 +523,7 @@
         <source srcset="img/logo-silva-blanco-400.avif" type="image/avif">
         <img src="img/logo-silva-blanco-400.webp" width="305" height="400" alt="" aria-hidden="true">
       </picture>
-      <p class="hero-bajada">Adopta un <b>Héroe de Rescate</b> y financia <b>horas de vuelo</b> para que personas con cáncer lleguen a su tratamiento.</p>
+      <p class="hero-bajada">Adopta un <b>Héroe de Rescate</b> y financia <b>la ruta solidaria</b> para que personas con cáncer lleguen a su tratamiento.</p>
       <div class="hero-acciones" id="hero-acciones">
         <a class="btn btn-1" data-wa="general" href="https://wa.me/584241466595" target="_blank" rel="noopener">Adopta un héroe</a>
         <a class="btn btn-2" href="#como-funciona">Ver cómo funciona</a>
@@ -536,14 +540,15 @@
     <div class="bloque">
       <h2 class="sr" id="t-datos">Lo que lleva la campaña</h2>
       <div class="datos-cifras">
-        <p class="cifra"><b data-cifra="recaudado">$690</b><span>recaudados</span></p>
-        <p class="cifra cifra--der"><b data-cifra="pasajeros">44</b><span>pasajeros de honor</span></p>
+        <p class="cifra"><b data-cifra="meta-osos">609</b><span>meta</span></p>
+        <p class="cifra cifra--centro"><b data-cifra="pasajeros">44</b><span>pasajeros de honor</span></p>
+        <p class="cifra cifra--der"><b data-cifra="faltan">565</b><span>diferencia</span></p>
       </div>
 
       <div class="pista" id="pista">
         <div class="pista-cabeza">
-          <span class="rotulo">Meta del primer vuelo</span>
-          <b data-cifra="meta">$15 000</b>
+          <span class="rotulo">Onco Ruta 001</span>
+          <b class="rotulo-destino">Caracas</b>
         </div>
         <div class="pista-riel">
           <div class="pista-linea" aria-hidden="true"></div>
@@ -556,10 +561,10 @@
           <span class="pista-meta" aria-hidden="true"></span>
         </div>
         <div class="pista-pie">
-          <span data-cifra="porcentaje-texto">4,6&nbsp;% de la meta</span>
+          <span data-cifra="porcentaje-texto">7,2&nbsp;% de la meta</span>
           <span data-cifra="actualizado">Actualizado el 19 de septiembre de 2026</span>
         </div>
-        <p class="sr" data-cifra="progreso-sr">Progreso hacia el primer vuelo solidario: 4,6 por ciento de la meta.</p>
+        <p class="sr" data-cifra="progreso-sr">Progreso hacia el primer vuelo solidario: 7,2 por ciento de la meta.</p>
       </div>
     </div>
   </section>
@@ -573,7 +578,7 @@
         <span class="cupon-n" aria-hidden="true">01</span>
         <div>
           <h3>Adoptas un Héroe de Rescate</h3>
-          <p>En toalla, llavero u oso grande. <b>Edición limitada</b>, se coordina por WhatsApp.</p>
+          <p>En toalla, llavero u oso grande. <b>Edición limitada</b>, se coordina por WhatsApp y en los <b>puntos de venta</b> que anunciaremos.</p>
         </div>
         <div class="cupon-foto">
           <picture>
@@ -602,7 +607,7 @@
       <div class="cupon">
         <span class="cupon-n" aria-hidden="true">03</span>
         <div>
-          <h3>Tu aporte financia horas de vuelo</h3>
+          <h3>Tu aporte financia la ruta completa</h3>
           <p>Para trasladar a personas con cáncer desde su región <b>hasta Caracas</b>, con <b>tripulación médica a bordo</b>.</p>
         </div>
         <div class="cupon-foto">
@@ -710,7 +715,7 @@
         <article class="nivel">
           <h3 class="sr">Copiloto Solidario</h3>
           <p class="nivel-precio nivel-precio--texto">Variable</p>
-          <p>Compra de <b>horas de vuelo o bloques fraccionados</b>, con exposición proporcional al aporte.</p>
+          <p>Compra de <b>tramos de la ruta o bloques fraccionados</b>, con exposición proporcional al aporte.</p>
           <p class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Copiloto Solidario</a></p>
         </article>
         <article class="nivel">
@@ -818,7 +823,7 @@
         <div class="columna">
           <span class="columna-n" aria-hidden="true">02</span>
           <h3>Transparencia</h3>
-          <p><b>No es una donación</b>: es la compra formal de <b>horas de vuelo, con factura</b>, del servicio aeromédico ordinario de Aeroambulancias Silva.</p>
+          <p><b>No es una donación</b>: es la compra formal de <b>la ruta aeromédica, con factura</b>, del servicio ordinario de Aeroambulancias Silva.</p>
         </div>
         <div class="columna">
           <span class="columna-n" aria-hidden="true">03</span>
@@ -849,7 +854,7 @@
         </div>
         <div class="faq-item">
           <h3><button class="faq-boton" type="button" aria-expanded="false" aria-controls="faq-2">¿Es una donación?<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></h3>
-          <div class="faq-cuerpo" id="faq-2"><div class="faq-clip"><p><b>No</b>: es la compra de <b>horas de vuelo</b> del servicio aeromédico de Aeroambulancias Silva, <b>con factura</b>. El Héroe de Rescate y su boarding pass son la constancia de tu aporte.</p></div></div>
+          <div class="faq-cuerpo" id="faq-2"><div class="faq-clip"><p><b>No</b>: es la compra de <b>la ruta aeromédica</b> del servicio de Aeroambulancias Silva, <b>con factura</b>. El Héroe de Rescate y su boarding pass son la constancia de tu aporte.</p></div></div>
         </div>
         <div class="faq-item">
           <h3><button class="faq-boton" type="button" aria-expanded="false" aria-controls="faq-3">¿Cómo pago y cómo recibo mi héroe?<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></h3>
@@ -914,7 +919,7 @@
 
 <div class="barra" id="barra" hidden>
   <div class="barra-datos">
-    <p class="barra-cifras"><b data-cifra="recaudado">$690</b> <span>de</span> <b data-cifra="meta">$15 000</b></p>
+    <p class="barra-cifras"><b data-cifra="pasajeros">44</b> <span>de</span> <b data-cifra="meta-osos">609</b></p>
     <div class="barra-riel" aria-hidden="true"><div class="barra-avance" id="barra-avance"></div></div>
   </div>
   <a class="barra-wa" data-wa="general" href="https://wa.me/584241466595" target="_blank" rel="noopener">
@@ -944,7 +949,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var mensajes = {
     general: '¡Hola! Vengo de la web de la campaña Un Check-in por la Vida y quiero adoptar un Héroe de Rescate. ¿Me puedes dar más información?',
     padrino: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Padrino de Ruta ($15.000), para financiar un vuelo completo. ¿Me pueden enviar la información?',
-    copiloto: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, con compra de horas de vuelo fraccionadas. ¿Cómo se calcula el aporte?',
+    copiloto: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, con compra de tramos de la ruta. ¿Cómo se calcula el aporte?',
     lotes: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero cotizar un lote institucional de Héroes de Rescate. ¿Cuál es el mínimo y los precios por cantidad?'
   };
   Object.keys(nombres).forEach(function (id) {
@@ -960,16 +965,23 @@ document.addEventListener('DOMContentLoaded', function () {
   var pon = function (clave, texto) {
     document.querySelectorAll('[data-cifra="' + clave + '"]').forEach(function (el) { el.textContent = texto; });
   };
-  // Se pregunta por el TIPO y no por el valor: con `if (d.recaudado)` un cero
+  // Se pregunta por el TIPO y no por el valor: con `if (d.metaOsos)` un cero
   // —el arranque de una campaña, que es un dato tan real como cualquier otro—
   // no se publicaba y la página seguía mostrando las cifras viejas del evento.
   var num = function (v) { return typeof v === 'number' && isFinite(v) && v >= 0; };
-  var pasajeros = null, pct = 4.6;
-  if (Array.isArray(d.productos)) pasajeros = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
-  if (num(d.recaudado) && num(d.meta) && d.meta > 0) pct = Math.round(d.recaudado / d.meta * 1000) / 10;
-  if (num(d.recaudado)) pon('recaudado', money(d.recaudado));
-  if (pasajeros !== null) { pon('pasajeros', String(pasajeros)); pon('pasajeros-texto', String(pasajeros)); }
-  if (num(d.meta)) pon('meta', money(d.meta));
+  // La campaña se cuenta en OSOS: adoptados, meta y diferencia. El único número
+  // que se edita a mano es la meta; los otros dos salen de sumar las unidades
+  // vendidas y de restar. Así las tres cifras no pueden contradecirse.
+  var adoptados = null, pct = 7.2;
+  if (Array.isArray(d.productos)) adoptados = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
+  if (adoptados !== null) { pon('pasajeros', String(adoptados)); pon('pasajeros-texto', String(adoptados)); }
+  if (num(d.metaOsos) && d.metaOsos > 0) {
+    pon('meta-osos', String(d.metaOsos));
+    if (adoptados !== null) {
+      pct = Math.round(adoptados / d.metaOsos * 1000) / 10;
+      pon('faltan', String(Math.max(d.metaOsos - adoptados, 0)));
+    }
+  }
 
   // El gráfico del evento también sale de datos.js. Antes estaba duro en el HTML:
   // el cliente editaba `vendidas` —que es justo lo que el archivo le pide— y la
