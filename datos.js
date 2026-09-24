@@ -5,6 +5,10 @@
 //
 // La campaña se mide en OSOS, no en dinero: las cifras de la portada, la barra
 // de progreso y la barra fija cuentan unidades adoptadas.
+//
+// Acá va sólo lo que ve el público. El tamaño de cada lote —cuántas unidades
+// había— es información de inventario, se lleva aparte y no se publica.
+//
 // La fecha va en formato AAAA-MM-DD: si se escribe de otra forma, la página
 // conserva la fecha anterior en lugar de publicar una mal armada.
 window.CAMPANA = {
@@ -16,9 +20,8 @@ window.CAMPANA = {
   metaOsos: 609,
 
   productos: [
-    // "vendidas" de "total": total es el tamaño del lote, no lo que queda.
-    { id: "toalla",  nombre: "Toalla tipo oso",    precio: 10, vendidas: 27, total: 40 },
-    { id: "llavero", nombre: "Llavero articulado", precio: 20, vendidas: 13, total: 19 },
-    { id: "oso",     nombre: "Oso grande",         precio: 40, vendidas: 4,  total: 4  }
+    { id: "toalla",  nombre: "Toalla tipo oso",    precio: 10, vendidas: 27 },
+    { id: "llavero", nombre: "Llavero articulado", precio: 20, vendidas: 13 },
+    { id: "oso",     nombre: "Oso grande",         precio: 40, vendidas: 4  }
   ]
 };
