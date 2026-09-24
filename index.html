@@ -447,11 +447,22 @@
      encontraban. */
   .nivel-nombre{font-family:var(--sans);font-weight:700;font-size:1.12rem;text-align:center;
                 color:var(--navy);margin:0 0 .35rem;}
-  .nivel .nivel-precio{margin:0 0 .9rem;text-align:center;font-family:var(--cifra);font-weight:700;
+  /* Altura fija para que las tres líneas de cifra midan lo mismo: una tiene un
+     número grande con su unidad, otra una palabra y otra un rango, y sin esto
+     cada tarjeta empujaba su botón a una altura distinta. */
+  .nivel .nivel-precio{display:flex;align-items:baseline;justify-content:center;gap:.35rem;min-height:2.2rem;
+                       margin:0 0 .9rem;text-align:center;font-family:var(--cifra);font-weight:700;
                        font-size:1.6rem;color:var(--navy);letter-spacing:-.05em;line-height:1;}
   .nivel-unidad{font-family:var(--sans);font-size:1.05rem;letter-spacing:0;color:var(--ink);}
-  .nivel p:not(.nivel-precio){flex:1;margin:0;color:var(--ink);font-size:1rem;font-weight:400;}
-  .nivel .nivel-precio--texto{font-family:var(--titulo);font-size:1.75rem;letter-spacing:0;}
+  /* El botón también es un <p> desde que dejó de ser encabezado: sin excluirlo,
+     se reparte el espacio sobrante con la descripción y los tres botones de la
+     fila quedan a alturas distintas. */
+  .nivel p:not(.nivel-precio):not(.nivel-accion){flex:1;margin:0;color:var(--ink);font-size:1rem;font-weight:400;}
+  /* «Por tramos» no es una cifra y no puede ir en la fuente de cifras, que sólo
+     trae dígitos. Iba en la condensada de titulares y quedaba con un ancho y un
+     color distintos de sus dos hermanas: las tres líneas tenían tres
+     tipografías. Va en la del cuerpo, al tamaño que iguala ópticamente. */
+  .nivel .nivel-precio--texto{font-family:var(--sans);font-weight:700;font-size:1.32rem;letter-spacing:0;}
   .nivel-accion{margin:1.1rem 0 0;}
   .nivel-accion .btn{width:100%;font-size:1rem;min-height:50px;}
 
@@ -708,17 +719,17 @@
           <p class="prod-accion"><a class="btn btn-3" data-wa="toalla" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Toalla tipo oso</a></p>
         </article>
         <article class="prod">
-          <h3 class="sr">Llavero articulado</h3>
+          <h3 class="sr">Llavero</h3>
           <div class="prod-cab">
             <p class="desc">Oso de bolsillo, <b>tipo llavero</b>, de 8 cm.</p>
             <p class="prod-precio" data-precio="llavero">$20</p>
           </div>
-          <p class="prod-accion"><a class="btn btn-3" data-wa="llavero" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Llavero articulado</a></p>
+          <p class="prod-accion"><a class="btn btn-3" data-wa="llavero" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Llavero</a></p>
         </article>
         <article class="prod">
           <h3 class="sr">Oso grande</h3>
           <div class="prod-cab">
-            <p class="desc">El Héroe de Rescate <b>completo</b>, de 20 cm.</p>
+            <p class="desc">El <b>Héroe de Rescate</b>, de 20 cm.</p>
             <p class="prod-precio" data-precio="oso">$40</p>
           </div>
           <p class="prod-accion"><a class="btn btn-3" data-wa="oso" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Oso grande</a></p>
@@ -739,19 +750,19 @@
           <h3 class="nivel-nombre">Padrino de Ruta</h3>
           <p class="nivel-precio"><b class="nivel-cifra">600</b> <span class="nivel-unidad">osos</span></p>
           <p>Financia <b>un vuelo completo</b>. Su empresa queda asociada <b>nominalmente</b> a la ruta patrocinada.</p>
-          <p class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Padrino de Ruta</a></p>
+          <p class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Escribir por WhatsApp</a></p>
         </article>
         <article class="nivel">
           <h3 class="nivel-nombre">Copiloto Solidario</h3>
           <p class="nivel-precio nivel-precio--texto">Por tramos</p>
-          <p>Compra de <b>bloques fraccionados</b> de la ruta. Su empresa queda asociada a la ruta patrocinada, con <b>exposición proporcional</b> al aporte.</p>
-          <p class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Copiloto Solidario</a></p>
+          <p>Compra de <b>bloques fraccionados</b> y su empresa queda asociada a la ruta patrocinada, con <b>exposición proporcional</b> al aporte.</p>
+          <p class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Escribir por WhatsApp</a></p>
         </article>
         <article class="nivel">
           <h3 class="nivel-nombre">Regalos con propósito</h3>
           <p class="nivel-precio">$10 – $40</p>
           <p>Adquisición de Héroes de Rescate <b>por unidad</b>, como obsequio corporativo o material de responsabilidad social.</p>
-          <p class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Regalos con propósito</a></p>
+          <p class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Escribir por WhatsApp</a></p>
         </article>
       </div>
     </div>

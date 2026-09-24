@@ -21,7 +21,7 @@ window.CAMPANA = {
 
   productos: [
     { id: "toalla",  nombre: "Toalla tipo oso",    precio: 10, vendidas: 27 },
-    { id: "llavero", nombre: "Llavero articulado", precio: 20, vendidas: 13 },
+    { id: "llavero", nombre: "Llavero",           precio: 20, vendidas: 13 },
     { id: "oso",     nombre: "Oso grande",         precio: 40, vendidas: 4  }
   ]
 };
