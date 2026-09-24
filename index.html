@@ -375,8 +375,32 @@
        display:grid;place-items:center;color:var(--navy);text-decoration:none;background:#fffdf8;}
   @media (hover:hover){.red:hover{border-color:var(--navy);}}
   .qr-intro{max-width:62ch;margin-inline:auto;margin-top:2.2rem;font-size:1.04rem;font-weight:400;color:var(--ink);text-align:center;}
-  .qr-caja{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:.9rem;
+  /* El QR sube y queda centrado sobre el botón: es el atajo para pasar la
+     campaña a otra pantalla, no un anexo del final. */
+  .qr-arriba{margin:1.6rem auto 0;display:flex;flex-direction:column;align-items:center;gap:.9rem;}
+  .qr-arriba img{height:clamp(9rem,30vw,12rem);width:auto;}
+  .qr-arriba figcaption{display:flex;flex-direction:column;align-items:center;gap:.4rem;
+    text-align:center;font-size:1rem;font-weight:400;color:var(--ink);}
+
+  /* El formulario no manda nada a ningún servidor: arma un mensaje de WhatsApp,
+     que es como funciona todo el resto del sitio. */
+  .activar{display:flex;flex-direction:column;gap:.7rem;text-align:left;}
+  .activar-titulo{font-family:var(--sans);font-weight:700;font-size:1.15rem;color:var(--navy);margin:0;}
+  .activar-intro{font-size:.95rem;color:var(--ink);margin:0 0 .3rem;}
+  .activar label{display:flex;flex-direction:column;gap:.25rem;
+    font:600 .82rem/1.3 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);}
+  .activar input{font:400 1rem/1.3 var(--sans);color:var(--navy);background:#fff;
+    border:1.5px solid var(--paper-edge);border-radius:8px;padding:.6rem .7rem;min-height:44px;}
+  .activar input:focus-visible{border-color:var(--navy);}
+  .activar input[aria-invalid="true"]{border-color:#a5372b;}
+  .activar .btn{margin-top:.5rem;width:100%;}
+  .activar-error{margin:0;font-size:.92rem;font-weight:600;color:#a5372b;}
+
+  /* Apilado por defecto: el formulario es bastante más ancho que el oso, y a
+     dos columnas en un teléfono el peluche quedaba aplastado a 51 px. */
+  .qr-caja{display:grid;grid-template-columns:1fr;gap:1.8rem;margin-top:2.2rem;align-items:center;
     padding:1.4rem;border:1.5px dashed var(--paper-edge);border-radius:12px;background:#fffdf8;}
+  @media (min-width:52rem){.qr-caja{grid-template-columns:1.15fr .85fr;}}
   .qr-pieza{margin:0;display:flex;flex-direction:column;align-items:center;gap:.9rem;}
   /* El QR y el oso, del mismo alto para que lean como un par */
   .qr-pieza img{height:clamp(9rem,34vw,13rem);width:auto;max-width:100%;}
@@ -793,6 +817,16 @@
       <h2 id="t-compartir">Compartir también es hacer check-in</h2>
       <p class="bajada">Si hoy no puedes adoptar un héroe, puedes hacer que <b>la campaña llegue a alguien que sí</b>.</p>
 
+      <p class="qr-intro"><b>Escanea o descarga el código</b> para llevar la campaña a otra pantalla.</p>
+      <figure class="qr-arriba">
+        <img src="img/qr.svg" width="588" height="588" loading="lazy" alt="Código QR de la campaña Un Check-in por la Vida">
+        <figcaption>
+          <a class="enlace-fuerte" href="img/qr-1024.png" download>Descargar código QR</a>
+          <span class="o-separador">o</span>
+          <button class="enlace-fuerte enlace-boton" type="button" id="btn-copiar">copiar enlace</button>
+        </figcaption>
+      </figure>
+
       <div class="compartir-acciones">
         <button class="btn btn-1 btn-compartir" type="button" id="btn-compartir">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -806,16 +840,31 @@
 
       <div class="redes" id="redes"></div>
 
-      <p class="qr-intro"><b>Escanea o descarga el código</b> para llevar la campaña a otra pantalla.</p>
       <div class="qr-caja">
-        <figure class="qr-pieza">
-          <img src="img/qr.svg" width="588" height="588" loading="lazy" alt="Código QR de la campaña Un Check-in por la Vida">
-          <figcaption>
-            <a class="enlace-fuerte" href="img/qr-1024.png" download>Descargar código QR</a>
-            <span class="o-separador">o</span>
-            <button class="enlace-fuerte enlace-boton" type="button" id="btn-copiar">copiar enlace</button>
-          </figcaption>
-        </figure>
+        <form class="activar" id="form-pase" novalidate>
+          <h3 class="activar-titulo">Activa tu Boarding Pass</h3>
+          <p class="activar-intro">Completa tus datos y se envían por WhatsApp. Nada se guarda en esta página.</p>
+          <label>Nombre y apellido
+            <input name="nombre" type="text" autocomplete="name" required>
+          </label>
+          <label>Cédula
+            <input name="cedula" type="text" inputmode="numeric" required>
+          </label>
+          <label>N.º de ticket
+            <input name="ticket" type="text" required>
+          </label>
+          <label>Correo
+            <input name="correo" type="email" autocomplete="email" required>
+          </label>
+          <label>Teléfono
+            <input name="telefono" type="tel" autocomplete="tel" required>
+          </label>
+          <p class="activar-error" id="activar-error" role="status" hidden></p>
+          <button class="btn btn-3" type="submit">
+            <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
+            Enviar por WhatsApp
+          </button>
+        </form>
         <figure class="qr-pieza">
           <picture>
             <source srcset="img/oso-compartir.avif" type="image/avif">
@@ -825,6 +874,7 @@
           <figcaption>Tu Héroe de Rescate</figcaption>
         </figure>
       </div>
+
     </div>
   </section>
 
@@ -1250,6 +1300,46 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-compartir').addEventListener('click', compartir);
   document.getElementById('btn-compartir-cab').addEventListener('click', compartir);
   document.getElementById('btn-copiar').addEventListener('click', copiar);
+
+  // ── Activar el boarding pass ───────────────────────────────────────────
+  // El formulario no envía a ningún servidor: arma el mensaje de WhatsApp con
+  // los datos y lo abre en el chat de la campaña, igual que el resto del sitio.
+  // Por eso nada queda guardado acá.
+  var formPase = document.getElementById('form-pase');
+  if (formPase) {
+    var errorPase = document.getElementById('activar-error');
+    var campos = [
+      ['nombre',   'Nombre y apellido'],
+      ['cedula',   'Cédula'],
+      ['ticket',   'N.º de ticket'],
+      ['correo',   'Correo'],
+      ['telefono', 'Teléfono']
+    ];
+    formPase.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var faltan = [], datos = [];
+      campos.forEach(function (c) {
+        var el = formPase.elements[c[0]];
+        var v = (el.value || '').trim();
+        var mal = !v || (c[0] === 'correo' && v.indexOf('@') < 1);
+        el.setAttribute('aria-invalid', mal ? 'true' : 'false');
+        if (mal) faltan.push(c[1]); else datos.push(c[1] + ': ' + v);
+      });
+      if (faltan.length) {
+        errorPase.textContent = faltan.length === 1
+          ? 'Falta completar: ' + faltan[0] + '.'
+          : 'Faltan completar: ' + faltan.join(', ') + '.';
+        errorPase.hidden = false;
+        var primero = formPase.querySelector('[aria-invalid="true"]');
+        if (primero) primero.focus();
+        return;
+      }
+      errorPase.hidden = true;
+      var texto = 'Hola, vengo de la web de Un Check-in por la Vida. '
+                + 'Los datos de mi Boarding Pass son:\n\n' + datos.join('\n');
+      window.open('https://wa.me/' + TEL + '?text=' + encodeURIComponent(texto), '_blank', 'noopener');
+    });
+  }
 
   var redes = [
     ['WhatsApp', 'https://wa.me/?text=' + encodeURIComponent(TEXTO + ' ' + URL_LIMPIA), 'M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z'],
