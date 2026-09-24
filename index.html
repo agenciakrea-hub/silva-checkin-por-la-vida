@@ -299,6 +299,29 @@
   }
 
   .grafico{margin-top:2.6rem;padding-top:2rem;border-top:1.5px dashed var(--paper-edge);}
+  @media (min-width:64rem){
+    /* En computadora estas secciones eran listas estiradas a los 912 px del
+       bloque: el nombre quedaba en un extremo y la cifra en el otro, con medio
+       metro de nada en el medio. Lo que en el teléfono se lee compacto, en
+       pantalla grande se lee vacío. El título pasa a la izquierda y la lista
+       ocupa el ancho que de verdad necesita. */
+    .grafico{display:grid;grid-template-columns:16rem 1fr;gap:0 3rem;align-items:start;}
+    .grafico h3{grid-column:1;grid-row:1/span 5;margin:0;}
+    .grafico>:not(h3){grid-column:2;}
+    .grafico .barra-prod:first-of-type{margin-top:0;}
+    /* La cifra viaja junto al nombre en vez de irse al extremo del riel: separada
+       por el ancho de la barra, había que cruzar la pantalla para saber a qué
+       producto correspondía. */
+    .grafico .barra-prod-cabeza{justify-content:flex-start;gap:.7rem;}
+
+    #preguntas .bloque{display:grid;grid-template-columns:18rem 1fr;gap:0 3rem;align-items:start;}
+    #preguntas h2{grid-column:1;grid-row:1/span 2;margin:0;}
+    #preguntas .faq{grid-column:2;}
+
+    /* La foto del boarding pass es vertical y estiraba la sección a lo alto:
+       con techo, el texto deja de flotar en el medio de una columna de aire. */
+    .pase-img img{max-height:30rem;object-fit:cover;object-position:center 60%;}
+  }
   .grafico h3{font-family:var(--sans);font-weight:600;font-size:1.25rem;margin-bottom:.3rem;}
   .barra-prod{margin-top:1.1rem;}
   .barra-prod-cabeza{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;font-size:1.02rem;}
@@ -419,8 +442,14 @@
   .nivel{background:#fffdf8;border:1.5px solid var(--paper-edge);border-radius:12px;padding:1.3rem;
     display:flex;flex-direction:column;}
   /* Igual que el catálogo, salvo que acá el precio manda y va arriba, centrado. */
+  /* El nombre del plan, visible: estaba sólo dentro del botón y los
+     organizadores lo escribieron a mano arriba de cada tarjeta porque no lo
+     encontraban. */
+  .nivel-nombre{font-family:var(--sans);font-weight:700;font-size:1.12rem;text-align:center;
+                color:var(--navy);margin:0 0 .35rem;}
   .nivel .nivel-precio{margin:0 0 .9rem;text-align:center;font-family:var(--cifra);font-weight:700;
                        font-size:1.6rem;color:var(--navy);letter-spacing:-.05em;line-height:1;}
+  .nivel-unidad{font-family:var(--sans);font-size:1.05rem;letter-spacing:0;color:var(--ink);}
   .nivel p:not(.nivel-precio){flex:1;margin:0;color:var(--ink);font-size:1rem;font-weight:400;}
   .nivel .nivel-precio--texto{font-family:var(--titulo);font-size:1.75rem;letter-spacing:0;}
   .nivel-accion{margin:1.1rem 0 0;}
@@ -707,22 +736,22 @@
       <p class="bajada">Formas de apoyar la campaña con <b>retorno reputacional</b> para la organización.</p>
       <div class="niveles">
         <article class="nivel">
-          <h3 class="sr">Padrino de Ruta</h3>
-          <p class="nivel-precio">$15 000</p>
-          <p>Financia <b>un vuelo completo</b>. Incluye el nombre de la empresa asociado a la ruta y material audiovisual del abordaje para informes de responsabilidad social.</p>
+          <h3 class="nivel-nombre">Padrino de Ruta</h3>
+          <p class="nivel-precio"><b class="nivel-cifra">600</b> <span class="nivel-unidad">osos</span></p>
+          <p>Financia <b>un vuelo completo</b>. Su empresa queda asociada <b>nominalmente</b> a la ruta patrocinada.</p>
           <p class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Padrino de Ruta</a></p>
         </article>
         <article class="nivel">
-          <h3 class="sr">Copiloto Solidario</h3>
-          <p class="nivel-precio nivel-precio--texto">Variable</p>
-          <p>Compra de <b>tramos de la ruta o bloques fraccionados</b>, con exposición proporcional al aporte.</p>
+          <h3 class="nivel-nombre">Copiloto Solidario</h3>
+          <p class="nivel-precio nivel-precio--texto">Por tramos</p>
+          <p>Compra de <b>bloques fraccionados</b> de la ruta. Su empresa queda asociada a la ruta patrocinada, con <b>exposición proporcional</b> al aporte.</p>
           <p class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Copiloto Solidario</a></p>
         </article>
         <article class="nivel">
-          <h3 class="sr">Lotes institucionales</h3>
+          <h3 class="nivel-nombre">Regalos con propósito</h3>
           <p class="nivel-precio">$10 – $40</p>
           <p>Adquisición de Héroes de Rescate <b>por unidad</b>, como obsequio corporativo o material de responsabilidad social.</p>
-          <p class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Lotes institucionales</a></p>
+          <p class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Regalos con propósito</a></p>
         </article>
       </div>
     </div>
@@ -948,9 +977,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var respaldo = { toalla: 10, llavero: 20, oso: 40 };
   var mensajes = {
     general: '¡Hola! Vengo de la web de la campaña Un Check-in por la Vida y quiero adoptar un Héroe de Rescate. ¿Me puedes dar más información?',
-    padrino: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Padrino de Ruta ($15.000), para financiar un vuelo completo. ¿Me pueden enviar la información?',
-    copiloto: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, con compra de tramos de la ruta. ¿Cómo se calcula el aporte?',
-    lotes: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero cotizar un lote institucional de Héroes de Rescate. ¿Cuál es el mínimo y los precios por cantidad?'
+    padrino: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Padrino de Ruta, con un aporte de 600 osos para financiar un vuelo completo. ¿Me pueden enviar la información?',
+    copiloto: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, con compra de bloques fraccionados de la ruta. ¿Cómo se calcula el aporte?',
+    lotes: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero cotizar Héroes de Rescate como regalo institucional. ¿Cuál es el mínimo y los precios por cantidad?'
   };
   Object.keys(nombres).forEach(function (id) {
     var precio = (precios[id] && precios[id].precio) || respaldo[id];
