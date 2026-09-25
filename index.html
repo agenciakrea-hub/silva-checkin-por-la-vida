@@ -460,6 +460,11 @@
   .tablero-cod{font-family:var(--cifra);font-weight:700;font-size:.94rem;letter-spacing:-.03em;color:var(--navy);}
   .tablero-fila:not(:first-child) .tablero-cod:last-child{color:var(--orange-papel);}
   .tablero-linea{height:2px;background:repeating-linear-gradient(90deg,var(--paper-edge) 0 5px,transparent 5px 11px);}
+  /* El nombre de la ruta va entre dos tramos de línea punteada, para que el
+     tablero siga leyéndose como una pantalla de salidas. */
+  .tablero-ruta{display:flex;align-items:center;gap:.7rem;min-width:0;}
+  .tablero-ruta .tablero-linea{flex:1;}
+  .tablero-nombre{font:600 .82rem/1.3 var(--sans);letter-spacing:.04em;color:var(--ink);white-space:nowrap;}
   .nota-rutas{max-width:62ch;margin-top:.9rem;font-size:.96rem;font-weight:400;color:#07364f;}
 
   .columnas{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;margin-top:1rem;}
@@ -898,25 +903,26 @@
   <section class="mision" id="mision" aria-labelledby="t-mision">
     <div class="bloque">
       <h2 id="t-mision">La misión</h2>
-      <p class="bajada">Cómo funciona una ruta solidaria, de principio a fin.</p>
+      <p class="bajada">Desarrollar <b>rutas sanitarias</b> en colaboración con aliados individuales y empresariales.</p>
 
       <div class="mision-meta">
-        <p class="mision-meta-rotulo">Lo que financia un vuelo</p>
-        <b class="meta-cifra">$15 000</b>
-        <p>financian <b>un vuelo completo</b>: de <b>6 a 8 pacientes</b>, cada uno con un representante.</p>
+        <p class="mision-meta-rotulo">El paquete de rutas</p>
+        <b class="meta-cifra">6</b>
+        <p><b>rutas cuidadosamente evaluadas</b> conforman el inventario.</p>
       </div>
 
       <h3 class="rotulo rotulo--claro">Rutas planteadas</h3>
       <div class="tablero">
         <div class="tablero-fila"><span>Origen</span><span>Ruta</span><span>Destino</span></div>
-        <div class="tablero-fila"><span class="tablero-cod">SVMC</span><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-cod">SVCS</span></div>
-        <div class="tablero-fila"><span class="tablero-cod">SVSO</span><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-cod">SVCS</span></div>
-        <div class="tablero-fila"><span class="tablero-cod">SVBI</span><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-cod">SVCS</span></div>
-        <div class="tablero-fila"><span class="tablero-cod">SVPA</span><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-cod">SVCS</span></div>
-        <div class="tablero-fila"><span class="tablero-cod">SVPR</span><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-cod">SVCS</span></div>
-        <div class="tablero-fila"><span class="tablero-cod">SVGI</span><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-cod">SVCS</span></div>
+        <div class="tablero-fila"><span class="tablero-cod">SVMC</span><span class="tablero-ruta"><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-nombre">Ruta 1 · Occidente</span><span class="tablero-linea" aria-hidden="true"></span></span><span class="tablero-cod">SVCS</span></div>
+        <div class="tablero-fila"><span class="tablero-cod">SVSO</span><span class="tablero-ruta"><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-nombre">Ruta 2 · Andina</span><span class="tablero-linea" aria-hidden="true"></span></span><span class="tablero-cod">SVCS</span></div>
+        <div class="tablero-fila"><span class="tablero-cod">SVBI</span><span class="tablero-ruta"><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-nombre">Ruta 3 · Llano Central</span><span class="tablero-linea" aria-hidden="true"></span></span><span class="tablero-cod">SVCS</span></div>
+        <div class="tablero-fila"><span class="tablero-cod">SVPA</span><span class="tablero-ruta"><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-nombre">Ruta 4 · Llano Sur</span><span class="tablero-linea" aria-hidden="true"></span></span><span class="tablero-cod">SVCS</span></div>
+        <div class="tablero-fila"><span class="tablero-cod">SVPR</span><span class="tablero-ruta"><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-nombre">Ruta 5 · Sur</span><span class="tablero-linea" aria-hidden="true"></span></span><span class="tablero-cod">SVCS</span></div>
+        <div class="tablero-fila"><span class="tablero-cod">SVGI</span><span class="tablero-ruta"><span class="tablero-linea" aria-hidden="true"></span><span class="tablero-nombre">Ruta 6 · Oriente</span><span class="tablero-linea" aria-hidden="true"></span></span><span class="tablero-cod">SVCS</span></div>
       </div>
       <p class="nota-rutas">Maracaibo, Santo Domingo del Táchira, Barinas, Puerto Ayacucho, Puerto Ordaz y Güiria, todas hacia Caracas.</p>
+      <p class="nota-rutas">Cada ruta completa tiene el potencial de mover <b>desde 1 paciente crítico hasta 10 pasajeros</b> en configuración sanitaria.</p>
 
       <h3 class="rotulo rotulo--claro">Cómo se opera</h3>
       <div class="columnas">
