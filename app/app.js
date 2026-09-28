@@ -71,6 +71,23 @@
     $('d-estado').textContent = ESTADOS[v.estado] || v.estado || 'Preparando';
   }
 
+  /**
+   * Las cifras de la campaña, de datos.js. Son OSOS ADOPTADOS, no personas
+   * registradas: una persona puede adoptar varios, y quien compró en el evento
+   * sin pasar por la web no está registrada en ningún lado. Contar registros
+   * daba un número más chico que el de la portada para la misma cosa.
+   */
+  function cifrasDeLaCampana() {
+    var d = window.CAMPANA;
+    if (!d) return null;
+    var meta = (typeof d.metaOsos === 'number' && d.metaOsos > 0) ? d.metaOsos : null;
+    var adoptados = null;
+    if (Object.prototype.toString.call(d.productos) === '[object Array]') {
+      adoptados = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
+    }
+    return (meta !== null && adoptados !== null) ? { adoptados: adoptados, meta: meta } : null;
+  }
+
   function pintarAvance(adoptados, meta) {
     if (typeof adoptados !== 'number' || typeof meta !== 'number' || meta <= 0) return;
     $('c-osos').textContent   = String(adoptados);
@@ -158,6 +175,11 @@
     // Sin servidor configurado la app igual sirve: muestra la ruta con los
     // valores que ya están en el HTML. Vale también para un navegador sin
     // fetch, que en el público de esta campaña no es una hipótesis.
+    // Las cifras primero y sin depender del servidor: son las mismas que la
+    // portada y tienen que coincidir con ella aunque Apps Script no conteste.
+    var c = cifrasDeLaCampana();
+    if (c) pintarAvance(c.adoptados, c.meta);
+
     if (!API || typeof fetch !== 'function') { pintarDesconocido(); return; }
 
     var yo = leer(K_YO, null);
@@ -165,8 +187,6 @@
       .then(function (r) {
         if (!r || !r.ok) { pintarDesconocido(); return; }
         pintarVuelo(r.vuelo);
-        var meta = parseInt((r.vuelo && r.vuelo.meta) || '0', 10);
-        pintarAvance(r.personas, meta);
         if (r.yo) pintarPersona(r.yo);
         else {
           // El token guardado ya no vale: se descarta para no volver a
