@@ -1,0 +1,20 @@
+{
+  "name": "Mi Boarding Pass · Un Check-in por la Vida",
+  "short_name": "Mi Boarding Pass",
+  "description": "Tu pase de la campaña aero-oncológica de Aeroambulancias Silva: en qué va la ruta que ayudaste a financiar.",
+  "start_url": "./",
+  "scope": "./",
+  "id": "/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#29b9e9",
+  "theme_color": "#0e2a5c",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    { "src": "../img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "../img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "../img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

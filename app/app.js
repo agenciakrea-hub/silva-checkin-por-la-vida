@@ -228,5 +228,88 @@
     window.open(textoWa(texto + ' ' + url), '_blank', 'noopener');
   });
 
+  // ── Instalable ───────────────────────────────────────────────────────────
+
+  var yaInstalada = window.matchMedia('(display-mode: standalone)').matches ||
+                    window.navigator.standalone === true;
+
+  function registrarServicio() {
+    if (!('serviceWorker' in navigator)) return;
+    // Sólo por https o en localhost: en http el navegador lo rechaza sin avisar.
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
+
+    navigator.serviceWorker.register('sw.js', { scope: './' })
+      .then(function (reg) {
+        // Si aparece una versión nueva mientras la app está abierta, se avisa y
+        // se deja decidir. Recargar por las malas pierde lo que se esté haciendo.
+        reg.addEventListener('updatefound', function () {
+          var nuevo = reg.installing;
+          if (!nuevo) return;
+          nuevo.addEventListener('statechange', function () {
+            if (nuevo.state === 'installed' && navigator.serviceWorker.controller) {
+              $('aviso-nuevo').hidden = false;
+            }
+          });
+        });
+      })
+      .catch(function () { /* sin service worker la app funciona igual, sólo que sin red no abre */ });
+
+    var recargando = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (recargando) return;      // Chrome lo dispara dos veces y recargaría en bucle
+      recargando = true;
+      location.reload();
+    });
+  }
+
+  var pedidoDeInstalar = null;
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    // Sin esto Chrome muestra su propia barra, que aparece donde quiere y dice
+    // lo que quiere. Con el botón propio, se ofrece en su lugar y con el texto
+    // de la campaña.
+    e.preventDefault();
+    pedidoDeInstalar = e;
+    if (!yaInstalada) $('instalar').hidden = false;
+  });
+
+  window.addEventListener('appinstalled', function () {
+    pedidoDeInstalar = null;
+    $('instalar').hidden = true;
+  });
+
+  $('btn-instalar').addEventListener('click', function () {
+    if (!pedidoDeInstalar) return;
+    pedidoDeInstalar.prompt();
+    pedidoDeInstalar.userChoice.then(function () { pedidoDeInstalar = null; });
+  });
+
+  $('btn-recargar').addEventListener('click', function () {
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+      navigator.serviceWorker.getRegistration().then(function (reg) {
+        if (reg && reg.waiting) reg.waiting.postMessage('actualizar');
+        else location.reload();
+      });
+    } else location.reload();
+  });
+
+  // ⚠️ iOS NO TIENE `beforeinstallprompt` y no lo va a tener: Safari no expone
+  // ninguna forma de pedir la instalación desde la página. Lo único que se
+  // puede hacer es explicar dónde está el botón de Compartir. Sin esto, en
+  // iPhone la sección de instalar no aparecería nunca.
+  (function () {
+    if (yaInstalada) return;
+    var ua = navigator.userAgent;
+    var esIOS = /iPad|iPhone|iPod/.test(ua) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (!esIOS) return;
+    $('instalar').hidden = false;
+    $('btn-instalar').hidden = true;
+    $('pasos-ios').hidden = false;
+    $('instalar-texto').textContent =
+      'Agrégalo a tu pantalla de inicio y ábrelo como una aplicación:';
+  })();
+
+  registrarServicio();
   arrancar();
 })();
