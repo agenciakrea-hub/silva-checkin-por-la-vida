@@ -404,6 +404,10 @@
   .activar-intro{font-size:.95rem;color:var(--ink);margin:0 0 .3rem;}
   .activar label{display:flex;flex-direction:column;gap:.25rem;
     font:600 .82rem/1.3 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);}
+  /* Sin opacidad: bajarla dejaba el texto en 4,41:1 sobre el papel y el mínimo
+     legible es 4,5:1. El peso normal y las minúsculas ya lo separan del resto
+     de la etiqueta, que va en 600 y en mayúsculas. */
+  .activar .opt{font-weight:400;letter-spacing:0;text-transform:none;}
   .activar input{font:400 1rem/1.3 var(--sans);color:var(--navy);background:#fff;
     border:1.5px solid var(--paper-edge);border-radius:8px;padding:.6rem .7rem;min-height:44px;}
   .activar input:focus-visible{border-color:var(--navy);}
@@ -885,12 +889,13 @@
       <div class="qr-caja">
         <form class="activar" id="form-pase" novalidate>
           <h3 class="activar-titulo">Activa tu Boarding Pass</h3>
-          <p class="activar-intro">Completa tus datos y los recibimos por WhatsApp para registrar tu pase.</p>
+          <p class="activar-intro">Completa tus datos para registrar tu pase. Si todavía no tienes tu
+            Héroe de Rescate, déjalos igual y te escribimos.</p>
           <label>Nombre y apellido
             <input name="nombre" type="text" autocomplete="name" required>
           </label>
-          <label>N.º de ticket
-            <input name="ticket" type="text" required>
+          <label><span>N.º de ticket <span class="opt">— solo si ya lo tienes</span></span>
+            <input name="ticket" type="text">
           </label>
           <label>Correo
             <input name="correo" type="email" autocomplete="email" required>
@@ -1333,28 +1338,126 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-compartir-cab').addEventListener('click', compartir);
   document.getElementById('btn-copiar').addEventListener('click', copiar);
 
+  // ── El servidor ────────────────────────────────────────────────────────
+  // Dirección del Apps Script que guarda a las personas. Mientras esté vacía el
+  // sitio funciona igual que antes: todo sigue yendo por WhatsApp y no se
+  // guarda nada. Cómo desplegarlo y de dónde sacar esta dirección está en
+  // docs/herramientas/apps-script/LEEME.md.
+  var API_URL = '';
+
+  var K_DISPOSITIVO = 'cxv.dispositivo';
+  var K_PENDIENTES  = 'cxv.pendientes';
+  var K_YO          = 'cxv.yo';
+
+  // localStorage falla entero en modo privado de algunos navegadores y cuando
+  // el usuario bloquea el almacenamiento. Nada de esto es importante como para
+  // romper la página: si no se puede guardar, se sigue sin guardar.
+  function leer(clave, porDefecto) {
+    try { var v = localStorage.getItem(clave); return v ? JSON.parse(v) : porDefecto; }
+    catch (e) { return porDefecto; }
+  }
+  function escribir(clave, valor) {
+    try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) {}
+  }
+
+  // Identifica al teléfono, no a la persona. Sirve para saber si alguien vuelve
+  // desde el mismo aparato; no se usa para nada más.
+  function dispositivoId() {
+    var id = leer(K_DISPOSITIVO, null);
+    if (!id) {
+      id = (window.crypto && crypto.randomUUID)
+             ? crypto.randomUUID()
+             : 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+      escribir(K_DISPOSITIVO, id);
+    }
+    return id;
+  }
+
+  // ⚠️ SIN CABECERA Content-Type, a propósito. Poniéndola, el navegador manda
+  // antes una petición OPTIONS de permiso, y Apps Script no contesta ese tipo
+  // de petición: la llamada falla entera sin llegar nunca al servidor. Sin
+  // cabecera, el navegador la trata como envío simple de formulario y pasa
+  // derecho. El servidor lee el cuerpo como JSON igual.
+  function alServidor(cuerpo) {
+    return fetch(API_URL, { method: 'POST', keepalive: true, body: JSON.stringify(cuerpo) })
+             .then(function (r) { return r.json(); });
+  }
+
+  // Guarda en la cola ANTES de intentar mandar: si el envío se pierde por falta
+  // de señal, o porque la persona cierra la pestaña al irse a WhatsApp, queda
+  // anotado y se reintenta la próxima vez que abra el sitio. Es lo único que
+  // evita que se pierdan datos en una red lenta, que es la red de esta campaña.
+  function guardarPersona(valores) {
+    if (!API_URL) return;
+    var cuerpo = {
+      action: 'registro', origen: 'web', dispositivo: dispositivoId(),
+      nombre: valores.nombre || '', telefono: valores.telefono || '',
+      correo: valores.correo || '', ticket: valores.ticket || ''
+    };
+    var cola = leer(K_PENDIENTES, []);
+    cola.push(cuerpo);
+    escribir(K_PENDIENTES, cola.slice(-20));   // tope: una cola infinita no se vacía nunca
+    enviarPendientes();
+  }
+
+  var enviando = false;
+  function enviarPendientes() {
+    if (!API_URL || enviando) return;
+    var cola = leer(K_PENDIENTES, []);
+    if (!cola.length) return;
+    enviando = true;
+    alServidor(cola[0])
+      .then(function (r) {
+        if (r && r.ok) {
+          if (r.token) escribir(K_YO, { id: r.id, token: r.token });
+          escribir(K_PENDIENTES, leer(K_PENDIENTES, []).slice(1));
+          enviando = false;
+          enviarPendientes();              // el que sigue
+        } else if (r && r.motivo && r.motivo.indexOf('invalido') > -1) {
+          // Datos que el servidor nunca va a aceptar: reintentarlos es quedarse
+          // trabado para siempre en el mismo elemento. Se descarta y se sigue.
+          escribir(K_PENDIENTES, leer(K_PENDIENTES, []).slice(1));
+          enviando = false;
+          enviarPendientes();
+        } else {
+          enviando = false;                // error del servidor: se reintenta después
+        }
+      })
+      .catch(function () { enviando = false; });   // sin señal: queda para la próxima
+  }
+
+  if (API_URL) enviarPendientes();
+
   // ── Activar el boarding pass ───────────────────────────────────────────
-  // El formulario no envía a ningún servidor: arma el mensaje de WhatsApp con
-  // los datos y lo abre en el chat de la campaña, igual que el resto del sitio.
-  // Por eso nada queda guardado acá.
+  // Hace dos cosas: abre WhatsApp con los datos (como siempre) y los manda al
+  // servidor para que queden guardados. Si el servidor no está configurado o
+  // falla, el WhatsApp se abre igual: es el camino que la persona ve.
+  //
+  // El n.º de ticket es opcional a propósito. Al formulario llegan tres
+  // personas distintas: quien compró en el evento y tiene el pase de papel,
+  // quien compró por WhatsApp y no tiene nada físico, y quien todavía no
+  // compró. Pidiéndolo obligatorio, las dos últimas no pueden ni empezar.
   var formPase = document.getElementById('form-pase');
   if (formPase) {
     var errorPase = document.getElementById('activar-error');
     var campos = [
-      ['nombre',   'Nombre y apellido'],
-      ['ticket',   'N.º de ticket'],
-      ['correo',   'Correo'],
-      ['telefono', 'Teléfono']
+      ['nombre',   'Nombre y apellido', true],
+      ['ticket',   'N.º de ticket',     false],
+      ['correo',   'Correo',            true],
+      ['telefono', 'Teléfono',          true]
     ];
     formPase.addEventListener('submit', function (e) {
       e.preventDefault();
-      var faltan = [], datos = [];
+      var faltan = [], datos = [], valores = {};
       campos.forEach(function (c) {
-        var el = formPase.elements[c[0]];
+        var el = formPase.elements[c[0]], obligatorio = c[2];
         var v = (el.value || '').trim();
-        var mal = !v || (c[0] === 'correo' && v.indexOf('@') < 1);
+        // Un campo opcional vacío no es un error; uno opcional mal escrito sí.
+        var mal = obligatorio ? (!v || (c[0] === 'correo' && v.indexOf('@') < 1))
+                              : false;
         el.setAttribute('aria-invalid', mal ? 'true' : 'false');
-        if (mal) faltan.push(c[1]); else datos.push(c[1] + ': ' + v);
+        if (mal) faltan.push(c[1]);
+        else if (v) { datos.push(c[1] + ': ' + v); valores[c[0]] = v; }
       });
       if (faltan.length) {
         errorPase.textContent = faltan.length === 1
@@ -1365,7 +1468,23 @@ document.addEventListener('DOMContentLoaded', function () {
         if (primero) primero.focus();
         return;
       }
+      // Se limpia el texto, no sólo se oculta: es un role="status", y un lector
+      // de pantalla sólo anuncia lo que CAMBIA. Dejando el texto viejo puesto,
+      // quien se equivoca dos veces en el mismo campo no escucha nada la
+      // segunda vez, porque el contenido quedó igual.
+      errorPase.textContent = '';
       errorPase.hidden = true;
+
+      // ⚠️ EL ORDEN IMPORTA, y no es el que parece. `window.open` sólo funciona
+      // mientras el navegador considera que está atendiendo el clic; si acá se
+      // esperara la respuesta del servidor, ese permiso se pierde y el WhatsApp
+      // queda bloqueado como si fuera un aviso. Por eso se dispara el guardado
+      // sin esperarlo y se abre WhatsApp en la misma vuelta.
+      //
+      // Además no se puede esperar aunque se quisiera: Apps Script arrancando
+      // en frío tarda más de 20 segundos, y nadie se queda mirando eso.
+      guardarPersona(valores);
+
       var texto = 'Hola, vengo de la web de Un Check-in por la Vida. '
                 + 'Los datos de mi Boarding Pass son:\n\n' + datos.join('\n');
       window.open('https://wa.me/' + TEL + '?text=' + encodeURIComponent(texto), '_blank', 'noopener');
