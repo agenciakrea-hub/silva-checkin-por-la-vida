@@ -1058,6 +1058,7 @@
   </a>
 </div>
 
+<script src="config.js" defer></script>
 <script src="datos.js" defer></script>
 <script defer>
 // Marca el documento antes que nada: el CSS cuelga de esta clase lo que sólo
@@ -1339,15 +1340,19 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-copiar').addEventListener('click', copiar);
 
   // ── El servidor ────────────────────────────────────────────────────────
-  // Dirección del Apps Script que guarda a las personas. Mientras esté vacía el
-  // sitio funciona igual que antes: todo sigue yendo por WhatsApp y no se
-  // guarda nada. Cómo desplegarlo y de dónde sacar esta dirección está en
-  // docs/herramientas/apps-script/LEEME.md.
-  var API_URL = '';
+  // Dirección del Apps Script que guarda a las personas. Sale de config.js,
+  // que es el único lugar donde se edita: la app del pasajero usa el mismo
+  // archivo, y con una copia en cada página tarde o temprano se cambia una
+  // sola y la otra queda apuntando a un servidor viejo.
+  // Mientras esté vacía, el sitio funciona igual que antes: todo sigue yendo
+  // por WhatsApp y no se guarda nada.
+  var API_URL = (window.CXV_API || '').trim();
 
   var K_DISPOSITIVO = 'cxv.dispositivo';
   var K_PENDIENTES  = 'cxv.pendientes';
   var K_YO          = 'cxv.yo';
+  var MAX_COLA      = 40;   // tope de altas guardadas esperando señal
+  var MAX_INTENTOS  = 6;    // tras esto se deja de insistir con un mismo envío
 
   // localStorage falla entero en modo privado de algunos navegadores y cuando
   // el usuario bloquea el almacenamiento. Nada de esto es importante como para
@@ -1357,19 +1362,27 @@ document.addEventListener('DOMContentLoaded', function () {
     catch (e) { return porDefecto; }
   }
   function escribir(clave, valor) {
-    try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) {}
+    try { localStorage.setItem(clave, JSON.stringify(valor)); return true; }
+    catch (e) { return false; }
+  }
+  // Lo guardado puede venir de una versión anterior, o corrupto. Si no es una
+  // lista, se empieza de cero en vez de reventar en el primer `.push`.
+  function leerCola() {
+    var c = leer(K_PENDIENTES, []);
+    return Object.prototype.toString.call(c) === '[object Array]' ? c : [];
+  }
+
+  function idUnico() {
+    return (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   }
 
   // Identifica al teléfono, no a la persona. Sirve para saber si alguien vuelve
   // desde el mismo aparato; no se usa para nada más.
   function dispositivoId() {
     var id = leer(K_DISPOSITIVO, null);
-    if (!id) {
-      id = (window.crypto && crypto.randomUUID)
-             ? crypto.randomUUID()
-             : 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-      escribir(K_DISPOSITIVO, id);
-    }
+    if (!id) { id = idUnico(); escribir(K_DISPOSITIVO, id); }
     return id;
   }
 
@@ -1378,55 +1391,112 @@ document.addEventListener('DOMContentLoaded', function () {
   // de petición: la llamada falla entera sin llegar nunca al servidor. Sin
   // cabecera, el navegador la trata como envío simple de formulario y pasa
   // derecho. El servidor lee el cuerpo como JSON igual.
+  //
+  // ⚠️ SE LEE COMO TEXTO Y SE PARSEA APARTE. `r.json()` directo revienta cuando
+  // Apps Script contesta HTML, y contesta HTML más seguido de lo que parece:
+  // un despliegue que quedó en «solo yo» devuelve la página de inicio de
+  // sesión, y la cuota agotada devuelve otra. Tratar eso como «error de
+  // servidor» en vez de como excepción es lo que evita que un envío quede
+  // dando vueltas para siempre.
   function alServidor(cuerpo) {
     return fetch(API_URL, { method: 'POST', keepalive: true, body: JSON.stringify(cuerpo) })
-             .then(function (r) { return r.json(); });
+      .then(function (r) { return r.text(); })
+      .then(function (t) {
+        try { return JSON.parse(t); }
+        catch (e) { return { ok: false, motivo: 'respuesta_no_json' }; }
+      });
   }
 
   // Guarda en la cola ANTES de intentar mandar: si el envío se pierde por falta
   // de señal, o porque la persona cierra la pestaña al irse a WhatsApp, queda
-  // anotado y se reintenta la próxima vez que abra el sitio. Es lo único que
-  // evita que se pierdan datos en una red lenta, que es la red de esta campaña.
+  // anotado y se reintenta. Es lo único que evita perder datos en una red
+  // lenta, que es la red de esta campaña.
   function guardarPersona(valores) {
-    if (!API_URL) return;
-    var cuerpo = {
-      action: 'registro', origen: 'web', dispositivo: dispositivoId(),
-      nombre: valores.nombre || '', telefono: valores.telefono || '',
-      correo: valores.correo || '', ticket: valores.ticket || ''
-    };
-    var cola = leer(K_PENDIENTES, []);
-    cola.push(cuerpo);
-    escribir(K_PENDIENTES, cola.slice(-20));   // tope: una cola infinita no se vacía nunca
+    // `fetch` no existe en navegadores viejos, y esta función corre ANTES de
+    // abrir WhatsApp: una excepción acá dejaría el botón sin hacer nada de
+    // nada. En un teléfono viejo con red lenta —el público de la campaña— eso
+    // es perder a la persona entera, no sólo su registro.
+    if (!API_URL || typeof fetch !== 'function') return;
+    var cola = leerCola();
+    cola.push({
+      id: idUnico(), intentos: 0,
+      cuerpo: {
+        action: 'registro', origen: 'web', dispositivo: dispositivoId(),
+        nombre: valores.nombre || '', telefono: valores.telefono || '',
+        correo: valores.correo || '', ticket: valores.ticket || ''
+      }
+    });
+    // Se descarta por el principio sólo cuando de verdad hay demasiado: lo más
+    // viejo es lo que más tiempo lleva esperando, y tirarlo es perderlo.
+    escribir(K_PENDIENTES, cola.slice(-MAX_COLA));
     enviarPendientes();
+  }
+
+  // Quita un envío por su id. ⚠️ POR ID, NUNCA POR POSICIÓN: con dos pestañas
+  // abiertas, o con una alta nueva entrando mientras otra está en vuelo, el
+  // envío que respondió ya no está donde estaba, y recortar el primero borra
+  // un registro que jamás salió.
+  function sacarDeCola(id) {
+    var antes = leerCola();
+    var despues = antes.filter(function (x) { return x && x.id !== id; });
+    if (despues.length === antes.length) return true;   // ya no estaba
+    // Si el almacenamiento acepta leer pero no escribir (cuota llena), el
+    // envío nunca desaparece y esto se llamaría en bucle: cientos de
+    // peticiones que queman la cuota diaria del servidor, que es el de todos.
+    return escribir(K_PENDIENTES, despues);
   }
 
   var enviando = false;
   function enviarPendientes() {
-    if (!API_URL || enviando) return;
-    var cola = leer(K_PENDIENTES, []);
+    if (!API_URL || enviando || typeof fetch !== 'function') return;
+    var cola = leerCola();
     if (!cola.length) return;
+
+    // Se recorre la cola entera, no sólo el primero. Con el modelo viejo, un
+    // solo envío que el servidor no aceptaba tapaba a todos los de atrás y no
+    // volvía a salir ninguno nunca más.
+    var pendiente = null;
+    for (var i = 0; i < cola.length; i++) {
+      if ((cola[i].intentos || 0) < MAX_INTENTOS) { pendiente = cola[i]; break; }
+    }
+    if (!pendiente) return;
+
     enviando = true;
-    alServidor(cola[0])
+    alServidor(pendiente.cuerpo)
       .then(function (r) {
-        if (r && r.ok) {
-          if (r.token) escribir(K_YO, { id: r.id, token: r.token });
-          escribir(K_PENDIENTES, leer(K_PENDIENTES, []).slice(1));
-          enviando = false;
-          enviarPendientes();              // el que sigue
-        } else if (r && r.motivo && r.motivo.indexOf('invalido') > -1) {
-          // Datos que el servidor nunca va a aceptar: reintentarlos es quedarse
-          // trabado para siempre en el mismo elemento. Se descarta y se sigue.
-          escribir(K_PENDIENTES, leer(K_PENDIENTES, []).slice(1));
-          enviando = false;
-          enviarPendientes();
+        var listo = r && r.ok;
+        // Datos que el servidor nunca va a aceptar: insistir es quedarse
+        // trabado. El servidor los anota en su bitácora antes de rechazarlos,
+        // así que no desaparecen sin dejar rastro.
+        var irrecuperable = r && r.motivo && r.motivo.indexOf('invalido') > -1;
+
+        if (listo && r.token) escribir(K_YO, { id: r.id, token: r.token });
+
+        if (listo || irrecuperable) {
+          if (!sacarDeCola(pendiente.id)) { enviando = false; return; }
         } else {
-          enviando = false;                // error del servidor: se reintenta después
+          var cola2 = leerCola();
+          for (var k = 0; k < cola2.length; k++) {
+            if (cola2[k].id === pendiente.id) { cola2[k].intentos = (cola2[k].intentos || 0) + 1; }
+          }
+          if (!escribir(K_PENDIENTES, cola2)) { enviando = false; return; }
         }
+        enviando = false;
+        enviarPendientes();
       })
       .catch(function () { enviando = false; });   // sin señal: queda para la próxima
   }
 
-  if (API_URL) enviarPendientes();
+  // Sin esto, «se reintenta la próxima vez que abra el sitio» es una promesa
+  // vacía: quien se va a WhatsApp y no vuelve nunca deja su registro muerto en
+  // el teléfono. Volver a la pestaña o recuperar la señal alcanzan.
+  if (API_URL && typeof fetch === 'function') {
+    enviarPendientes();
+    window.addEventListener('online', enviarPendientes);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) enviarPendientes();
+    });
+  }
 
   // ── Activar el boarding pass ───────────────────────────────────────────
   // Hace dos cosas: abre WhatsApp con los datos (como siempre) y los manda al
@@ -1483,7 +1553,7 @@ document.addEventListener('DOMContentLoaded', function () {
       //
       // Además no se puede esperar aunque se quisiera: Apps Script arrancando
       // en frío tarda más de 20 segundos, y nadie se queda mirando eso.
-      guardarPersona(valores);
+      try { guardarPersona(valores); } catch (e) {}
 
       var texto = 'Hola, vengo de la web de Un Check-in por la Vida. '
                 + 'Los datos de mi Boarding Pass son:\n\n' + datos.join('\n');
