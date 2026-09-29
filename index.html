@@ -476,7 +476,15 @@
      mensaje de «listo» con el formulario todavía debajo. */
   [hidden]{display:none!important;}
   .activar-titulo{font-family:var(--sans);font-weight:700;font-size:1.15rem;color:var(--navy);margin:0;}
-  .activar-intro{font-size:.95rem;color:var(--ink);margin:0 0 .3rem;}
+  .activar-intro{font-size:.95rem;color:var(--ink);margin:0 0 .6rem;}
+  /* Las tres puertas. Lista y no párrafo: son tres caminos distintos y quien
+     lee busca el suyo, no lee los tres. */
+  .activar-puertas{list-style:none;margin:0 0 .9rem;padding:0;display:grid;gap:.5rem;}
+  .activar-puertas li{position:relative;padding-left:1.1rem;
+                      font:400 .88rem/1.45 var(--sans);color:var(--ink);}
+  .activar-puertas li::before{content:'';position:absolute;left:0;top:.55em;
+    width:6px;height:6px;border-radius:50%;background:var(--orange);}
+  .activar-puertas b{font-weight:600;color:var(--navy);}
   .activar label{display:flex;flex-direction:column;gap:.25rem;
     font:600 .82rem/1.3 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);}
   /* Sin opacidad: bajarla dejaba el texto en 4,41:1 sobre el papel y el mínimo
@@ -994,10 +1002,22 @@
              llegue a engancharse, el navegador no manda los datos por la
              dirección. -->
         <form class="activar" id="form-pase" novalidate onsubmit="return false">
-          <h3 class="activar-titulo">Activa tu Boarding Pass</h3>
-          <p class="activar-intro">Completa tus datos y entras a tu Boarding Pass: ahí ves la ruta
-            que estás financiando, encargas lo que quieras y puedes invitar a otros.
-            Si todavía no tienes tu Héroe de Rescate, entras igual.</p>
+          <h3 class="activar-titulo">Accede a tu Boarding Pass</h3>
+          <!-- ⚠️ EL TÍTULO DICE «ACCEDE» Y NO «ACTIVA», y la bajada cuenta las
+               TRES puertas. Decía sólo «activa», que es una de las tres, y las
+               otras dos quedaban escondidas: quien venía con el código de un
+               amigo, o quien todavía no compró nada, no sabía que este mismo
+               formulario era también para él. -->
+          <p class="activar-intro">Completa tus datos y entras: ahí ves la ruta que estás
+            financiando, encargas lo que quieras e invitas a otros.</p>
+          <ul class="activar-puertas">
+            <li><b>¿Ya tienes tu Héroe de Rescate?</b> Adentro activas tu pase con el
+              código que vino con él.</li>
+            <li><b>¿Te invitó alguien?</b> Adentro pones su código y esa persona recibe
+              el reconocimiento de haberte traído.</li>
+            <li><b>¿Todavía no tienes ninguno?</b> Entras igual, y desde ahí puedes
+              adoptar el tuyo.</li>
+          </ul>
           <label>Nombre y apellido
             <input name="nombre" type="text" autocomplete="name" required>
           </label>

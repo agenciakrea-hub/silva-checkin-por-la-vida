@@ -52,8 +52,21 @@
   var dispositivoId = window.CXV.dispositivoId;
   var alServidor    = window.CXV.alServidor;
 
-  var textoWa = function (m) {
+  /* ⚠️ SON DOS COSAS DISTINTAS Y CONFUNDIRLAS ROMPIÓ LA CAMPAÑA ENTERA.
+     `wa.me/<numero>` escribe A ESE NÚMERO; `wa.me/` sin número abre el
+     SELECTOR DE CONTACTOS para elegir a quién mandarle.
+     Hasta hoy había una sola función, con el número de Aeroambulancias, y
+     `compartir()` la usaba de respaldo: en cualquier navegador sin Web Share
+     —el escritorio, los navegadores de Instagram y Facebook— tocar «Invitar»
+     le mandaba la invitación A LA EMPRESA. Toda la mecánica de códigos de las
+     fases 3 y 4 no llegaba a una sola persona por ese camino.
+     Antes de usar una de las dos, preguntarse: ¿esto se lo escribo a la
+     campaña, o se lo mando a un amigo? */
+  var waALaEmpresa = function (m) {
     return 'https://wa.me/' + TEL + '?text=' + encodeURIComponent(m);
+  };
+  var waAUnContacto = function (m) {
+    return 'https://wa.me/?text=' + encodeURIComponent(m);
   };
 
   // ── Pintar ───────────────────────────────────────────────────────────────
@@ -709,13 +722,34 @@
     entrar(v);
   });
 
+  /**
+   * Manda algo A OTRA PERSONA: el selector del sistema si existe, y si no,
+   * WhatsApp abriendo la lista de contactos.
+   *
+   * ⚠️ EL RESPALDO VA A UN CONTACTO, NUNCA A LA EMPRESA. Era exactamente el
+   * bug: sin `navigator.share`, la invitación terminaba en el WhatsApp de
+   * Aeroambulancias en vez de en el del amigo.
+   */
   function compartir(texto, url) {
+    var completo = texto + ' ' + url;
     if (navigator.share) {
       navigator.share({ title: 'Un Check-in por la Vida', text: texto, url: url })
-        .catch(function () {});
+        .catch(function (e) {
+          /* Cancelar no es fallar: si la persona cerró el selector, no se le
+             abre WhatsApp por atrás como si no hubiera pasado nada. */
+          if (e && e.name === 'AbortError') return;
+          window.open(waAUnContacto(completo), '_blank', 'noopener');
+        });
       return;
     }
-    window.open(textoWa(texto + ' ' + url), '_blank', 'noopener');
+    window.open(waAUnContacto(completo), '_blank', 'noopener');
+  }
+
+  /** Compartir la campaña, sin código ni invitación: «mirá esto». */
+  function compartirCampana() {
+    compartir('Este oso puede salvar vidas 🧸✈️ Adopta un Héroe de Rescate y '
+      + 'ayuda a que personas con cáncer lleguen a su tratamiento:',
+      location.origin + '/');
   }
 
   // ── El código de tripulación ─────────────────────────────────────────────
@@ -826,6 +860,20 @@
     if (!codigo) { $('tripu').hidden = true; return; }
     $('tripu').hidden = false;
     $('tripu-codigo').textContent = codigo;
+
+    /* ⚠️ SIN EL PASE ACTIVADO NO SE ENTRA AL RANKING, y hay que decirlo con
+       todas las letras. El ranking se llama «oncoaliados» y un oncoaliado es
+       quien adoptó un Héroe: el servidor no lista a quien sólo repartió su
+       código. Dejar el botón apagado sin explicación se lee como un error de
+       la app, no como una condición. Y se aclara lo que SÍ puede hacer:
+       su código funciona igual, y compartir la campaña no depende de nada. */
+    var activo = !!(yo && yo.activo);
+    $('tripu-falta').hidden = activo;
+    var bInv = $('btn-invitar-tripu');
+    if (bInv) {
+      bInv.disabled = !activo;
+      bInv.textContent = activo ? 'Invitar con mi código' : 'Invitar (activa tu pase)';
+    }
     /* El campo para anotar a quien la invitó sólo tiene sentido mientras no
        haya nadie anotado: después es una puerta que no lleva a ningún lado. */
     var tiene = !!(yo && yo.invitadoPor);
@@ -851,6 +899,7 @@
   });
 
   al('btn-invitar-tripu', 'click', invitar);
+  al('btn-compartir-campana', 'click', compartirCampana);
 
   al('form-invito', 'submit', function (e) {
     e.preventDefault();
@@ -910,7 +959,7 @@
   });
 
   al('btn-otra-ruta', 'click', function () {
-    window.open(textoWa('Hola, mi ruta se completó y quiero sumarme a la próxima con otro Héroe de Rescate.'), '_blank', 'noopener');
+    window.open(waALaEmpresa('Hola, mi ruta se completó y quiero sumarme a la próxima con otro Héroe de Rescate.'), '_blank', 'noopener');
   });
 
   // ── Encargar ─────────────────────────────────────────────────────────────
@@ -1025,7 +1074,7 @@
     var quien = (perfil && perfil.nombre) ? ('Soy ' + perfil.nombre + '. ') : '';
     var pase = (yo && yo.id) ? ('\n\nMi pase: ' + (perfil && perfil.ticket ? perfil.ticket : yo.id)) : '';
     var d = destinoElegido();
-    window.open(textoWa(
+    window.open(waALaEmpresa(
       'Hola, vengo de mi Boarding Pass de Un Check-in por la Vida. ' + quien +
       d.frase + ':\n\n' + lineas.join('\n') +
       '\n\nTotal: $' + t.suma + d.cola + pase), '_blank', 'noopener');
@@ -1041,7 +1090,7 @@
 
   document.querySelectorAll('[data-plan]').forEach(function (b) {
     b.addEventListener('click', function () {
-      window.open(textoWa(PLANES[b.getAttribute('data-plan')] || PLANES.padrino), '_blank', 'noopener');
+      window.open(waALaEmpresa(PLANES[b.getAttribute('data-plan')] || PLANES.padrino), '_blank', 'noopener');
     });
   });
 
@@ -1049,17 +1098,25 @@
 
   function invitar() {
     var yo = leer(K_YO, null);
+    var codigo = (yo && yo.invitacion) || '';
     // Sin código ni id no hay enlace propio, pero la campaña sí: se comparte
     // igual en vez de dejar el botón muerto.
     var url = (yo && (yo.invitacion || yo.id)) ? enlacePropio(yo) : location.origin + '/';
-    compartir('Adopté un Héroe de Rescate para que personas con cáncer lleguen a su tratamiento en Caracas. Súmate a mi tripulación:', url);
+    /* ⚠️ EL CÓDIGO VA ESCRITO EN EL MENSAJE, no sólo dentro del enlace. Quien
+       lo recibe por WhatsApp Web, o lo reenvía copiando el texto a mano, se
+       queda sin el `?de=` y la invitación no existe para nadie. Escrito
+       aparte, se puede teclear en el campo «¿Te invitaron?» de la app. */
+    var texto = 'Adopté un Héroe de Rescate para que personas con cáncer lleguen '
+      + 'a su tratamiento en Caracas. Súmate a mi tripulación'
+      + (codigo ? ' con mi código ' + codigo : '') + ':';
+    compartir(texto, url);
   }
 
   function regalar() {
     // Se anota que se preguntó: al volver, la misión ofrece confirmarlo.
     escribir(K_REGALO, 'preguntando');
     setTimeout(arrancar, 400);
-    window.open(textoWa(
+    window.open(waALaEmpresa(
       'Hola, vengo de mi Boarding Pass de Un Check-in por la Vida. Quiero regalar un Héroe de Rescate. '
       + '¿Me puedes decir cómo?'), '_blank', 'noopener');
   }
@@ -1171,7 +1228,7 @@
   al('btn-quiero', 'click', function () {
     var perfil = leer(K_PERFIL, null);
     var quien = (perfil && perfil.nombre) ? (' Soy ' + perfil.nombre + '.') : '';
-    window.open(textoWa('Hola, vengo de Un Check-in por la Vida y quiero adoptar un Héroe de Rescate.'
+    window.open(waALaEmpresa('Hola, vengo de Un Check-in por la Vida y quiero adoptar un Héroe de Rescate.'
       + quien + ' ¿Cómo lo hago?'), '_blank', 'noopener');
   });
 
@@ -1236,7 +1293,7 @@
   al('btn-ayuda', 'click', function () {
     var perfil = leer(K_PERFIL, null);
     var quien = (perfil && perfil.nombre) ? (' Soy ' + perfil.nombre + '.') : '';
-    window.open(textoWa('Hola, tengo una consulta sobre mi Boarding Pass de Un Check-in por la Vida.' + quien),
+    window.open(waALaEmpresa('Hola, tengo una consulta sobre mi Boarding Pass de Un Check-in por la Vida.' + quien),
                 '_blank', 'noopener');
   });
 

@@ -639,6 +639,25 @@
                   padding:14px 10px;word-break:break-all;}
   .tripu-botones{display:grid;gap:10px;}
   .tripu-botones .btn{width:100%;}
+  /* El aviso de que falta activar.
+
+     ⚠️ SIN BARRA DE COLOR A LA IZQUIERDA. La primera versión llevaba un
+     `border-left:3px solid var(--orange)` y `impeccable` lo marcó como
+     anti-patrón —«el tell más reconocible de una interfaz generada por IA»—,
+     con razón. El comentario que yo mismo le había puesto decía que en este
+     sitio ese borde «siempre quiere decir algo», y era falso: no lo usa ningún
+     otro bloque. Era una racionalización, no una convención.
+     El destaque lo da la caja blanca sobre el papel crema y el borde completo,
+     que es como ya se destacan `.prod` en el sitio y `.tripu-codigo` acá. */
+  .tripu-falta{margin:0 0 14px;padding:13px 15px;background:#fff;
+               border:1.5px solid var(--paper-edge);border-radius:10px;
+               font:400 .9rem/1.5 var(--sans);color:var(--ink);}
+  .tripu-falta b{font-weight:600;color:var(--navy);}
+  /* ⚠️ UN BOTÓN APAGADO TIENE QUE SEGUIR LEYÉNDOSE. Con `opacity` sobre naranja
+     el texto cae a 2,1:1 y no se entiende qué es lo que no se puede tocar. Se
+     apaga cambiando los colores, no bajando la opacidad de todo. */
+  .tripu-botones .btn[disabled]{background:#e7e2d6;color:#6b6456;cursor:not-allowed;
+                                border-color:transparent;}
   .tripu-de{margin:18px 0 0;padding-top:16px;border-top:1px solid var(--paper-edge);}
   .tripu-de p{margin:0 0 12px;font-size:.92rem;color:var(--ink);}
   .tripu-ya{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--paper-edge);
@@ -928,9 +947,17 @@
       <p class="tripu-bajada">Quien entre con este código viaja contigo. Puedes
         dictarlo por teléfono o compartir tu enlace.</p>
       <p class="tripu-codigo"><b id="tripu-codigo">—</b></p>
+      <!-- Quien todavía no activó su pase ve por qué su botón está apagado, y
+           qué sí puede hacer. Un botón deshabilitado sin explicación se lee
+           como un error de la app. -->
+      <p class="tripu-falta" id="tripu-falta" hidden>Para aparecer entre los
+        <b>oncoaliados que más suman</b> necesitas activar tu Boarding Pass con
+        el código de tu Héroe. Tu código de invitación ya funciona: quien entre
+        con él queda contigo. Y compartir la campaña puedes hacerlo siempre.</p>
       <div class="tripu-botones">
         <button class="btn btn-2" type="button" id="btn-copiar-codigo">Copiar mi código</button>
-        <button class="btn btn-1" type="button" id="btn-invitar-tripu">Compartir mi enlace</button>
+        <button class="btn btn-1" type="button" id="btn-invitar-tripu">Invitar con mi código</button>
+        <button class="btn btn-3" type="button" id="btn-compartir-campana">Compartir la campaña</button>
       </div>
       <p class="aviso" id="tripu-aviso" role="status"></p>
 
