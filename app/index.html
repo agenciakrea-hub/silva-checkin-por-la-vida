@@ -7,7 +7,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tu Boarding Pass · Un Check-in por la Vida</title>
 <meta name="description" content="Tu pase de la campaña Un Check-in por la Vida: en qué va la ruta que ayudaste a financiar.">
-<meta name="theme-color" content="#29b9e9">
+<!-- ⚠️ NAVY, NO EL CELESTE DE LA CAMPAÑA, y es lo que arreglaba el arranque.
+     El `body` de la app es `--navy-deep` (#091d40), pero esto y el
+     `background_color` del manifest decían #29b9e9: al abrir la app instalada,
+     Android pintaba una pantalla de arranque CELESTE con el ícono navy encima
+     —un cuadrado oscuro flotando en celeste— y un instante después aparecía la
+     app en navy. Krea lo describió como «el tono azul con el celeste del logo
+     queda feo», y tenía razón: eran tres colores distintos en dos segundos.
+     Los tres valores —este, el `theme_color` y el `background_color`— tienen que
+     seguir siendo el mismo que el `body`, o el salto vuelve. -->
+<meta name="theme-color" content="#091d40">
 <meta name="color-scheme" content="light">
 <!-- noindex a propósito: esto es la pantalla de una persona, no una página de
      la campaña. Lighthouse lo cuenta como falla de SEO; es la decisión correcta. -->
@@ -577,6 +586,44 @@
     .pase3d-pieza,.pase3d-flota{animation:none;}
   }
 
+  /* La línea que dice si lo que se ve es lo último. Discreta: es una nota al
+     pie, no un aviso. */
+  .latido{margin:0 0 14px;font:400 .8rem/1.3 var(--sans);color:var(--ink-soft);
+          display:flex;align-items:center;gap:7px;}
+  .latido::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;
+                  background:var(--ink-soft);}
+  .latido[data-yendo]::before{background:var(--orange);animation:latido 1.4s ease-in-out infinite;}
+  .latido[data-listo]::before{background:#2f8f4e;}
+  .latido[data-mal]::before{background:#a5372b;}
+  @keyframes latido{0%,100%{opacity:1;}50%{opacity:.25;}}
+  @media (prefers-reduced-motion:reduce){.latido::before{animation:none!important;}}
+
+  /* ── Quiénes más suman ── */
+  .rank{background:var(--paper);color:var(--navy);border-radius:16px;
+        padding:22px 20px;margin-top:18px;}
+  .rank h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
+           letter-spacing:.02em;}
+  .rank-bajada{margin:0 0 16px;font-size:.95rem;color:var(--ink);}
+  .rank-lista{list-style:none;margin:0;padding:0;counter-reset:puesto;}
+  .rank-lista li{display:flex;align-items:center;gap:12px;padding:11px 0;
+                 border-top:1px solid var(--paper-edge);}
+  .rank-lista li:first-child{border-top:0;}
+  /* El puesto en cifra, que es lo único que se lee como número acá. */
+  .rank-lista li::before{counter-increment:puesto;content:counter(puesto);
+    flex:none;width:26px;text-align:right;
+    font:700 .95rem/1 var(--cifra);color:var(--ink-soft);letter-spacing:-.04em;}
+  .rank-nombre{flex:1;min-width:0;font:600 .96rem/1.3 var(--sans);
+               overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rank-cuantos{flex:none;font:400 .86rem/1.3 var(--sans);color:var(--ink-soft);}
+  .rank-cuantos b{font:700 1rem/1 var(--cifra);color:var(--navy);letter-spacing:-.04em;}
+  /* Quien está mirando, marcado. Sin medalla ni color de premio: un fondo y el
+     nombre en navy alcanzan para encontrarse en la lista. */
+  .rank-lista li[data-yo]{background:var(--celeste-papel);
+    margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:10px;border-top-color:transparent;}
+  .rank-lista li[data-yo] .rank-nombre::after{content:' · tú';color:var(--ink-soft);font-weight:400;}
+  .rank-mas,.rank-vos{margin:14px 0 0;font-size:.9rem;color:var(--ink);}
+  .rank-vos{padding-top:12px;border-top:1px solid var(--paper-edge);}
+
   /* ── El código de tripulación ── */
   .tripu{background:var(--paper);color:var(--navy);border-radius:16px;
          padding:22px 20px;margin-top:18px;}
@@ -811,6 +858,14 @@
       <h2 id="t-vuelo">Tu oncovuelo</h2>
       <p id="vuelo-nota">Estamos reuniendo los Héroes de Rescate para la primera ruta.</p>
 
+      <!-- ⚠️ ESTA LÍNEA EXISTE PORQUE LA HOJA «PARECÍA NO FUNCIONAR».
+           Krea editaba la pestaña `vuelo` y no veía el cambio. No era un
+           error: Apps Script en frío tarda más de veinte segundos, y durante
+           esa espera la app muestra los valores de respaldo del HTML, sin una
+           sola señal de que esté yendo a buscar los de verdad. Se cerraba
+           antes de que llegara la respuesta. Ahora se ve. -->
+      <p class="latido" id="latido" aria-live="polite" hidden></p>
+
       <ol class="etapas" id="etapas">
         <!-- Nace marcada: «reuniendo Héroes» siempre es verdad, y el servidor
              tarda más de 20 s en frío. Sin esto las cuatro salían apagadas
@@ -893,6 +948,19 @@
 
       <p class="tripu-ya" id="tripu-ya" hidden>Llegaste por la invitación de
         alguien, y ya quedó anotado. Gracias por sumarte a su tripulación.</p>
+    </section>
+
+    <!-- ── Quiénes más suman ───────────────────────────────────────────────
+         El título no es competitivo a propósito: esta campaña es sobre niños
+         con cáncer y «los que van ganando» estaría fuera de lugar. Se nombra
+         lo que hicieron, no el puesto. -->
+    <section class="rank" id="rank" hidden aria-labelledby="t-rank">
+      <h2 id="t-rank">Oncoaliados que más suman</h2>
+      <p class="rank-bajada">Personas que trajeron a otras, y esas otras
+        adoptaron su Héroe de Rescate.</p>
+      <ol class="rank-lista" id="rank-lista"></ol>
+      <p class="rank-mas" id="rank-mas" hidden></p>
+      <p class="rank-vos" id="rank-vos" hidden></p>
     </section>
 
     <!-- ── Sumar más ───────────────────────────────────────────────────────

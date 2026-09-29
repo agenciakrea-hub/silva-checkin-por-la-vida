@@ -626,7 +626,8 @@
       $('form-entrar').hidden = true;
     }
 
-    conTope(alServidor({ action: 'estado', token: (yo && yo.token) || '' }))
+    latido('yendo');
+    conTope(alServidor({ action: 'estado', token: (yo && yo.token) || '', ranking: true }))
       .then(function (r) {
         // El servidor no contestó JSON: es un problema de conexión o de
         // despliegue, no que esta persona no exista. Se vuelve a intentar antes
@@ -634,12 +635,15 @@
         if (!r || (!r.ok && r.motivo === 'respuesta_no_json')) {
           if (reintentarEstado()) return;
           limpiarSinConexion();
+          latido('mal');
           pintarSinConexion();
           return;
         }
         limpiarSinConexion();
         intento = 0;
         if (!r.ok) { pintarDesconocido(); return; }
+        latido('listo', horaCorta());
+        pintarRanking(r.ranking);
         pintarVuelo(r.vuelo);
         pintarAporte(r.vuelo);
         pintarCierre(r.vuelo);
@@ -665,6 +669,7 @@
       })
       .catch(function () {
         if (reintentarEstado()) return;
+        latido('mal');
         pintarSinConexion();
       });
   }
@@ -705,6 +710,99 @@
    * guion adentro y dos botones que no hacen nada. Un bloque que no está se
    * entiende; uno vacío parece roto.
    */
+  /**
+   * La línea que dice si lo que se está viendo es lo último que hay.
+   *
+   * ⚠️ NO ES DECORACIÓN. Krea editaba la hoja `vuelo`, abría la app y veía los
+   * valores viejos: no había ningún error, pero Apps Script en frío tarda más
+   * de veinte segundos y en ese rato la app muestra el respaldo del HTML sin
+   * decir nada. Cerraba antes de que llegara la respuesta y concluía que la
+   * hoja no servía. Esta línea es la diferencia entre «no anda» y «esperá».
+   */
+  function latido(estado, cuando) {
+    var el = $('latido');
+    if (!el) return;
+    el.hidden = false;
+    el.removeAttribute('data-yendo');
+    el.removeAttribute('data-listo');
+    el.removeAttribute('data-mal');
+    if (estado === 'yendo') {
+      el.setAttribute('data-yendo', '');
+      el.textContent = 'Buscando el estado más reciente…';
+    } else if (estado === 'listo') {
+      el.setAttribute('data-listo', '');
+      el.textContent = 'Al día' + (cuando ? ' · ' + cuando : '');
+    } else {
+      el.setAttribute('data-mal', '');
+      el.textContent = 'No pudimos conectarnos. Esto es lo último que guardamos.';
+    }
+  }
+
+  function horaCorta() {
+    try {
+      return new Date().toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return ''; }
+  }
+
+  /**
+   * Quiénes más gente trajeron.
+   *
+   * ⚠️ SIN MEDALLAS NI PUNTOS. Es una campaña sobre niños con cáncer: un podio
+   * con oro y plata estaría fuera de lugar, y el cliente lo pidió así. Se
+   * nombra lo que la persona hizo —«trajo a 3»— y no el puesto que ocupa.
+   */
+  function pintarRanking(r) {
+    var caja = $('rank');
+    if (!caja) return;
+    if (!r || !r.lista || !r.lista.length) { caja.hidden = true; return; }
+    caja.hidden = false;
+
+    var ol = $('rank-lista');
+    ol.textContent = '';
+    r.lista.forEach(function (p) {
+      var li = document.createElement('li');
+      if (p.yo) li.setAttribute('data-yo', '');
+      var n = document.createElement('span');
+      n.className = 'rank-nombre';
+      n.textContent = p.nombre;
+      var c = document.createElement('span');
+      c.className = 'rank-cuantos';
+      /* El número en negrita y la palabra al lado: «3 a bordo» se lee de un
+         vistazo, «3» solo no dice de qué. */
+      var b = document.createElement('b');
+      b.textContent = String(p.cuantos);
+      c.appendChild(b);
+      c.appendChild(document.createTextNode(p.cuantos === 1 ? ' a bordo' : ' a bordo'));
+      li.appendChild(n); li.appendChild(c);
+      ol.appendChild(li);
+    });
+
+    var mas = $('rank-mas');
+    if (r.restantes > 0) {
+      mas.hidden = false;
+      mas.textContent = r.restantes === 1
+        ? 'Y un oncoaliado más que también trajo gente.'
+        : 'Y ' + r.restantes + ' oncoaliados más que también trajeron gente.';
+    } else mas.hidden = true;
+
+    /* A quien no entró en la lista se le dice dónde está y cuánto le falta.
+       Un ranking que sólo muestra a los de arriba no le sirve a nadie más. */
+    var vos = $('rank-vos');
+    var estaArriba = r.lista.some(function (p) { return p.yo; });
+    if (estaArriba) { vos.hidden = true; return; }
+    if (r.miPuesto > 0) {
+      vos.hidden = false;
+      vos.textContent = 'Tú vas ' + r.miCuenta + (r.miCuenta === 1 ? ' a bordo' : ' a bordo')
+        + (r.faltanPara > 0
+            ? ', y con ' + r.faltanPara + (r.faltanPara === 1 ? ' más entras' : ' más entras') + ' a esta lista.'
+            : '.');
+    } else {
+      vos.hidden = false;
+      vos.textContent = 'Todavía no trajiste a nadie que haya activado su pase. '
+        + 'Comparte tu código y esta lista te espera.';
+    }
+  }
+
   function pintarInvitacion(yo) {
     var codigo = String((yo && yo.invitacion) || '');
     if (!codigo) { $('tripu').hidden = true; return; }
