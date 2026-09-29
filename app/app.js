@@ -25,6 +25,22 @@
   // vaciar la misma cola que llena el formulario: quien se registra navega
   // hasta acá en el mismo instante en que sale el alta, el envío se corta por
   // la mitad, y si la app no lo reintentara ese registro no llegaría nunca.
+  // ⚠️ SIN ESTO LA APP SE QUEDA MUDA HASTA 27 SEGUNDOS. Apps Script arranca en
+  // frío en más de 21 s (medido), y hasta que contesta no aparecía ni el pase
+  // ni el formulario para buscarlo: quien abría el enlace desde WhatsApp veía
+  // una pantalla sin nada suyo y concluía que su pase no existía.
+  // Y sin corte por tiempo, una petición colgada dejaba esa pantalla así para
+  // siempre: `fetch` no falla solo.
+  var TOPE_MS = 9000;
+
+  function conTope(promesa) {
+    return new Promise(function (resolver, rechazar) {
+      var reloj = setTimeout(function () { rechazar(new Error('tardó demasiado')); }, TOPE_MS);
+      promesa.then(function (v) { clearTimeout(reloj); resolver(v); },
+                   function (e) { clearTimeout(reloj); rechazar(e); });
+    });
+  }
+
   var leer          = window.CXV.leer;
   var escribir      = window.CXV.escribir;
   var dispositivoId = window.CXV.dispositivoId;
@@ -122,9 +138,7 @@
     $('tripu-texto').textContent =
       n === 0 ? 'Comparte tu enlace: vas a ver aquí a quienes se sumen por ti.'
     : n === 1 ? 'Una persona se sumó por ti. Con una más, completas tu tripulación.'
-    : n < META_TRIPU ? n + ' personas se sumaron por ti.'
-    : n === META_TRIPU ? 'Tu tripulación está completa: ' + n + ' personas se sumaron por ti.'
-    : n + ' personas se sumaron por ti. Tu tripulación va más que completa.';
+    : 'Ya son ' + n + '. Tu tripulación está completa.';
 
     $('tripu').hidden = false;
   }
@@ -145,10 +159,13 @@
   }
 
   function pintarPersona(yo) {
-    $('d-nombre').textContent = yo.nombre || '—';
+    // El completo en el pase —en un boarding pass el nombre es el documento— y
+    // el de pila en el rótulo, que tiene que entrar en una línea.
+    $('d-nombre').textContent = yo.nombreCompleto || yo.nombre || '—';
     $('d-pase').textContent   = yo.ticket || yo.id || '—';
     // El nombre arriba del todo: es el pase de esa persona, no un pase genérico.
-    $('pase-rotulo').textContent = yo.nombre ? ('Boarding de ' + yo.nombre) : 'Boarding Pass solidario';
+    var pila = primerNombre(yo.nombre || yo.nombreCompleto || '');
+    $('pase-rotulo').textContent = pila ? ('Boarding de ' + pila) : 'Boarding Pass solidario';
     $('pase').hidden   = false;
     $('entrar').hidden = true;
     $('avance-titulo').textContent = 'La ruta que estás financiando';
@@ -174,6 +191,7 @@
     $('entrar').hidden = false;
     $('avance-titulo').textContent = 'La ruta que estamos financiando';
     $('btn-adoptar').textContent = 'Adoptar un Héroe de Rescate';
+    $('papel').hidden = true;   // sin token no hay a quién vincularle el pase
   }
 
   // ── Entrar con el teléfono ───────────────────────────────────────────────
@@ -223,6 +241,29 @@
 
   // ── Arranque ─────────────────────────────────────────────────────────────
 
+  // Un fallo de conexión y «no estás registrado» son dos cosas distintas, y
+  // mezclarlas es el error más caro: a quien tiene su pase perfectamente
+  // válido se le decía «entra a tu pase», escribía su teléfono, fallaba otra
+  // vez, y terminaba creyendo que perdió lo que compró.
+  function pintarSinConexion() {
+    if (leer(K_PERFIL, null)) return;          // ya tiene su pase en pantalla
+    $('entrar').hidden = false;
+    $('entrar-titulo').textContent = 'No pudimos conectarnos';
+    $('entrar-texto').textContent =
+      'Tu Boarding Pass está a salvo: es el servidor el que no responde. '
+      + 'Vuelve a intentarlo en un momento.';
+    $('form-entrar').hidden = true;
+    $('btn-reintentar').hidden = false;
+  }
+
+  function limpiarSinConexion() {
+    $('entrar-titulo').textContent = 'Busca tu Boarding Pass';
+    $('entrar-texto').textContent =
+      'Escribe el teléfono con el que te registraste y lo recuperamos.';
+    $('form-entrar').hidden = false;
+    $('btn-reintentar').hidden = true;
+  }
+
   function arrancar() {
     // Sin servidor configurado la app igual sirve: muestra la ruta con los
     // valores que ya están en el HTML. Vale también para un navegador sin
@@ -239,16 +280,32 @@
     // momento de más entusiasmo.
     var perfil = leer(K_PERFIL, null);
     if (perfil && perfil.nombre) {
-      pintarPersona({ nombre: primerNombre(perfil.nombre), ticket: perfil.ticket || '', id: '' });
+      pintarPersona({ nombre: primerNombre(perfil.nombre), nombreCompleto: perfil.nombre,
+                      ticket: perfil.ticket || '', id: '' });
       $('d-pase').textContent = perfil.ticket || 'Activando…';
     }
 
     if (!API || typeof fetch !== 'function') { pintarDesconocido(); return; }
 
     var yo = leer(K_YO, null);
-    alServidor({ action: 'estado', token: (yo && yo.token) || '' })
+
+    // Mientras se espera, se dice que se está buscando. Es lo que separa «esto
+    // está trabajando» de «esto está roto».
+    var perfilLocal = leer(K_PERFIL, null);
+    if (!perfilLocal) {
+      $('entrar').hidden = false;
+      $('entrar-titulo').textContent = 'Buscando tu Boarding Pass…';
+      $('entrar-texto').textContent = 'Un momento.';
+      $('form-entrar').hidden = true;
+    }
+
+    conTope(alServidor({ action: 'estado', token: (yo && yo.token) || '' }))
       .then(function (r) {
-        if (!r || !r.ok) { pintarDesconocido(); return; }
+        limpiarSinConexion();
+        // El servidor no contestó JSON: es un problema de conexión o de
+        // despliegue, no que esta persona no exista.
+        if (!r || (!r.ok && r.motivo === 'respuesta_no_json')) { pintarSinConexion(); return; }
+        if (!r.ok) { pintarDesconocido(); return; }
         pintarVuelo(r.vuelo);
         pintarCierre(r.vuelo);
         if (r.yo) { pintarPersona(r.yo); pintarTripulacion(r.yo); }
@@ -259,21 +316,27 @@
           pintarDesconocido();
         }
       })
-      .catch(function () { pintarDesconocido(); });
+      .catch(function () { pintarSinConexion(); });
   }
 
   // ── Enganches ────────────────────────────────────────────────────────────
 
   $('form-entrar').addEventListener('submit', function (e) {
     e.preventDefault();
-    var v = (this.elements.telefono.value || '').trim();
-    if (!v) { $('entrar-aviso').textContent = 'Escribe tu teléfono.'; return; }
+    var campo = this.elements.telefono;
+    var v = (campo.value || '').trim();
+    campo.setAttribute('aria-invalid', 'false');
+    if (!v) {
+      $('entrar-aviso').textContent = 'Escribe tu teléfono.';
+      campo.setAttribute('aria-invalid', 'true');
+      campo.focus();
+      return;
+    }
     $('elegir').hidden = true;
     entrar(v);
   });
 
-  $('btn-adoptar').addEventListener('click', function (e) {
-    e.preventDefault();
+  $('btn-adoptar').addEventListener('click', function () {
     var yo = leer(K_YO, null);
     var m = yo
       ? 'Hola, ya tengo mi Boarding Pass de Un Check-in por la Vida y quiero adoptar otro Héroe de Rescate.'
@@ -289,11 +352,6 @@
     }
     window.open(textoWa(texto + ' ' + url), '_blank', 'noopener');
   }
-
-  $('btn-compartir').addEventListener('click', function () {
-    compartir('Adopté un Héroe de Rescate para que personas con cáncer lleguen a su tratamiento. Súmate:',
-              location.origin + '/');
-  });
 
   $('btn-invitar').addEventListener('click', function () {
     var yo = leer(K_YO, null);
@@ -508,6 +566,13 @@
   window.addEventListener('appinstalled', function () {
     pedidoDeInstalar = null;
     $('instalar').hidden = true;
+  });
+
+  $('btn-reintentar').addEventListener('click', function () {
+    $('entrar-titulo').textContent = 'Buscando tu Boarding Pass…';
+    $('entrar-texto').textContent = 'Un momento.';
+    $('btn-reintentar').hidden = true;
+    arrancar();
   });
 
   $('btn-instalar').addEventListener('click', function () {
