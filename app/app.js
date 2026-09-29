@@ -52,19 +52,40 @@
 
   // ── Pintar ───────────────────────────────────────────────────────────────
 
+  // El orden es el del viaje. La hoja `vuelo` sólo tiene que decir en cuál está.
+  var ETAPAS = ['preparando', 'asignando', 'en_curso', 'completado'];
+
   var ESTADOS = {
     preparando: 'Preparando',
+    asignando:  'Asignando',
     en_curso:   'En vuelo',
     completado: 'Completada'
   };
+
+  // Un porcentaje no cuenta en qué anda un vuelo; las etapas sí. Sólo la de hoy
+  // lleva peso: las anteriores están hechas y las siguientes no son noticia.
+  function pintarEtapas(estado) {
+    var i = ETAPAS.indexOf(estado);
+    if (i < 0) i = 0;
+    ETAPAS.forEach(function (nombre, k) {
+      var li = document.querySelector('.etapa[data-etapa="' + nombre + '"]');
+      if (!li) return;
+      li.removeAttribute('data-hecha');
+      li.removeAttribute('data-ahora');
+      li.removeAttribute('aria-current');
+      if (k < i) li.setAttribute('data-hecha', '');
+      if (k === i) { li.setAttribute('data-ahora', ''); li.setAttribute('aria-current', 'step'); }
+    });
+  }
 
   function pintarVuelo(v) {
     if (!v) return;
     if (v.titulo)  $('vuelo-titulo').textContent = v.titulo;
     if (v.origen)  $('origen').textContent  = v.origen;
     if (v.destino) $('destino').textContent = v.destino;
-    if (v.nota)    $('avance-nota').textContent = v.nota;
+    if (v.nota)    $('vuelo-nota').textContent = v.nota;
     $('d-estado').textContent = ESTADOS[v.estado] || v.estado || 'Preparando';
+    pintarEtapas(v.estado || 'preparando');
   }
 
   /**
@@ -102,9 +123,16 @@
       adoptados + ' de ' + meta + ' Héroes de Rescate adoptados');
   }
 
-  // ── La tripulación ───────────────────────────────────────────────────────
+  // ── Misiones ─────────────────────────────────────────────────────────────
+  //
+  // La mecánica de juego que pidió el cliente, sin puntos ni insignias: esta
+  // campaña es sobre niños con cáncer y un marcador con premios estaría fuera
+  // de lugar. Cada misión es algo que de verdad acerca la ruta a despegar.
+  //
+  // La primera nace cumplida a propósito: quien llega acá ya activó su pase, y
+  // empezar con algo logrado es lo que hace que quiera seguir.
 
-  var META_TRIPU = 2;   // lo que pidió el cliente: «compartir con dos contactos»
+  var META_TRIPU = 2;
 
   function primerNombre(v) {
     return String(v || '').trim().split(/\s+/)[0] || '';
@@ -114,43 +142,122 @@
     return location.origin + '/?de=' + encodeURIComponent(id);
   }
 
-  function pintarTripulacion(yo) {
-    var n = Number(yo.tripulacion) || 0;
-    var caja = $('asientos');
+  var TILDE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" ' +
+              'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+              '<path d="M4 12.5l5.5 5.5L20 7"/></svg>';
+  var PERSONA = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+                '<path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-7 2-7 4.5V21h14v-2.5C19 16 16 14 12 14z"/></svg>';
+
+  function pintarMisiones(yo) {
+    var n = Number(yo && yo.tripulacion) || 0;
+    var tienePase = !!(yo && (yo.ticket || yo.id));
+    var compro = !!(yo && yo.ticket);
+
+    var lista = [
+      { hecha: tienePase,
+        titulo: 'Activa tu Boarding Pass',
+        texto: 'Listo: ya eres pasajero de honor de esta ruta.' },
+
+      { hecha: n >= META_TRIPU,
+        titulo: 'Suma 2 personas a tu tripulación',
+        texto: n === 0 ? 'Comparte tu enlace. Quien entre por él viaja contigo.'
+             : n === 1 ? 'Una ya se sumó. Con una más, tu tripulación está completa.'
+             : 'Ya son ' + n + '. Tu tripulación está completa.',
+        asientos: n,
+        accion: n >= META_TRIPU ? null : { texto: 'Invitar', como: 'invitar' } },
+
+      { hecha: compro,
+        titulo: 'Vincula tu pase de papel',
+        texto: compro ? 'Tu pase impreso está vinculado a esta cuenta.'
+                      : '¿Compraste tu Héroe en el evento? Escribe el número de tu pase.',
+        campo: !compro },
+
+      { hecha: false,
+        titulo: 'Regala un Héroe de Rescate',
+        texto: 'A alguien que quieras, o a un paciente de la próxima ruta.',
+        accion: { texto: 'Regalar', como: 'regalar', suave: true } }
+    ];
+
+    var caja = $('lista-mis');
     caja.innerHTML = '';
-    /* Se dibujan al menos los dos asientos de la meta, y más si ya los pasó:
-       a quien invitó a cinco no se le esconden tres. */
-    var total = Math.max(META_TRIPU, n);
-    for (var i = 0; i < total; i++) {
-      var d = document.createElement('span');
-      d.className = 'asiento';
-      if (i < n) d.setAttribute('data-ocupado', '');
-      d.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
-        '<path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-7 2-7 4.5V21h14v-2.5C19 16 16 14 12 14z"/></svg>';
-      caja.appendChild(d);
-    }
-    caja.setAttribute('role', 'img');
-    caja.setAttribute('aria-label',
-      n === 0 ? 'Todavía no se sumó nadie por tu enlace'
-              : (n === 1 ? 'Una persona se sumó por tu enlace'
-                         : n + ' personas se sumaron por tu enlace'));
+    var hechas = 0;
 
-    $('tripu-texto').textContent =
-      n === 0 ? 'Comparte tu enlace: vas a ver aquí a quienes se sumen por ti.'
-    : n === 1 ? 'Una persona se sumó por ti. Con una más, completas tu tripulación.'
-    : 'Ya son ' + n + '. Tu tripulación está completa.';
+    lista.forEach(function (m) {
+      if (m.hecha) hechas++;
+      var li = document.createElement('li');
+      li.className = 'mis';
+      if (m.hecha) li.setAttribute('data-hecha', '');
 
-    $('tripu').hidden = false;
+      var marca = document.createElement('span');
+      marca.className = 'mis-marca';
+      if (m.hecha) marca.innerHTML = TILDE;
+      li.appendChild(marca);
+
+      var cuerpo = document.createElement('div');
+      cuerpo.className = 'mis-cuerpo';
+      var b = document.createElement('b'); b.textContent = m.titulo;
+      var pp = document.createElement('p'); pp.textContent = m.texto;
+      cuerpo.appendChild(b); cuerpo.appendChild(pp);
+
+      // La tripulación se ve, no se cuenta de memoria.
+      if (typeof m.asientos === 'number') {
+        var fila = document.createElement('div');
+        fila.className = 'mis-asientos';
+        fila.setAttribute('role', 'img');
+        fila.setAttribute('aria-label',
+          m.asientos === 0 ? 'Ninguna persona se sumó todavía'
+          : m.asientos === 1 ? 'Una persona se sumó por tu enlace'
+          : m.asientos + ' personas se sumaron por tu enlace');
+        for (var i = 0; i < Math.max(META_TRIPU, m.asientos); i++) {
+          var a = document.createElement('span');
+          a.className = 'mis-asiento';
+          if (i < m.asientos) a.setAttribute('data-ocupado', '');
+          a.innerHTML = PERSONA;
+          fila.appendChild(a);
+        }
+        cuerpo.appendChild(fila);
+      }
+
+      if (m.campo) {
+        var f = document.createElement('form');
+        f.className = 'mis-fila';
+        f.noValidate = true;
+        f.innerHTML = '<input name="ticket" type="text" autocomplete="off" ' +
+                      'aria-label="Número de tu Boarding Pass" placeholder="Ej.: BP-0042">' +
+                      '<button type="submit">Vincular</button>';
+        var av = document.createElement('p');
+        av.className = 'mis-aviso'; av.setAttribute('role', 'alert');
+        f.addEventListener('submit', function (e) { e.preventDefault(); vincular(f, av); });
+        cuerpo.appendChild(f); cuerpo.appendChild(av);
+      }
+
+      if (m.accion) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mis-accion' + (m.accion.suave ? ' suave' : '');
+        btn.textContent = m.accion.texto;
+        btn.addEventListener('click', function () {
+          if (m.accion.como === 'invitar') invitar();
+          if (m.accion.como === 'regalar') regalar();
+        });
+        cuerpo.appendChild(btn);
+      }
+
+      li.appendChild(cuerpo);
+      caja.appendChild(li);
+    });
+
+    $('mis-hechas').textContent = String(hechas);
+    $('mis-total').textContent  = String(lista.length);
+    $('misiones-bajada').textContent = hechas >= lista.length
+      ? 'Las completaste todas. Gracias de verdad.'
+      : 'Cada una acerca la ruta a despegar.';
   }
 
   // ── Cierre de la ruta ────────────────────────────────────────────────────
 
   function pintarCierre(vuelo) {
     if (!vuelo || vuelo.estado !== 'completado') { $('cierre').hidden = true; return; }
-    /* Con la ruta terminada, el bloque de avance sobra y además se contradice:
-       decía «estamos reuniendo los Héroes» con la barra a medias justo arriba
-       del cartel que anuncia que la ruta se completó. */
-    $('avance').hidden = true;
     if (vuelo.titulo) $('cierre-titulo').textContent = vuelo.titulo + ' se completó';
     /* El equipo escribe el cierre en la hoja: quiénes viajaron, cómo salió. Sin
        eso queda un agradecimiento genérico, que es lo justo pero no dice nada. */
@@ -168,11 +275,7 @@
     $('pase-rotulo').textContent = pila ? ('Boarding de ' + pila) : 'Boarding Pass solidario';
     $('pase').hidden   = false;
     $('entrar').hidden = true;
-    $('avance-titulo').textContent = 'La ruta que estás financiando';
-    // Quien ya tiene su pase vinculado no necesita que le pidan el de papel.
-    $('papel').hidden = !!yo.ticket;
-    $('tienda-texto').textContent =
-      'Elige lo que quieras y te abrimos WhatsApp con el pedido ya escrito.';
+    $('misiones').hidden = false;
   }
 
   // A quien no reconocemos se le muestra la ruta igual, y se le ofrece entrar.
@@ -189,9 +292,8 @@
     if (perfil && perfil.nombre) return;
     $('pase').hidden   = true;
     $('entrar').hidden = false;
-    $('avance-titulo').textContent = 'La ruta que estamos financiando';
-    $('btn-adoptar').textContent = 'Adoptar un Héroe de Rescate';
-    $('papel').hidden = true;   // sin token no hay a quién vincularle el pase
+    // Sin pase no hay misiones que mostrar: son de la persona, no de la ruta.
+    $('misiones').hidden = true;
   }
 
   // ── Entrar con el teléfono ───────────────────────────────────────────────
@@ -308,7 +410,7 @@
         if (!r.ok) { pintarDesconocido(); return; }
         pintarVuelo(r.vuelo);
         pintarCierre(r.vuelo);
-        if (r.yo) { pintarPersona(r.yo); pintarTripulacion(r.yo); }
+        if (r.yo) { pintarPersona(r.yo); pintarMisiones(r.yo); }
         else {
           // El token guardado ya no vale: se descarta para no volver a
           // mandarlo en cada arranque.
@@ -336,14 +438,6 @@
     entrar(v);
   });
 
-  $('btn-adoptar').addEventListener('click', function () {
-    var yo = leer(K_YO, null);
-    var m = yo
-      ? 'Hola, ya tengo mi Boarding Pass de Un Check-in por la Vida y quiero adoptar otro Héroe de Rescate.'
-      : 'Hola, vengo de la web de Un Check-in por la Vida y quiero adoptar un Héroe de Rescate.';
-    window.open(textoWa(m), '_blank', 'noopener');
-  });
-
   function compartir(texto, url) {
     if (navigator.share) {
       navigator.share({ title: 'Un Check-in por la Vida', text: texto, url: url })
@@ -353,21 +447,8 @@
     window.open(textoWa(texto + ' ' + url), '_blank', 'noopener');
   }
 
-  $('btn-invitar').addEventListener('click', function () {
-    var yo = leer(K_YO, null);
-    // Sin id no hay enlace propio que compartir, pero la campaña sí: se comparte
-    // igual en vez de dejar el botón muerto.
-    var url = (yo && yo.id) ? enlacePropio(yo.id) : location.origin + '/';
-    compartir('Adopté un Héroe de Rescate para que personas con cáncer lleguen a su tratamiento en Caracas. Súmate a mi tripulación:', url);
-  });
-
-  $('btn-otra-ruta').addEventListener('click', function (e) {
-    e.preventDefault();
+  $('btn-otra-ruta').addEventListener('click', function () {
     window.open(textoWa('Hola, mi ruta se completó y quiero sumarme a la próxima con otro Héroe de Rescate.'), '_blank', 'noopener');
-  });
-
-  $('btn-regalar').addEventListener('click', function () {
-    window.open(textoWa('Hola, quiero regalar un Héroe de Rescate a otra persona. ¿Cómo lo hago?'), '_blank', 'noopener');
   });
 
   // ── Encargar ─────────────────────────────────────────────────────────────
@@ -456,6 +537,21 @@
     return { suma: suma, piezas: piezas };
   }
 
+  // Para quién es lo que se encarga. Son las tres salidas que pidió el cliente
+  // —otro para mí, un regalo, o uno que reciba un paciente— y cada una cambia
+  // el mensaje: quien atiende el WhatsApp necesita saberlo para preparar el
+  // pedido, no es un detalle decorativo.
+  var DESTINO = {
+    mio:    { frase: 'Quiero encargar', cola: '' },
+    regalo: { frase: 'Quiero regalar',  cola: '\n\nEs un regalo.' },
+    donar:  { frase: 'Quiero donar',    cola: '\n\nQuiero que lo reciba un paciente de la próxima ruta.' }
+  };
+
+  function destinoElegido() {
+    var r = document.querySelector('input[name="destino"]:checked');
+    return DESTINO[(r && r.value) || 'mio'] || DESTINO.mio;
+  }
+
   $('btn-encargar').addEventListener('click', function () {
     var lineas = [], t = total();
     if (!t.piezas) return;
@@ -466,10 +562,11 @@
     var yo = leer(K_YO, null), perfil = leer(K_PERFIL, null);
     var quien = (perfil && perfil.nombre) ? ('Soy ' + perfil.nombre + '. ') : '';
     var pase = (yo && yo.id) ? ('\n\nMi pase: ' + (perfil && perfil.ticket ? perfil.ticket : yo.id)) : '';
+    var d = destinoElegido();
     window.open(textoWa(
       'Hola, vengo de mi Boarding Pass de Un Check-in por la Vida. ' + quien +
-      'Quiero encargar:\n\n' + lineas.join('\n') +
-      '\n\nTotal: $' + t.suma + pase), '_blank', 'noopener');
+      d.frase + ':\n\n' + lineas.join('\n') +
+      '\n\nTotal: $' + t.suma + d.cola + pase), '_blank', 'noopener');
   });
 
   // ── Empresas ─────────────────────────────────────────────────────────────
@@ -486,21 +583,37 @@
     });
   });
 
-  // ── El pase de papel ─────────────────────────────────────────────────────
+  // ── Lo que hacen las misiones ────────────────────────────────────────────
 
-  $('form-papel').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var aviso = $('papel-aviso');
-    var t = (this.elements.ticket.value || '').trim();
-    if (!t) { aviso.textContent = 'Escribe el número de tu Boarding Pass.'; return; }
+  function invitar() {
+    var yo = leer(K_YO, null);
+    // Sin id no hay enlace propio, pero la campaña sí: se comparte igual en
+    // vez de dejar el botón muerto.
+    var url = (yo && yo.id) ? enlacePropio(yo.id) : location.origin + '/';
+    compartir('Adopté un Héroe de Rescate para que personas con cáncer lleguen a su tratamiento en Caracas. Súmate a mi tripulación:', url);
+  }
 
+  function regalar() {
+    window.open(textoWa(
+      'Hola, vengo de mi Boarding Pass de Un Check-in por la Vida. Quiero regalar un Héroe de Rescate. '
+      + '¿Me puedes decir cómo?'), '_blank', 'noopener');
+  }
+
+  function vincular(form, aviso) {
+    var campo = form.elements.ticket;
+    var t = (campo.value || '').trim();
+    campo.setAttribute('aria-invalid', 'false');
+    if (!t) {
+      aviso.textContent = 'Escribe el número de tu Boarding Pass.';
+      campo.setAttribute('aria-invalid', 'true'); campo.focus(); return;
+    }
     var yo = leer(K_YO, null);
     if (!yo || !yo.token) {
-      aviso.textContent = 'Primero entra con tu teléfono y luego vincula tu pase.';
+      aviso.textContent = 'Espera unos segundos a que se active tu pase y vuelve a intentarlo.';
       return;
     }
     aviso.textContent = 'Vinculando…';
-    alServidor({ action: 'vincular', token: yo.token, ticket: t })
+    conTope(alServidor({ action: 'vincular', token: yo.token, ticket: t }))
       .then(function (r) {
         if (r && r.ok) {
           aviso.textContent = '';
@@ -508,15 +621,17 @@
           perfil.ticket = r.ticket || t;
           escribir(K_PERFIL, perfil);
           $('d-pase').textContent = perfil.ticket;
-          $('papel').hidden = true;
+          // Se vuelven a pintar: esa misión pasa a estar cumplida.
+          arrancar();
           return;
         }
+        campo.setAttribute('aria-invalid', 'true');
         aviso.textContent = (r && r.motivo === 'ticket_invalido')
           ? 'Ese número no parece un Boarding Pass. Revísalo.'
           : 'No pudimos vincularlo. Intenta de nuevo en un momento.';
       })
       .catch(function () { aviso.textContent = 'No pudimos conectarnos. Revisa tu conexión.'; });
-  });
+  }
 
   // ── Instalable ───────────────────────────────────────────────────────────
 

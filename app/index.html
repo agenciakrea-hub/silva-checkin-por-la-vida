@@ -199,6 +199,80 @@
                  cursor:pointer;text-align:left;}
   .elegir button:hover{border-color:var(--navy);}
 
+  /* ── Tu oncovuelo: las etapas ── */
+  .vuelo{background:var(--celeste-papel);border-radius:16px;padding:22px 20px;margin-top:18px;}
+  .vuelo h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
+            letter-spacing:.02em;}
+  .vuelo > p{margin:0 0 18px;font-size:.95rem;color:var(--ink);}
+
+  /* Línea de tiempo vertical. La etapa de hoy es la única con peso: las
+     anteriores están hechas y las siguientes todavía no son noticia. */
+  .etapas{list-style:none;margin:0 0 20px;padding:0;position:relative;}
+  .etapas::before{content:'';position:absolute;left:8px;top:10px;bottom:10px;width:2px;
+                  background:repeating-linear-gradient(180deg,var(--ink-soft) 0 5px,transparent 5px 11px);
+                  opacity:.45;}
+  .etapa{position:relative;padding:0 0 18px 30px;}
+  .etapa:last-child{padding-bottom:0;}
+  .etapa-punto{position:absolute;left:0;top:3px;width:18px;height:18px;border-radius:50%;
+               background:#fff;border:2px solid var(--ink-soft);}
+  .etapa-txt b{display:block;font:600 1rem/1.3 var(--sans);color:var(--ink-soft);}
+  .etapa-txt span{display:block;font:400 .88rem/1.4 var(--sans);color:var(--ink-soft);margin-top:1px;}
+
+  .etapa[data-hecha] .etapa-punto{background:var(--orange);border-color:var(--orange-papel);}
+  .etapa[data-hecha] .etapa-txt b{color:var(--navy);}
+  .etapa[data-ahora] .etapa-punto{background:var(--orange);border-color:var(--navy);
+                                  box-shadow:0 0 0 4px rgba(255,153,0,.28);}
+  .etapa[data-ahora] .etapa-txt b{color:var(--navy);font-weight:700;font-size:1.08rem;}
+  .etapa[data-ahora] .etapa-txt span{color:var(--ink);}
+
+  /* ── Misiones ── */
+  .misiones{background:var(--navy);color:#fff;border-radius:16px;padding:22px 20px;margin-top:18px;}
+  .misiones-cab{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+  .misiones h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0;
+               letter-spacing:.02em;color:#fff;}
+  .misiones-cuenta{margin:0;font:400 .92rem/1 var(--sans);color:#a9c0e4;white-space:nowrap;}
+  .misiones-cuenta b{font:700 1.5rem/1 var(--cifra);color:var(--orange);vertical-align:-.08em;}
+  .misiones-bajada{margin:6px 0 18px;font-size:.95rem;color:#dbe6f7;}
+
+  .lista-mis{list-style:none;margin:0;padding:0;}
+  .mis{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;
+       padding:14px 0;border-top:1px solid rgba(255,255,255,.16);}
+  .mis:first-child{border-top:0;padding-top:0;}
+  .mis-marca{width:26px;height:26px;border-radius:50%;border:2px solid #7d97c4;
+             display:grid;place-items:center;color:#7d97c4;margin-top:2px;}
+  .mis[data-hecha] .mis-marca{background:var(--orange);border-color:var(--orange);color:var(--tinta-boton);}
+  .mis-marca svg{width:15px;height:15px;}
+  /* ⚠️ `min-width:0`. Sin esto, un item de grid no se encoge por debajo del
+     ancho de su contenido, y la fila del campo con su botón se salía del panel
+     casi 30 px. */
+  .mis-cuerpo{min-width:0;}
+  .mis-cuerpo b{display:block;font:600 1rem/1.3 var(--sans);color:#fff;}
+  .mis[data-hecha] .mis-cuerpo b{color:#c6d6ef;}
+  .mis-cuerpo p{margin:2px 0 0;font:400 .9rem/1.45 var(--sans);color:#b9cbe8;}
+  .mis-accion{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;
+              min-height:44px;padding:0 18px;border-radius:999px;border:0;cursor:pointer;
+              font:600 .95rem/1 var(--sans);background:var(--orange);color:var(--tinta-boton);}
+  .mis-accion:hover{background:#ffa927;}
+  .mis-accion.suave{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.6);}
+  .mis-accion.suave:hover{background:rgba(255,255,255,.14);}
+  .mis-asientos{display:flex;gap:7px;margin-top:9px;}
+  .mis-asiento{width:30px;height:30px;border-radius:8px;border:2px solid #7d97c4;
+               display:grid;place-items:center;color:#7d97c4;}
+  .mis-asiento[data-ocupado]{border-color:var(--orange);color:var(--orange);
+                             background:rgba(255,153,0,.16);}
+  .mis-asiento svg{width:16px;height:16px;}
+
+  /* El campo para vincular el pase de papel vive dentro de su misión. */
+  .mis-fila{display:flex;gap:8px;margin-top:10px;}
+  .mis-fila input{flex:1;min-width:0;min-height:44px;font:400 .95rem/1.3 var(--sans);
+                  color:var(--navy);background:#fff;border:1.5px solid #fff;border-radius:10px;
+                  padding:0 12px;}
+  .mis-fila button{flex:none;min-height:44px;padding:0 16px;border-radius:10px;border:0;
+                   cursor:pointer;font:600 .95rem/1 var(--sans);background:var(--orange);
+                   color:var(--tinta-boton);}
+  .mis-aviso{margin:8px 0 0;font:600 .88rem/1.4 var(--sans);color:#ffc9a3;}
+  .mis-aviso:empty{display:none;}
+
   /* ── Encargar ── */
   .tienda{background:var(--paper);border-radius:16px;padding:20px;margin-top:18px;}
   .tienda h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
@@ -217,6 +291,13 @@
   .cant button:disabled{color:var(--paper-edge);cursor:default;}
   .cant output{min-width:34px;text-align:center;font:700 1rem/1 var(--cifra);color:var(--navy);
                font-variant-numeric:tabular-nums;}
+  .para-quien{border:0;margin:16px 0 0;padding:0;}
+  .para-quien legend{padding:0;font:600 .74rem/1.3 var(--sans);letter-spacing:.1em;
+                     text-transform:uppercase;color:var(--ink-soft);}
+  .para-quien label{display:flex;align-items:center;gap:10px;min-height:44px;
+                    font:400 .98rem/1.3 var(--sans);color:var(--navy);cursor:pointer;}
+  .para-quien input{width:20px;height:20px;accent-color:var(--navy);flex:none;}
+
   .total{display:flex;justify-content:space-between;align-items:baseline;
          margin:16px 0 0;font:600 .95rem/1.3 var(--sans);color:var(--ink);}
   .total b{font:700 1.5rem/1 var(--cifra);color:var(--navy);}
@@ -248,23 +329,6 @@
                border:1.5px solid var(--ink-soft);border-radius:10px;padding:14px;min-height:52px;}
   .papel input:focus-visible{border-color:var(--navy);}
   .papel .btn{flex:none;padding-left:22px;padding-right:22px;}
-
-  /* ── Tripulación ── */
-  .tripu{background:var(--paper);border-radius:16px;padding:20px;margin-top:18px;}
-  .tripu h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
-            letter-spacing:.02em;}
-  .tripu p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
-  .tripu .btn{width:100%;}
-  /* Asientos que se ocupan, no puntos de un juego: esta campaña es sobre niños
-     con cáncer y un marcador con premios estaría fuera de lugar. */
-  .asientos{display:flex;gap:9px;margin:0 0 16px;flex-wrap:wrap;}
-  /* Antes el asiento libre era un cuadro blanco con borde a 1,2:1 sobre el
-     papel: dos manchas blancas donde no se distinguía ni que fueran asientos. */
-  .asiento{width:38px;height:38px;border-radius:9px;border:2px solid var(--ink-soft);
-           display:grid;place-items:center;color:var(--ink-soft);background:#fff;}
-  .asiento[data-ocupado]{border-color:var(--orange);color:var(--orange-papel);
-                         background:#fff6e8;}
-  .asiento svg{width:19px;height:19px;}
 
   /* ── Cierre de la ruta ── */
   .cierre{background:var(--navy);color:#fff;border-radius:16px;padding:22px 20px;margin-top:18px;}
@@ -363,12 +427,32 @@
       <button class="btn btn-1" id="btn-reintentar" type="button" hidden>Reintentar</button>
     </section>
 
-    <section class="avance" id="avance">
-      <h2 id="avance-titulo">La ruta que estás financiando</h2>
-      <p id="avance-nota">Estamos reuniendo los Héroes de Rescate para la primera ruta.</p>
-      <!-- Antes las dos cifras iban al mismo tamaño y, con tres dígitos, lo que
-           falta ocupaba más que lo conseguido: la pantalla que debía decir «lo
-           tuyo sirvió» decía con más fuerza «falta muchísimo». -->
+    <!-- ── Tu oncovuelo: el proceso, no sólo el número ────────────────────
+         La persona puso plata y quiere saber en qué anda. Un porcentaje no
+         cuenta nada; las etapas sí: dónde está hoy su vuelo y qué falta. -->
+    <section class="vuelo" id="vuelo" aria-labelledby="t-vuelo">
+      <h2 id="t-vuelo">Tu oncovuelo</h2>
+      <p id="vuelo-nota">Estamos reuniendo los Héroes de Rescate para la primera ruta.</p>
+
+      <ol class="etapas" id="etapas">
+        <li class="etapa" data-etapa="preparando">
+          <span class="etapa-punto" aria-hidden="true"></span>
+          <span class="etapa-txt"><b>Reuniendo Héroes</b><span>Cada adopción suma horas de vuelo</span></span>
+        </li>
+        <li class="etapa" data-etapa="asignando">
+          <span class="etapa-punto" aria-hidden="true"></span>
+          <span class="etapa-txt"><b>Pacientes asignados</b><span>Se define quién viaja en esta ruta</span></span>
+        </li>
+        <li class="etapa" data-etapa="en_curso">
+          <span class="etapa-punto" aria-hidden="true"></span>
+          <span class="etapa-txt"><b>En vuelo</b><span>La ruta está en el aire</span></span>
+        </li>
+        <li class="etapa" data-etapa="completado">
+          <span class="etapa-punto" aria-hidden="true"></span>
+          <span class="etapa-txt"><b>Llegaron</b><span>Los pacientes están en su tratamiento</span></span>
+        </li>
+      </ol>
+
       <p class="cifra-grande">Ya somos <b id="c-osos">44</b> pasajeros de honor</p>
       <p class="cifra-resto">Faltan <b id="c-faltan">565</b> para completar la ruta</p>
       <div class="barra" role="img" aria-label="Avance de la ruta" id="barra-caja">
@@ -376,32 +460,45 @@
       </div>
     </section>
 
-    <section class="papel" id="papel" hidden>
-      <h2>¿Tienes tu pase de papel?</h2>
-      <p>Si compraste tu Héroe de Rescate en el evento, escribe el número que aparece
-        en tu Boarding Pass y queda vinculado aquí.</p>
-      <form class="fila" id="form-papel" novalidate>
-        <input name="ticket" type="text" inputmode="text" autocomplete="off"
-               aria-label="Número de tu Boarding Pass" placeholder="Ej.: BP-0042" required>
-        <button class="btn btn-3" type="submit">Vincular</button>
-      </form>
-      <p class="aviso" id="papel-aviso" role="alert"></p>
+    <!-- ── Misiones ────────────────────────────────────────────────────────
+         La mecánica de juego que pidió el cliente, sin puntos ni insignias:
+         cosas concretas que hacen avanzar la ruta, con su estado a la vista.
+         La primera nace cumplida a propósito — quien llega acá ya activó su
+         pase, y empezar con algo logrado es lo que hace que quiera seguir. -->
+    <section class="misiones" id="misiones" hidden aria-labelledby="t-misiones">
+      <div class="misiones-cab">
+        <h2 id="t-misiones">Tus misiones</h2>
+        <p class="misiones-cuenta"><b id="mis-hechas">1</b> de <span id="mis-total">4</span></p>
+      </div>
+      <p class="misiones-bajada" id="misiones-bajada">Cada una acerca la ruta a despegar.</p>
+      <ol class="lista-mis" id="lista-mis"></ol>
     </section>
 
-    <section class="tienda" id="tienda">
-      <h2>Encarga tus Héroes</h2>
+    <!-- ── Sumar más ───────────────────────────────────────────────────────
+         Las salidas que pidió el cliente, siempre a la vista y no sólo al
+         cerrar la ruta: otro Héroe para uno, o uno regalado a otra persona. -->
+    <section class="tienda" id="tienda" aria-labelledby="t-tienda">
+      <h2 id="t-tienda">Suma otro Héroe</h2>
       <p id="tienda-texto">Elige lo que quieras y te abrimos WhatsApp con el pedido ya escrito.</p>
       <div id="productos"></div>
       <p class="total">Total <b id="total">$0</b></p>
+
+      <fieldset class="para-quien" id="para-quien">
+        <legend>¿Para quién?</legend>
+        <label><input type="radio" name="destino" value="mio" checked> Para mí</label>
+        <label><input type="radio" name="destino" value="regalo"> Es un regalo</label>
+        <label><input type="radio" name="destino" value="donar"> Que lo reciba un paciente</label>
+      </fieldset>
+
       <button class="btn btn-1" id="btn-encargar" type="button" disabled>Encargar por WhatsApp</button>
     </section>
 
-    <section class="empresas" id="empresas">
-      <h2>¿Vienes de una empresa?</h2>
+    <section class="empresas" id="empresas" aria-labelledby="t-empresas">
+      <h2 id="t-empresas">¿Vienes de una empresa?</h2>
       <p>Tres formas de que tu empresa sume a la campaña.</p>
       <button class="plan" type="button" data-plan="padrino">
         <span><b>Padrino de Ruta</b><span>Financia una ruta aeromédica completa</span></span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 6l6 6-6 6"/><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
       </button>
       <button class="plan" type="button" data-plan="copiloto">
         <span><b>Copiloto Solidario</b><span>Aporta una parte de la ruta</span></span>
@@ -413,27 +510,12 @@
       </button>
     </section>
 
-    <section class="cierre" id="cierre" hidden>
+    <section class="cierre" id="cierre" hidden aria-labelledby="cierre-titulo">
       <h2 id="cierre-titulo">La ruta se completó</h2>
       <p id="cierre-nota">Gracias. Tu Héroe de Rescate ayudó a que esta ruta despegara.</p>
-      <a class="btn btn-1" id="btn-otra-ruta" href="#">Sumarme a la próxima ruta</a>
-      <button class="btn btn-2" id="btn-regalar" type="button">Regalar un Héroe a alguien</button>
+      <button class="btn btn-1" id="btn-otra-ruta" type="button">Sumarme a la próxima ruta</button>
     </section>
 
-    <section class="tripu" id="tripu" hidden>
-      <h2>Tu tripulación</h2>
-      <p id="tripu-texto">Comparte tu enlace: vas a ver aquí a quienes se sumen por ti.</p>
-      <div class="asientos" id="asientos"></div>
-      <button class="btn btn-1" id="btn-invitar" type="button">Invitar a alguien</button>
-    </section>
-
-    <!-- «Compartir la campaña» se fue: llamaba a la misma función que «Invitar
-         a alguien», así que eran el mismo botón dos veces. Y este queda en
-         contorno para que no haya dos naranjas seguidos: el naranja de esta
-         pantalla es invitar, que es lo que la campaña necesita que pase. -->
-    <div class="acciones">
-      <button class="btn btn-2" id="btn-adoptar" type="button">Adoptar otro Héroe de Rescate</button>
-    </div>
     <section class="instalar" id="instalar" hidden>
     <h2 id="instalar-titulo">Guárdalo en tu teléfono</h2>
     <p id="instalar-texto">Agrégalo a tu pantalla de inicio y ábrelo como una aplicación,
