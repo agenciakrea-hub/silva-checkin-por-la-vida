@@ -144,6 +144,55 @@
                  cursor:pointer;text-align:left;}
   .elegir button:hover{border-color:var(--navy);}
 
+  /* ── Encargar ── */
+  .tienda{background:var(--paper);border-radius:16px;padding:20px;margin-top:18px;}
+  .tienda h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
+             letter-spacing:.02em;}
+  .tienda > p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
+  .prod{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
+        padding:12px 0;border-bottom:1px solid var(--paper-edge);}
+  .prod-nombre{font:600 .98rem/1.3 var(--sans);color:var(--navy);margin:0;}
+  .prod-precio{font:700 .88rem/1.3 var(--cifra);color:var(--ink-soft);margin:2px 0 0;}
+  .cant{display:flex;align-items:center;gap:0;border:1.5px solid var(--paper-edge);
+        border-radius:10px;overflow:hidden;background:#fff;}
+  /* 44 px de lado: por debajo de eso, un dedo falla. */
+  .cant button{width:44px;height:44px;border:0;background:transparent;cursor:pointer;
+               font:700 1.25rem/1 var(--sans);color:var(--navy);}
+  .cant button:hover{background:var(--paper);}
+  .cant button:disabled{color:var(--paper-edge);cursor:default;}
+  .cant output{min-width:34px;text-align:center;font:700 1rem/1 var(--cifra);color:var(--navy);
+               font-variant-numeric:tabular-nums;}
+  .total{display:flex;justify-content:space-between;align-items:baseline;
+         margin:16px 0 0;font:600 .95rem/1.3 var(--sans);color:var(--ink);}
+  .total b{font:700 1.5rem/1 var(--cifra);color:var(--navy);}
+  .tienda .btn{width:100%;margin-top:14px;}
+  .tienda .btn[disabled]{opacity:.45;cursor:default;}
+
+  /* ── Empresas ── */
+  .empresas{background:var(--celeste-papel);border-radius:16px;padding:20px;margin-top:18px;}
+  .empresas h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
+               letter-spacing:.02em;}
+  .empresas > p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
+  .plan{display:flex;justify-content:space-between;align-items:center;gap:12px;
+        width:100%;text-align:left;background:#fff;border:1.5px solid transparent;
+        border-radius:12px;padding:14px 16px;margin-bottom:9px;cursor:pointer;
+        font:400 1rem/1.3 var(--sans);color:var(--navy);}
+  .plan:hover{border-color:var(--celeste-hondo);}
+  .plan b{display:block;font:600 .98rem/1.3 var(--sans);}
+  .plan span{display:block;font-size:.88rem;color:var(--ink-soft);margin-top:2px;}
+  .plan svg{flex:none;color:var(--celeste-hondo);}
+
+  /* ── Cargar el pase de papel ── */
+  .papel{background:var(--paper);border-radius:16px;padding:20px;margin-top:18px;}
+  .papel h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
+            letter-spacing:.02em;}
+  .papel p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
+  .papel .fila{display:flex;gap:9px;}
+  .papel input{flex:1;min-width:0;font:400 1rem/1.3 var(--sans);color:var(--navy);background:#fff;
+               border:1.5px solid var(--paper-edge);border-radius:10px;padding:13px 14px;}
+  .papel input:focus-visible{border-color:var(--navy);}
+  .papel .btn{flex:none;padding-left:22px;padding-right:22px;}
+
   /* ── Tripulación ── */
   .tripu{background:var(--paper);border-radius:16px;padding:20px;margin-top:18px;}
   .tripu h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
@@ -204,7 +253,7 @@
   <main id="app">
     <section class="pase" id="pase" hidden>
       <div class="pase-top">
-        <p class="pase-rotulo" id="pase-rotulo">Tu Boarding Pass solidario</p>
+        <p class="pase-rotulo" id="pase-rotulo">Boarding Pass solidario</p>
         <h1 class="pase-titulo" id="vuelo-titulo">Ruta ONCO 001</h1>
       </div>
       <div class="ruta">
@@ -251,6 +300,43 @@
       </div>
     </section>
 
+    <section class="papel" id="papel" hidden>
+      <h2>¿Tienes tu pase de papel?</h2>
+      <p>Si compraste tu Héroe de Rescate en el evento, escribe el número que aparece
+        en tu Boarding Pass y queda vinculado aquí.</p>
+      <form class="fila" id="form-papel" novalidate>
+        <input name="ticket" type="text" inputmode="text" autocomplete="off"
+               aria-label="Número de tu Boarding Pass" placeholder="Ej.: BP-0042" required>
+        <button class="btn btn-1" type="submit">Vincular</button>
+      </form>
+      <p class="aviso" id="papel-aviso" role="status"></p>
+    </section>
+
+    <section class="tienda" id="tienda">
+      <h2>Encarga tus Héroes</h2>
+      <p id="tienda-texto">Elige lo que quieras y te abrimos WhatsApp con el pedido ya escrito.</p>
+      <div id="productos"></div>
+      <p class="total">Total <b id="total">$0</b></p>
+      <button class="btn btn-1" id="btn-encargar" type="button" disabled>Encargar por WhatsApp</button>
+    </section>
+
+    <section class="empresas" id="empresas">
+      <h2>¿Vienes de una empresa?</h2>
+      <p>Tres formas de que tu empresa sume a la campaña.</p>
+      <button class="plan" type="button" data-plan="padrino">
+        <span><b>Padrino de Ruta</b><span>Financia una ruta aeromédica completa</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 6l6 6-6 6"/><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
+      </button>
+      <button class="plan" type="button" data-plan="copiloto">
+        <span><b>Copiloto Solidario</b><span>Aporta una parte de la ruta</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
+      </button>
+      <button class="plan" type="button" data-plan="lotes">
+        <span><b>Regalos con propósito</b><span>Héroes de Rescate para tus clientes o tu equipo</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
+      </button>
+    </section>
+
     <section class="cierre" id="cierre" hidden>
       <h2 id="cierre-titulo">La ruta se completó</h2>
       <p id="cierre-nota">Gracias. Tu Héroe de Rescate ayudó a que esta ruta despegara.</p>
@@ -295,6 +381,7 @@
      eran dos cosas distintas contadas como si fueran la misma. -->
 <script defer src="../datos.js"></script>
 <script defer src="../config.js"></script>
+<script defer src="../cola.js"></script>
 <script defer src="app.js"></script>
 </body>
 </html>

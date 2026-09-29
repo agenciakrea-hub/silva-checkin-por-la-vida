@@ -17,38 +17,18 @@
   var TEL = '584241466595';
   var K_YO = 'cxv.yo';
   var K_DISPOSITIVO = 'cxv.dispositivo';
+  var K_PERFIL = 'cxv.perfil';   // lo que dejó el formulario, para pintar sin esperar
 
   var $ = function (id) { return document.getElementById(id); };
 
-  function leer(clave, porDefecto) {
-    try { var v = localStorage.getItem(clave); return v ? JSON.parse(v) : porDefecto; }
-    catch (e) { return porDefecto; }
-  }
-  function escribir(clave, valor) {
-    try { localStorage.setItem(clave, JSON.stringify(valor)); return true; }
-    catch (e) { return false; }
-  }
-  function dispositivoId() {
-    var id = leer(K_DISPOSITIVO, null);
-    if (!id) {
-      id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
-         : 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-      escribir(K_DISPOSITIVO, id);
-    }
-    return id;
-  }
-
-  // Sin cabecera Content-Type y leyendo como texto: ver el comentario largo en
-  // index.html. Apps Script no contesta el OPTIONS de permiso, y devuelve HTML
-  // cuando el despliegue quedó mal configurado o se agotó la cuota.
-  function alServidor(cuerpo) {
-    return fetch(API, { method: 'POST', body: JSON.stringify(cuerpo) })
-      .then(function (r) { return r.text(); })
-      .then(function (t) {
-        try { return JSON.parse(t); }
-        catch (e) { return { ok: false, motivo: 'respuesta_no_json' }; }
-      });
-  }
+  // Todo esto vive en cola.js, que el sitio carga también. ⚠️ La app tiene que
+  // vaciar la misma cola que llena el formulario: quien se registra navega
+  // hasta acá en el mismo instante en que sale el alta, el envío se corta por
+  // la mitad, y si la app no lo reintentara ese registro no llegaría nunca.
+  var leer          = window.CXV.leer;
+  var escribir      = window.CXV.escribir;
+  var dispositivoId = window.CXV.dispositivoId;
+  var alServidor    = window.CXV.alServidor;
 
   var textoWa = function (m) {
     return 'https://wa.me/' + TEL + '?text=' + encodeURIComponent(m);
@@ -110,6 +90,10 @@
 
   var META_TRIPU = 2;   // lo que pidió el cliente: «compartir con dos contactos»
 
+  function primerNombre(v) {
+    return String(v || '').trim().split(/\s+/)[0] || '';
+  }
+
   function enlacePropio(id) {
     return location.origin + '/?de=' + encodeURIComponent(id);
   }
@@ -163,15 +147,29 @@
   function pintarPersona(yo) {
     $('d-nombre').textContent = yo.nombre || '—';
     $('d-pase').textContent   = yo.ticket || yo.id || '—';
-    $('pase-rotulo').textContent = 'Tu Boarding Pass solidario';
+    // El nombre arriba del todo: es el pase de esa persona, no un pase genérico.
+    $('pase-rotulo').textContent = yo.nombre ? ('Boarding de ' + yo.nombre) : 'Boarding Pass solidario';
     $('pase').hidden   = false;
     $('entrar').hidden = true;
     $('avance-titulo').textContent = 'La ruta que estás financiando';
+    // Quien ya tiene su pase vinculado no necesita que le pidan el de papel.
+    $('papel').hidden = !!yo.ticket;
+    $('tienda-texto').textContent =
+      'Elige lo que quieras y te abrimos WhatsApp con el pedido ya escrito.';
   }
 
   // A quien no reconocemos se le muestra la ruta igual, y se le ofrece entrar.
   // Mostrar el pase vacío sería peor que no mostrarlo: parece un error.
+  //
+  // ⚠️ NO PISA LO QUE YA SE PINTÓ CON EL PERFIL DEL TELÉFONO. Quien se acaba de
+  // registrar llega acá antes de que el servidor lo conozca —el alta viaja en
+  // segundo plano y Apps Script tarda más de 20 segundos en frío—, y sin esta
+  // guarda el pase aparecía con su nombre y se borraba solo un instante
+  // después, dejándole un formulario de «entra a tu pase» al que acababa de
+  // registrarse.
   function pintarDesconocido() {
+    var perfil = leer(K_PERFIL, null);
+    if (perfil && perfil.nombre) return;
     $('pase').hidden   = true;
     $('entrar').hidden = false;
     $('avance-titulo').textContent = 'La ruta que estamos financiando';
@@ -233,6 +231,17 @@
     // portada y tienen que coincidir con ella aunque Apps Script no conteste.
     var c = cifrasDeLaCampana();
     if (c) pintarAvance(c.adoptados, c.meta);
+
+    // ⚠️ SE PINTA EL PASE ANTES DE HABLAR CON EL SERVIDOR, con lo que el
+    // formulario acaba de guardar en el teléfono. Apps Script en frío tarda más
+    // de 20 segundos: esperar su respuesta para recién ahí mostrar algo dejaría
+    // a quien se acaba de registrar mirando una pantalla vacía justo en el
+    // momento de más entusiasmo.
+    var perfil = leer(K_PERFIL, null);
+    if (perfil && perfil.nombre) {
+      pintarPersona({ nombre: primerNombre(perfil.nombre), ticket: perfil.ticket || '', id: '' });
+      $('d-pase').textContent = perfil.ticket || 'Activando…';
+    }
 
     if (!API || typeof fetch !== 'function') { pintarDesconocido(); return; }
 
@@ -301,6 +310,154 @@
 
   $('btn-regalar').addEventListener('click', function () {
     window.open(textoWa('Hola, quiero regalar un Héroe de Rescate a otra persona. ¿Cómo lo hago?'), '_blank', 'noopener');
+  });
+
+  // ── Encargar ─────────────────────────────────────────────────────────────
+
+  // Los productos y sus precios salen de datos.js, el mismo archivo que la
+  // portada. Los de respaldo son para el caso de que no cargue: mejor un
+  // catálogo con precios viejos que una sección vacía.
+  var RESPALDO = [
+    { id: 'toalla',  nombre: 'Toalla tipo oso', precio: 10 },
+    { id: 'llavero', nombre: 'Llavero',         precio: 20 },
+    { id: 'oso',     nombre: 'Oso grande',      precio: 40 }
+  ];
+
+  var carrito = {};
+
+  function catalogo() {
+    var d = window.CAMPANA;
+    if (d && Object.prototype.toString.call(d.productos) === '[object Array]' && d.productos.length) {
+      return d.productos.map(function (p) {
+        return { id: p.id, nombre: p.nombre, precio: Number(p.precio) || 0 };
+      });
+    }
+    return RESPALDO;
+  }
+
+  function pintarTienda() {
+    var caja = $('productos');
+    caja.innerHTML = '';
+    catalogo().forEach(function (p) {
+      carrito[p.id] = carrito[p.id] || 0;
+
+      var fila = document.createElement('div');
+      fila.className = 'prod';
+
+      var txt = document.createElement('div');
+      txt.innerHTML = '<p class="prod-nombre"></p><p class="prod-precio"></p>';
+      txt.querySelector('.prod-nombre').textContent  = p.nombre;
+      txt.querySelector('.prod-precio').textContent = '$' + p.precio;
+
+      var cant = document.createElement('div');
+      cant.className = 'cant';
+
+      var menos = document.createElement('button');
+      menos.type = 'button'; menos.textContent = '−';
+      menos.setAttribute('aria-label', 'Quitar un ' + p.nombre);
+
+      var salida = document.createElement('output');
+      salida.textContent = '0';
+      salida.setAttribute('aria-label', p.nombre + ': 0');
+
+      var mas = document.createElement('button');
+      mas.type = 'button'; mas.textContent = '+';
+      mas.setAttribute('aria-label', 'Sumar un ' + p.nombre);
+
+      function refrescar() {
+        var n = carrito[p.id];
+        salida.textContent = String(n);
+        // El lector de pantalla necesita el nombre en la etiqueta: leer sólo
+        // «3» no dice de qué.
+        salida.setAttribute('aria-label', p.nombre + ': ' + n);
+        menos.disabled = n === 0;
+        total();
+      }
+      menos.addEventListener('click', function () {
+        if (carrito[p.id] > 0) { carrito[p.id]--; refrescar(); }
+      });
+      mas.addEventListener('click', function () {
+        if (carrito[p.id] < 99) { carrito[p.id]++; refrescar(); }
+      });
+
+      cant.appendChild(menos); cant.appendChild(salida); cant.appendChild(mas);
+      fila.appendChild(txt); fila.appendChild(cant);
+      caja.appendChild(fila);
+      refrescar();
+    });
+  }
+
+  function total() {
+    var suma = 0, piezas = 0;
+    catalogo().forEach(function (p) {
+      suma   += (carrito[p.id] || 0) * p.precio;
+      piezas += (carrito[p.id] || 0);
+    });
+    $('total').textContent = '$' + suma;
+    $('btn-encargar').disabled = piezas === 0;
+    return { suma: suma, piezas: piezas };
+  }
+
+  $('btn-encargar').addEventListener('click', function () {
+    var lineas = [], t = total();
+    if (!t.piezas) return;
+    catalogo().forEach(function (p) {
+      var n = carrito[p.id] || 0;
+      if (n) lineas.push('· ' + n + ' × ' + p.nombre + ' ($' + (n * p.precio) + ')');
+    });
+    var yo = leer(K_YO, null), perfil = leer(K_PERFIL, null);
+    var quien = (perfil && perfil.nombre) ? ('Soy ' + perfil.nombre + '. ') : '';
+    var pase = (yo && yo.id) ? ('\n\nMi pase: ' + (perfil && perfil.ticket ? perfil.ticket : yo.id)) : '';
+    window.open(textoWa(
+      'Hola, vengo de mi Boarding Pass de Un Check-in por la Vida. ' + quien +
+      'Quiero encargar:\n\n' + lineas.join('\n') +
+      '\n\nTotal: $' + t.suma + pase), '_blank', 'noopener');
+  });
+
+  // ── Empresas ─────────────────────────────────────────────────────────────
+
+  var PLANES = {
+    padrino:  'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Padrino de Ruta. ¿Me puedes dar más información?',
+    copiloto: 'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario. ¿Me puedes dar más información?',
+    lotes:    'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y quiero cotizar Héroes de Rescate como regalo con propósito. ¿Me puedes dar más información?'
+  };
+
+  document.querySelectorAll('[data-plan]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      window.open(textoWa(PLANES[b.getAttribute('data-plan')] || PLANES.padrino), '_blank', 'noopener');
+    });
+  });
+
+  // ── El pase de papel ─────────────────────────────────────────────────────
+
+  $('form-papel').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var aviso = $('papel-aviso');
+    var t = (this.elements.ticket.value || '').trim();
+    if (!t) { aviso.textContent = 'Escribe el número de tu Boarding Pass.'; return; }
+
+    var yo = leer(K_YO, null);
+    if (!yo || !yo.token) {
+      aviso.textContent = 'Primero entra con tu teléfono y luego vincula tu pase.';
+      return;
+    }
+    aviso.textContent = 'Vinculando…';
+    alServidor({ action: 'vincular', token: yo.token, ticket: t })
+      .then(function (r) {
+        if (r && r.ok) {
+          aviso.textContent = '';
+          var perfil = leer(K_PERFIL, {}) || {};
+          perfil.ticket = r.ticket || t;
+          escribir(K_PERFIL, perfil);
+          $('d-pase').textContent = perfil.ticket;
+          $('papel').hidden = true;
+          return;
+        }
+        aviso.textContent = (r && r.motivo === 'ticket_invalido')
+          ? 'Ese número no parece un Boarding Pass. Revísalo.'
+          : 'No pudimos vincularlo. Intenta de nuevo en un momento.';
+      })
+      .catch(function () { aviso.textContent = 'No pudimos conectarnos. Revisa tu conexión.'; });
   });
 
   // ── Instalable ───────────────────────────────────────────────────────────
@@ -385,6 +542,21 @@
       'Agrégalo a tu pantalla de inicio y ábrelo como una aplicación:';
   })();
 
+  // Cuando el alta encolada por el formulario llega al servidor, el pase deja
+  // de decir «Activando…» sin que la persona tenga que recargar nada, y se
+  // vuelve a preguntar por el estado: al abrir la app el servidor todavía no
+  // conocía a esta persona, así que respondió sin su tripulación ni su pase.
+  // Sin esto, quien se acaba de registrar no ve nada de eso hasta recargar.
+  window.addEventListener('cxv:alta', function (e) {
+    var perfil = leer(K_PERFIL, null);
+    if (perfil && !perfil.ticket && e.detail && e.detail.id) {
+      $('d-pase').textContent = e.detail.id;
+    }
+    arrancar();
+  });
+
   registrarServicio();
+  pintarTienda();
+  window.CXV.arrancarCola();
   arrancar();
 })();

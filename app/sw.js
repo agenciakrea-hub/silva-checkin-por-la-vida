@@ -19,7 +19,7 @@
  */
 'use strict';
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE   = 'checkin-app-' + VERSION;
 
 /* Lo que hace falta para que la pantalla se dibuje entera sin red. Las cifras
@@ -30,6 +30,7 @@ const PRECARGA = [
   './index.html',
   './app.js',
   '../config.js',
+  '../cola.js',
   '../datos.js',
   '../fonts/BigShoulders-700-latin.woff2',
   '../fonts/MartianMono-700-cifras.woff2',
