@@ -1546,8 +1546,19 @@ document.addEventListener('DOMContentLoaded', function () {
   // nadie. Se reemplaza sin recargar, así que no se pierde el lugar en la página.
   (function () {
     try {
-      var de = new URLSearchParams(location.search).get('de') || '';
-      if (!/^P[0-9A-F]{10}$/.test(de)) return;
+      var de = (new URLSearchParams(location.search).get('de') || '').trim();
+      /* ⚠️ LAS DOS FORMAS, Y NO SÓLO LA VIEJA. Hasta hoy el enlace llevaba el
+         identificador interno (`P3236C55BE6`); desde hoy lleva el código
+         legible de la persona (`ARELLANO-7K2`), que es el que se puede dictar
+         por teléfono. Validando sólo el formato viejo, este bloque descartaba
+         en silencio todas las invitaciones nuevas: la persona se registraba
+         igual y la invitación no existía para nadie. Los enlaces ya
+         compartidos siguen trayendo el formato viejo, así que ninguno de los
+         dos se puede sacar. El servidor valida de nuevo, y es el que decide. */
+      var esId     = /^P[0-9A-F]{10}$/.test(de);
+      var esCodigo = /^[A-Za-z]{2,10}-[0-9A-Za-z]{3,5}$/.test(de) && !/^ONCO-/i.test(de);
+      if (!esId && !esCodigo) return;
+      if (esCodigo) de = de.toUpperCase();
       if (!leer(K_INVITA, null)) escribir(K_INVITA, de);
       var limpia = location.pathname + location.hash;
       if (history.replaceState) history.replaceState(null, '', limpia);

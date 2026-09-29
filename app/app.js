@@ -19,6 +19,10 @@
   var K_DISPOSITIVO = 'cxv.dispositivo';
   var K_PERFIL = 'cxv.perfil';   // lo que dejó el formulario, para pintar sin esperar
   var K_REGALO = 'cxv.regalo';   // si ya encargó un Héroe para otra persona
+  /* El `?de=` de quien la invitó, guardado hasta que haya un token con el cual
+     anotarlo. Sin esto, abrir el enlace de un amigo y caer en la app —en vez
+     de en el formulario del sitio— perdía la invitación para siempre. */
+  var K_INVITO = 'cxv.invito';
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -165,8 +169,47 @@
     return String(v || '').trim().split(/\s+/)[0] || '';
   }
 
-  function enlacePropio(id) {
-    return location.origin + '/?de=' + encodeURIComponent(id);
+  /**
+   * El enlace que la persona comparte.
+   *
+   * ⚠️ PREFIERE EL CÓDIGO LEGIBLE AL ID INTERNO. `?de=ARELLANO-7K2` se puede
+   * dictar por teléfono y se reconoce en la barra del navegador; `?de=P3236C55BE6`
+   * no se puede ni leer en voz alta. El id sigue funcionando —el servidor
+   * entiende los dos— porque los enlaces ya compartidos lo llevan.
+   */
+  function enlacePropio(yo) {
+    var quien = (yo && (yo.invitacion || yo.id)) || '';
+    return location.origin + '/?de=' + encodeURIComponent(quien);
+  }
+
+  /** El `?de=` de la dirección, si vino uno. */
+  function invitacionDeLaUrl() {
+    try {
+      var m = /[?&]de=([^&#]+)/.exec(location.search);
+      return m ? decodeURIComponent(m[1]).trim().slice(0, 24) : '';
+    } catch (e) { return ''; }
+  }
+
+  /**
+   * Anota quién invitó a esta persona, en cuanto haya un token con el cual
+   * hacerlo. Se llama en cada arranque: si no hay nada pendiente no hace nada,
+   * y si el servidor dice que ya tenía padrino, se deja de insistir.
+   */
+  function anotarQuienInvito(yo) {
+    var pendiente = leer(K_INVITO, null);
+    if (!pendiente || !yo || !yo.token) return;
+    alServidor({ action: 'invitado', token: yo.token, codigo: pendiente })
+      .then(function (r) {
+        /* Se borra tanto si se anotó como si el servidor lo rechazó por un
+           motivo que no va a cambiar. Reintentar un código inexistente en cada
+           arranque es gastar un pedido por visita para siempre. */
+        if (r && (r.ok || r.motivo === 'codigo_desconocido' ||
+                  r.motivo === 'es_de_activacion' || r.motivo === 'es_el_propio')) {
+          try { localStorage.removeItem(K_INVITO); } catch (e) {}
+          if (r.ok && !r.yaEstaba) arrancar();
+        }
+      })
+      .catch(function () {});   // sin señal: queda pendiente para la próxima
   }
 
   var TILDE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" ' +
@@ -177,6 +220,9 @@
 
   function pintarMisiones(yo) {
     var n = Number(yo && yo.tripulacion) || 0;
+    /* Los que entraron por su enlace y todavía no activaron. Se restan los que
+       sí, porque el servidor manda el total de registrados, no la diferencia. */
+    var pendientes = Math.max((Number(yo && yo.tripulacionRegistrados) || 0) - n, 0);
     var regalo = leer(K_REGALO, null) === 'si';
     /* ⚠️ EL NOMBRE ALCANZA. Quien completó el formulario ya activó su pase,
        aunque el servidor tarde veinte segundos en devolverle un id. Atando
@@ -191,16 +237,32 @@
         titulo: 'Activa tu Boarding Pass',
         texto: 'Listo: ya eres pasajero de honor de esta ruta.' },
 
+      /* ⚠️ «2 O MÁS», NO «2». El título decía «Suma 2 personas» y eso pone un
+         techo donde no lo hay: quien llevaba cinco veía la misma tilde que
+         quien llevaba dos, y el número dejaba de importar justo cuando más
+         valía. La misión se cumple en la segunda y el contador sigue subiendo.
+         `pendientes` son los que entraron por su enlace pero todavía no
+         activaron: no cuentan como tripulación —no financiaron ninguna hora de
+         vuelo— pero decirle «cero» a quien trajo tres personas es mentirle al
+         revés. */
       { hecha: n >= META_TRIPU,
-        titulo: 'Suma 2 personas a tu tripulación',
-        texto: n === 0 ? 'Comparte tu enlace. Quien entre por él viaja contigo.'
-             : n === 1 ? 'Una ya se sumó. Con una más, tu tripulación está completa.'
-             : 'Ya son ' + n + '. Tu tripulación está completa.',
+        titulo: 'Suma personas a tu tripulación',
+        texto: n === 0 ? (pendientes > 0
+                  ? (pendientes === 1 ? 'Una persona entró por tu enlace. Cuando active su pase, viaja contigo.'
+                                      : pendientes + ' personas entraron por tu enlace. Cuando activen su pase, viajan contigo.')
+                  : 'Comparte tu enlace. Quien entre por él viaja contigo.')
+             : n === 1 ? 'Una ya viaja contigo. Con una más, tu tripulación despega.'
+             : 'Ya son ' + n + ' a bordo.'
+                  + (pendientes > 0 ? ' Y ' + pendientes + ' más en camino.' : '')
+                  + ' Cada una suma.',
         asientos: n,
         // La recompensa no puede ser sólo un tilde: la consecuencia es lo que
         // hace que valga la pena.
         produce: n >= META_TRIPU ? null : 'Cada persona que entra suma su Héroe a esta ruta',
-        accion: n >= META_TRIPU ? null : { texto: 'Invitar', como: 'invitar' } },
+        /* El botón NO desaparece al llegar a dos: si el contador sigue
+           subiendo, tiene que haber cómo seguir sumando. Cambia el tono. */
+        accion: { texto: n >= META_TRIPU ? 'Invitar a alguien más' : 'Invitar',
+                  como: 'invitar', suave: n >= META_TRIPU } },
 
       { hecha: compro,
         titulo: 'Vincula tu pase de papel',
@@ -510,6 +572,15 @@
   }
 
   function arrancar() {
+    /* ⚠️ EL `?de=` SE GUARDA ANTES QUE NADA, y antes de que nada pueda fallar.
+       Quien abre el enlace de un amigo y cae directo en la app —porque ya la
+       tenía instalada— traía la invitación en la dirección y se perdía: la app
+       ni la miraba, eso lo hacía sólo el formulario del sitio. Se guarda acá y
+       se anota en cuanto haya un token, que puede ser en esta misma visita o
+       en la próxima. */
+    var deLaUrl = invitacionDeLaUrl();
+    if (deLaUrl && !leer(K_INVITO, null)) escribir(K_INVITO, deLaUrl);
+
     // Sin servidor configurado la app igual sirve: muestra la ruta con los
     // valores que ya están en el HTML. Vale también para un navegador sin
     // fetch, que en el público de esta campaña no es una hipótesis.
@@ -573,8 +644,17 @@
         pintarAporte(r.vuelo);
         pintarCierre(r.vuelo);
         if (r.yo) {
+          /* El código de invitación se guarda en el teléfono: el botón de
+             compartir tiene que armar el enlace sin esperar al servidor. */
+          if (yo && r.yo.invitacion && yo.invitacion !== r.yo.invitacion) {
+            yo.invitacion = r.yo.invitacion;
+            escribir(K_YO, yo);
+          }
           pintarPersona(r.yo);
+          pintarInvitacion(r.yo);
           if (r.yo.activo) pintarMisiones(r.yo);
+          if (!r.yo.invitadoPor) anotarQuienInvito(yo);
+          else { try { localStorage.removeItem(K_INVITO); } catch (e) {} }
         }
         else {
           // El token guardado ya no vale: se descarta para no volver a
@@ -614,6 +694,104 @@
     }
     window.open(textoWa(texto + ' ' + url), '_blank', 'noopener');
   }
+
+  // ── El código de tripulación ─────────────────────────────────────────────
+
+  /**
+   * Muestra el código propio y, si hace falta, el campo para anotar el ajeno.
+   *
+   * ⚠️ EL BLOQUE NO APARECE SIN CÓDIGO. Sin esto, quien abre la app antes de
+   * que el servidor conteste —o sin conexión— ve un recuadro punteado con un
+   * guion adentro y dos botones que no hacen nada. Un bloque que no está se
+   * entiende; uno vacío parece roto.
+   */
+  function pintarInvitacion(yo) {
+    var codigo = String((yo && yo.invitacion) || '');
+    if (!codigo) { $('tripu').hidden = true; return; }
+    $('tripu').hidden = false;
+    $('tripu-codigo').textContent = codigo;
+    /* El campo para anotar a quien la invitó sólo tiene sentido mientras no
+       haya nadie anotado: después es una puerta que no lleva a ningún lado. */
+    var tiene = !!(yo && yo.invitadoPor);
+    $('tripu-de').hidden = tiene;
+    $('tripu-ya').hidden = !tiene;
+  }
+
+  $('btn-copiar-codigo').addEventListener('click', function () {
+    var c = $('tripu-codigo').textContent.trim();
+    var aviso = $('tripu-aviso');
+    if (!c || c === '—') return;
+    var listo = function () { aviso.textContent = 'Código copiado.'; };
+    /* `navigator.clipboard` no existe fuera de HTTPS y falla sin aviso en
+       algunos navegadores viejos. El respaldo deja el código seleccionado
+       para que se pueda copiar a mano, que es mejor que no hacer nada. */
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(c).then(listo, function () {
+        aviso.textContent = 'No pudimos copiarlo. Tu código es ' + c + '.';
+      });
+    } else {
+      aviso.textContent = 'Tu código es ' + c + '. Anótalo o mantén pulsado para copiarlo.';
+    }
+  });
+
+  $('btn-invitar-tripu').addEventListener('click', invitar);
+
+  $('form-invito').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var campo = this.elements.codigo;
+    var aviso = $('invito-aviso');
+    var yo = leer(K_YO, null);
+    var c = (campo.value || '').trim();
+    campo.setAttribute('aria-invalid', 'false');
+    if (!c) {
+      aviso.textContent = 'Escribe el código de quien te invitó.';
+      campo.setAttribute('aria-invalid', 'true'); campo.focus(); return;
+    }
+    if (!yo || !yo.token) {
+      aviso.textContent = 'Primero busca tu Boarding Pass, más arriba.';
+      return;
+    }
+    aviso.textContent = 'Anotando…';
+    /* El mismo tope largo que la activación, y por el mismo motivo: esto
+       escribe en la hoja, y un tope corto reporta como fallo algo que pudo
+       haber ocurrido. */
+    conTope(alServidor({ action: 'invitado', token: yo.token, codigo: c }), TOPE_ESCRIBIR_MS)
+      .then(function (r) {
+        if (r && r.ok) {
+          try { localStorage.removeItem(K_INVITO); } catch (e2) {}
+          aviso.textContent = '';
+          campo.value = '';
+          arrancar();
+          return;
+        }
+        campo.setAttribute('aria-invalid', 'true');
+        var m = r && r.motivo;
+        /* Cada motivo dice algo distinto porque llevan a acciones distintas.
+           Pegar el código del oso acá es el error más común de los tres: los
+           dos códigos se parecen y la persona tiene el del oso a mano. */
+        aviso.textContent =
+          m === 'es_de_activacion' ? 'Ese es el código de tu Héroe, para activar tu pase. '
+                                   + 'Aquí va el de la persona que te invitó, que lleva su apellido.'
+        : m === 'es_el_propio'     ? 'Ese es tu propio código. Pon el de quien te invitó.'
+        : m === 'codigo_desconocido' ? 'No encontramos ese código. Revísalo con quien te invitó.'
+        : 'No pudimos anotarlo. Intenta de nuevo en un momento.';
+      })
+      .catch(function () {
+        aviso.textContent = 'Está tardando más de lo normal. Verificando…';
+        /* Igual que en la activación: pudo haberse anotado igual. Se mira
+           cómo quedó antes de decirle a nadie que falló. */
+        conTope(alServidor({ action: 'estado', token: yo.token }), TOPE_ESCRIBIR_MS)
+          .then(function (r2) {
+            if (r2 && r2.ok && r2.yo && r2.yo.invitadoPor) {
+              aviso.textContent = ''; campo.value = ''; arrancar(); return;
+            }
+            aviso.textContent = 'No pudimos confirmarlo. Vuelve a intentar en un momento.';
+          })
+          .catch(function () {
+            aviso.textContent = 'No pudimos conectarnos. Vuelve a intentar en un momento.';
+          });
+      });
+  });
 
   $('btn-otra-ruta').addEventListener('click', function () {
     window.open(textoWa('Hola, mi ruta se completó y quiero sumarme a la próxima con otro Héroe de Rescate.'), '_blank', 'noopener');
@@ -755,9 +933,9 @@
 
   function invitar() {
     var yo = leer(K_YO, null);
-    // Sin id no hay enlace propio, pero la campaña sí: se comparte igual en
-    // vez de dejar el botón muerto.
-    var url = (yo && yo.id) ? enlacePropio(yo.id) : location.origin + '/';
+    // Sin código ni id no hay enlace propio, pero la campaña sí: se comparte
+    // igual en vez de dejar el botón muerto.
+    var url = (yo && (yo.invitacion || yo.id)) ? enlacePropio(yo) : location.origin + '/';
     compartir('Adopté un Héroe de Rescate para que personas con cáncer lleguen a su tratamiento en Caracas. Súmate a mi tripulación:', url);
   }
 

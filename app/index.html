@@ -186,10 +186,18 @@
   .btn-2{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55);}
   .btn-2:hover{background:rgba(255,255,255,.12);}
   /* ⚠️ Salvo dentro de una tarjeta de papel, donde el blanco sobre crema da
-     1,12:1 y el botón desaparece. */
-  .instalar .btn-2, .papel .btn-2, .tienda .btn-2, .cierre .btn-2{
+     1,12:1 y el botón desaparece.
+
+     ⚠️ ESTA LISTA HAY QUE ACORDARSE DE AMPLIAR, y ya falló una vez: `.tripu`
+     se agregó sin tocarla y su botón «Copiar mi código» salió invisible sobre
+     el papel — el mismo 1,12:1 que este comentario venía advirtiendo. Cada
+     tarjeta de fondo `--paper` que use un `.btn-2` tiene que estar acá. La
+     forma de que deje de pasar es que las tarjetas de papel compartan una
+     clase y esto cuelgue de ella; está anotado como deuda en el plan. */
+  .instalar .btn-2, .papel .btn-2, .tienda .btn-2, .cierre .btn-2, .tripu .btn-2{
     color:var(--navy);border-color:var(--navy);}
-  .instalar .btn-2:hover, .papel .btn-2:hover, .tienda .btn-2:hover, .cierre .btn-2:hover{
+  .instalar .btn-2:hover, .papel .btn-2:hover, .tienda .btn-2:hover,
+  .cierre .btn-2:hover, .tripu .btn-2:hover{
     background:rgba(14,42,92,.08);}
   /* Navy pleno: la acción secundaria de un bloque de papel, donde el contorno
      se perdería contra el crema. */
@@ -569,6 +577,26 @@
     .pase3d-pieza,.pase3d-flota{animation:none;}
   }
 
+  /* ── El código de tripulación ── */
+  .tripu{background:var(--paper);color:var(--navy);border-radius:16px;
+         padding:22px 20px;margin-top:18px;}
+  .tripu h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
+            letter-spacing:.02em;}
+  .tripu-bajada{margin:0 0 16px;font-size:.95rem;color:var(--ink);}
+  /* El código, grande y espaciado: está hecho para dictarse en voz alta y para
+     copiarse de un vistazo, así que se lo trata como a un número de vuelo. */
+  .tripu-codigo{margin:0 0 14px;text-align:center;}
+  .tripu-codigo b{display:block;font:700 clamp(1.5rem,7.5vw,2rem)/1.1 var(--titulo);
+                  letter-spacing:.1em;color:var(--navy);
+                  background:#fff;border:1.5px dashed var(--orange);border-radius:12px;
+                  padding:14px 10px;word-break:break-all;}
+  .tripu-botones{display:grid;gap:10px;}
+  .tripu-botones .btn{width:100%;}
+  .tripu-de{margin:18px 0 0;padding-top:16px;border-top:1px solid var(--paper-edge);}
+  .tripu-de p{margin:0 0 12px;font-size:.92rem;color:var(--ink);}
+  .tripu-ya{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--paper-edge);
+            font-size:.92rem;color:var(--ink);}
+
   /* ── Tu aporte ── */
   .aporte{background:var(--paper);color:var(--navy);border-radius:16px;
           padding:22px 20px;margin-top:18px;}
@@ -832,6 +860,39 @@
       <div class="mis-barra" id="mis-barra" aria-hidden="true"></div>
       <p class="misiones-bajada" id="misiones-bajada">Cada una acerca la ruta a despegar.</p>
       <ol class="lista-mis" id="lista-mis"></ol>
+    </section>
+
+    <!-- ── El código de tripulación ────────────────────────────────────────
+         Dos cosas en el mismo bloque porque son la misma idea vista de los dos
+         lados: el código que esta persona reparte, y el de quien la trajo.
+         El de quien la trajo existe porque el `?de=` del enlace se pierde con
+         una facilidad que sorprende — se comparte por WhatsApp, el otro lo
+         abre, lo cierra, y vuelve tecleando la dirección. -->
+    <section class="tripu" id="tripu" hidden aria-labelledby="t-tripu">
+      <h2 id="t-tripu">Tu código de tripulación</h2>
+      <p class="tripu-bajada">Quien entre con este código viaja contigo. Puedes
+        dictarlo por teléfono o compartir tu enlace.</p>
+      <p class="tripu-codigo"><b id="tripu-codigo">—</b></p>
+      <div class="tripu-botones">
+        <button class="btn btn-2" type="button" id="btn-copiar-codigo">Copiar mi código</button>
+        <button class="btn btn-1" type="button" id="btn-invitar-tripu">Compartir mi enlace</button>
+      </div>
+      <p class="aviso" id="tripu-aviso" role="status"></p>
+
+      <div class="tripu-de" id="tripu-de" hidden>
+        <p>¿Alguien te invitó a sumarte? Escribe su código: así esa persona
+          recibe el reconocimiento de haberte traído.</p>
+        <form class="activar-fila" id="form-invito" novalidate>
+          <input name="codigo" type="text" autocomplete="off" autocapitalize="characters"
+                 spellcheck="false" aria-label="El código de quien te invitó"
+                 placeholder="APELLIDO-7K2" maxlength="18">
+          <button class="btn btn-2" type="submit">Anotar</button>
+        </form>
+        <p class="aviso" id="invito-aviso" role="alert"></p>
+      </div>
+
+      <p class="tripu-ya" id="tripu-ya" hidden>Llegaste por la invitación de
+        alguien, y ya quedó anotado. Gracias por sumarte a su tripulación.</p>
     </section>
 
     <!-- ── Sumar más ───────────────────────────────────────────────────────
