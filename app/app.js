@@ -367,9 +367,11 @@
     // El completo en el pase —en un boarding pass el nombre es el documento— y
     // el de pila en el rótulo, que tiene que entrar en una línea.
     $('d-nombre').textContent = yo.nombreCompleto || yo.nombre || '—';
-    /* Sin activar no hay número de pase. Antes se mostraba el `id` interno
-       —`P67905F0891`—, que para quien lo lee parece un error del sistema. */
-    $('d-pase').textContent = yo.activo ? (yo.ticket || yo.id || '—') : '—';
+    /* ⚠️ NUNCA EL `id` INTERNO. `P507E6F3712` es una clave de base de datos y
+       en la línea que dice «N.º de pase» se lee como un error del sistema.
+       Lo que va acá es lo que la persona tiene escrito en algún lado: el
+       número del pase de papel si lo vinculó, o su código de activación. */
+    $('d-pase').textContent = yo.activo ? (yo.ticket || yo.codigo || '—') : '—';
     // El nombre arriba del todo: es el pase de esa persona, no un pase genérico.
     var pila = primerNombre(yo.nombre || yo.nombreCompleto || '');
     $('pase-rotulo').textContent = pila ? ('Boarding de ' + pila) : 'Boarding Pass solidario';
