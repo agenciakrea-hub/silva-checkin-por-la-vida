@@ -150,7 +150,12 @@
 
   function pintarMisiones(yo) {
     var n = Number(yo && yo.tripulacion) || 0;
-    var tienePase = !!(yo && (yo.ticket || yo.id));
+    /* ⚠️ EL NOMBRE ALCANZA. Quien completó el formulario ya activó su pase,
+       aunque el servidor tarde veinte segundos en devolverle un id. Atando
+       esta misión al id, el contador le decía «0 de 4» justo en el momento en
+       que acababa de hacer la primera — que es exactamente lo contrario de lo
+       que la mecánica busca. */
+    var tienePase = !!(yo && (yo.ticket || yo.id || yo.nombre || yo.nombreCompleto));
     var compro = !!(yo && yo.ticket);
 
     var lista = [

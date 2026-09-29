@@ -49,9 +49,18 @@
      «listo», y «Reintentar» apareciendo junto a «Buscar mi pase». Esta regla lo
      cierra para todos los casos de una vez. */
   [hidden]{display:none!important;}
-  body{margin:0;background:var(--celeste);color:var(--navy);
+  /* ⚠️ ACÁ ESTÁ LA DIFERENCIA CON EL SITIO, Y ES DELIBERADA. La campaña es un
+     afiche celeste que invita desde afuera; esto es el documento que te dan
+     cuando ya entraste. Mismo alfabeto de marca —mismos colores, mismas
+     tipografías— y otra atmósfera: el navy deja de ser la tinta y pasa a ser
+     el ambiente, con el papel apoyado encima.
+     El punteado repite el troquel del pase, muy tenue, para que el fondo tenga
+     materia sin competir con nada. */
+  body{margin:0;background:var(--navy-deep);color:var(--navy);
+       background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.6px);
+       background-size:22px 22px;
        font:400 1rem/1.55 var(--sans);-webkit-font-smoothing:antialiased;
-       padding:0 var(--lado) calc(24px + env(safe-area-inset-bottom));}
+       padding:0 var(--lado) calc(28px + env(safe-area-inset-bottom));}
   :focus-visible{outline:3px solid var(--navy);outline-offset:3px;
                  box-shadow:0 0 0 3px var(--paper);border-radius:3px;}
   .env{max-width:560px;margin:0 auto;}
@@ -60,12 +69,11 @@
   .top{display:flex;align-items:center;justify-content:space-between;gap:12px;
        padding:calc(14px + env(safe-area-inset-top)) 0 18px;}
   .top img{height:34px;width:auto;display:block;}
-  /* Navy y no blanco: el blanco sobre este celeste da 2,28:1 y el mínimo
-     legible es 4,5:1. El navy sobre el mismo fondo da 6,3:1. */
+  /* Sobre el navy del fondo, el texto va claro: da 13:1. */
   .volver{display:flex;align-items:center;min-height:44px;
-          font:600 .86rem/1 var(--sans);color:var(--navy);text-decoration:none;
-          padding:0 16px;border:1.5px solid var(--navy);border-radius:999px;}
-  .volver:hover{background:rgba(255,255,255,.35);}
+          font:600 .86rem/1 var(--sans);color:#fff;text-decoration:none;
+          padding:0 16px;border:1.5px solid rgba(255,255,255,.45);border-radius:999px;}
+  .volver:hover{background:rgba(255,255,255,.12);}
 
   /* ── El pase ── */
   .pase{background:var(--paper);border-radius:16px;overflow:hidden;
@@ -100,8 +108,9 @@
      saturado, dieciséis de ellos eran el elemento más fuerte del pase y
      competían con el nombre y el número. El troquel es una costura, no un
      título. */
+  /* Los agujeros muestran el fondo de atrás: ahora es el navy, no el celeste. */
   .troquel{height:18px;background-color:var(--paper);
-    background-image:radial-gradient(circle at 14px 9px,var(--celeste) 4px,transparent 4.5px);
+    background-image:radial-gradient(circle at 14px 9px,var(--navy-deep) 4px,transparent 4.5px);
     background-size:28px 18px;background-position:center;}
 
   .pase-bajo{padding:18px 20px 20px;}
@@ -158,7 +167,15 @@
        font:600 1rem/1 var(--sans);text-decoration:none;padding:15px 18px;
        min-height:52px;border-radius:999px;border:0;cursor:pointer;text-align:center;}
   .btn-1{background:var(--orange);color:var(--tinta-boton);}
-  .btn-2{background:transparent;color:var(--navy);border:1.5px solid var(--navy);}
+  /* Por defecto va sobre el navy del fondo. */
+  .btn-2{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55);}
+  .btn-2:hover{background:rgba(255,255,255,.12);}
+  /* ⚠️ Salvo dentro de una tarjeta de papel, donde el blanco sobre crema da
+     1,12:1 y el botón desaparece. */
+  .instalar .btn-2, .papel .btn-2, .tienda .btn-2, .cierre .btn-2{
+    color:var(--navy);border-color:var(--navy);}
+  .instalar .btn-2:hover, .papel .btn-2:hover, .tienda .btn-2:hover, .cierre .btn-2:hover{
+    background:rgba(14,42,92,.08);}
   /* Navy pleno: la acción secundaria de un bloque de papel, donde el contorno
      se perdería contra el crema. */
   .btn-3{background:var(--navy);color:#fff;}
@@ -226,40 +243,44 @@
   .etapa[data-ahora] .etapa-txt span{color:var(--ink);}
 
   /* ── Misiones ── */
-  .misiones{background:var(--navy);color:#fff;border-radius:16px;padding:22px 20px;margin-top:18px;}
+  /* Sobre un fondo navy, un panel navy desaparece. Las misiones pasan a ser la
+     pieza naranja de la pantalla: es la acción que la campaña necesita que
+     ocurra, y ahora es lo único que se ve desde lejos. */
+  .misiones{background:linear-gradient(160deg,#c46a00,#a05c00);color:#fff;
+            border-radius:16px;padding:22px 20px;margin-top:18px;
+            box-shadow:0 12px 30px rgba(0,0,0,.22);}
   .misiones-cab{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
   .misiones h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0;
                letter-spacing:.02em;color:#fff;}
-  .misiones-cuenta{margin:0;font:400 .92rem/1 var(--sans);color:#a9c0e4;white-space:nowrap;}
-  .misiones-cuenta b{font:700 1.5rem/1 var(--cifra);color:var(--orange);vertical-align:-.08em;}
-  .misiones-bajada{margin:6px 0 18px;font-size:.95rem;color:#dbe6f7;}
+  .misiones-cuenta{margin:0;font:400 .92rem/1 var(--sans);color:#ffe4c2;white-space:nowrap;}
+  .misiones-cuenta b{font:700 1.5rem/1 var(--cifra);color:#fff;vertical-align:-.08em;}
+  .misiones-bajada{margin:6px 0 18px;font-size:.95rem;color:#ffeeda;}
 
   .lista-mis{list-style:none;margin:0;padding:0;}
   .mis{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;
        padding:14px 0;border-top:1px solid rgba(255,255,255,.16);}
   .mis:first-child{border-top:0;padding-top:0;}
-  .mis-marca{width:26px;height:26px;border-radius:50%;border:2px solid #7d97c4;
-             display:grid;place-items:center;color:#7d97c4;margin-top:2px;}
-  .mis[data-hecha] .mis-marca{background:var(--orange);border-color:var(--orange);color:var(--tinta-boton);}
+  .mis-marca{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.6);
+             display:grid;place-items:center;color:rgba(255,255,255,.75);margin-top:2px;}
+  .mis[data-hecha] .mis-marca{background:#fff;border-color:#fff;color:var(--orange-papel);}
   .mis-marca svg{width:15px;height:15px;}
   /* ⚠️ `min-width:0`. Sin esto, un item de grid no se encoge por debajo del
      ancho de su contenido, y la fila del campo con su botón se salía del panel
      casi 30 px. */
   .mis-cuerpo{min-width:0;}
   .mis-cuerpo b{display:block;font:600 1rem/1.3 var(--sans);color:#fff;}
-  .mis[data-hecha] .mis-cuerpo b{color:#c6d6ef;}
-  .mis-cuerpo p{margin:2px 0 0;font:400 .9rem/1.45 var(--sans);color:#b9cbe8;}
+  .mis[data-hecha] .mis-cuerpo b{color:#ffe4c2;}
+  .mis-cuerpo p{margin:2px 0 0;font:400 .9rem/1.45 var(--sans);color:#ffeeda;}
   .mis-accion{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;
               min-height:44px;padding:0 18px;border-radius:999px;border:0;cursor:pointer;
-              font:600 .95rem/1 var(--sans);background:var(--orange);color:var(--tinta-boton);}
-  .mis-accion:hover{background:#ffa927;}
+              font:600 .95rem/1 var(--sans);background:#fff;color:var(--orange-papel);}
+  .mis-accion:hover{background:#fff6e8;}
   .mis-accion.suave{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.6);}
   .mis-accion.suave:hover{background:rgba(255,255,255,.14);}
   .mis-asientos{display:flex;gap:7px;margin-top:9px;}
-  .mis-asiento{width:30px;height:30px;border-radius:8px;border:2px solid #7d97c4;
-               display:grid;place-items:center;color:#7d97c4;}
-  .mis-asiento[data-ocupado]{border-color:var(--orange);color:var(--orange);
-                             background:rgba(255,153,0,.16);}
+  .mis-asiento{width:30px;height:30px;border-radius:8px;border:2px solid rgba(255,255,255,.5);
+               display:grid;place-items:center;color:rgba(255,255,255,.7);}
+  .mis-asiento[data-ocupado]{border-color:#fff;color:var(--orange-papel);background:#fff;}
   .mis-asiento svg{width:16px;height:16px;}
 
   /* El campo para vincular el pase de papel vive dentro de su misión. */
@@ -268,9 +289,10 @@
                   color:var(--navy);background:#fff;border:1.5px solid #fff;border-radius:10px;
                   padding:0 12px;}
   .mis-fila button{flex:none;min-height:44px;padding:0 16px;border-radius:10px;border:0;
-                   cursor:pointer;font:600 .95rem/1 var(--sans);background:var(--orange);
-                   color:var(--tinta-boton);}
-  .mis-aviso{margin:8px 0 0;font:600 .88rem/1.4 var(--sans);color:#ffc9a3;}
+                   cursor:pointer;font:600 .95rem/1 var(--sans);background:var(--navy);
+                   color:#fff;}
+  .mis-aviso{margin:8px 0 0;font:600 .88rem/1.4 var(--sans);color:#fff;background:rgba(0,0,0,.22);
+             border-radius:8px;padding:8px 10px;}
   .mis-aviso:empty{display:none;}
 
   /* ── Encargar ── */
@@ -331,14 +353,17 @@
   .papel .btn{flex:none;padding-left:22px;padding-right:22px;}
 
   /* ── Cierre de la ruta ── */
-  .cierre{background:var(--navy);color:#fff;border-radius:16px;padding:22px 20px;margin-top:18px;}
+  /* Igual que las misiones: sobre el navy del fondo, un panel navy no existe.
+     El cierre es el momento más importante de todo el recorrido, así que va en
+     el papel de la campaña con el borde naranja que lo separa del resto. */
+  .cierre{background:var(--paper);color:var(--navy);border-radius:16px;
+          padding:22px 20px;margin-top:18px;border:2px solid var(--orange);}
   .cierre h2{font:700 clamp(1.3rem,5.5vw,1.6rem)/1.1 var(--titulo);text-transform:uppercase;
              margin:0 0 8px;letter-spacing:.01em;}
-  .cierre p{margin:0 0 16px;font-size:.97rem;color:#dbe6f7;}
+  .cierre p{margin:0 0 16px;font-size:.97rem;color:var(--ink);}
   .cierre .btn{width:100%;}
   .cierre .btn + .btn{margin-top:10px;}
-  .cierre .btn-2{color:#fff;border-color:rgba(255,255,255,.6);}
-  .cierre .btn-2:hover{background:rgba(255,255,255,.14);}
+
 
   /* ── Instalar ── */
   .instalar{background:var(--paper);border-radius:14px;padding:16px 18px;margin-top:12px;}
@@ -358,8 +383,8 @@
                       border:0;border-bottom:2px solid var(--orange);cursor:pointer;
                       min-height:44px;padding:0 4px;}
 
-  .pie{margin:22px 0 0;text-align:center;font-size:.84rem;color:var(--navy);}
-  .pie a{color:var(--navy);}
+  .pie{margin:26px 0 0;text-align:center;font-size:.84rem;color:#8fa8cc;}
+  .pie a{color:#c6d6ef;}
 
   /* El contenido nace visible: si el script falla o tarda, se ve el respaldo
      del HTML en vez de una pantalla en blanco. Sólo se anima la entrada. */
