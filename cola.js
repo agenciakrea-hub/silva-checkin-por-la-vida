@@ -16,7 +16,11 @@
   var K_DISPOSITIVO = 'cxv.dispositivo';
   var K_PENDIENTES  = 'cxv.pendientes';
   var K_YO          = 'cxv.yo';
-  var MAX_COLA      = 40;   // tope de altas guardadas esperando señal
+  /* 200 y no 40: cada alta ocupa unos 200 bytes y el navegador da megabytes,
+     así que el tope de 40 sólo servía para descartar en silencio a los más
+     viejos. El caso real es el stand del evento, con gente registrándose una
+     atrás de otra y sin señal. */
+  var MAX_COLA      = 200;  // tope de altas guardadas esperando señal
   var MAX_INTENTOS  = 6;    // tras esto se deja de insistir con un mismo envío
 
   // localStorage falla entero en modo privado de algunos navegadores y cuando
@@ -65,12 +69,21 @@
   // un despliegue que quedó en «solo yo» devuelve la página de inicio de
   // sesión, y la cuota agotada devuelve otra.
   function alServidor(cuerpo) {
-    return fetch(api(), { method: 'POST', keepalive: true, body: JSON.stringify(cuerpo) })
+    var pedido = fetch(api(), { method: 'POST', keepalive: true, body: JSON.stringify(cuerpo) })
       .then(function (r) { return r.text(); })
       .then(function (t) {
         try { return JSON.parse(t); }
         catch (e) { return { ok: false, motivo: 'respuesta_no_json' }; }
       });
+    /* Tope de tiempo: un `fetch` que no resuelve nunca —Apps Script colgado,
+       una conexión abierta que no trae datos— dejaba la bandera `enviando` en
+       verdadero para siempre y la cola no volvía a moverse en toda la vida de
+       la página. Noventa segundos es lo que tarda el peor arranque en frío. */
+    return new Promise(function (ok, mal) {
+      var reloj = setTimeout(function () { mal(new Error('sin respuesta')); }, 90000);
+      pedido.then(function (v) { clearTimeout(reloj); ok(v); },
+                  function (e) { clearTimeout(reloj); mal(e); });
+    });
   }
 
   // Guarda en la cola ANTES de intentar mandar: si el envío se pierde por falta
@@ -78,7 +91,6 @@
   // anotado y se reintenta. Es lo único que evita perder datos en una red
   // lenta, que es la red de esta campaña.
   function guardarPersona(valores, extra) {
-    if (!hayRed()) return;
     var cuerpo = {
       action: 'registro', origen: 'web', dispositivo: dispositivoId(),
       nombre: valores.nombre || '', telefono: valores.telefono || '',
@@ -86,11 +98,39 @@
     };
     if (extra) { for (var k in extra) { if (extra[k]) cuerpo[k] = extra[k]; } }
 
+    /* ⚠️ SE ENCOLA AUNQUE NO HAYA A DÓNDE MANDARLO TODAVÍA. Antes había un
+       `return` acá arriba cuando faltaba la dirección del servidor o el
+       navegador no tenía `fetch`, y el alta se evaporaba sin dejar rastro. Si
+       `config.js` no llegó a cargar —una red que corta un subrecurso, nada
+       raro— la persona veía su pase «Activando…» para siempre y no existía en
+       ninguna parte. Encolado, al menos sale en la próxima visita. */
+    var id = idUnico();
     var cola = leerCola();
-    cola.push({ id: idUnico(), intentos: 0, cuerpo: cuerpo });
+    cola.push({ id: id, intentos: 0, cuerpo: cuerpo });
     // Se descarta por el principio sólo cuando de verdad hay demasiado: lo más
     // viejo es lo que más tiempo lleva esperando, y tirarlo es perderlo.
-    escribir(K_PENDIENTES, cola.slice(-MAX_COLA));
+    var seGuardo = escribir(K_PENDIENTES, cola.slice(-MAX_COLA));
+
+    /* ⚠️ Y SE INTENTA MANDAR CON EL CUERPO QUE YA ESTÁ EN LA MANO, sin volver a
+       leerlo del almacenamiento. Ésta es la diferencia entre guardar a la
+       persona y perderla: en modo privado de Safari, con el almacenamiento
+       lleno, o dentro del navegador de Instagram, `escribir` falla en silencio
+       y la cola queda vacía. Como `enviarPendientes` relee de ahí, no salía un
+       solo pedido. Ahora el envío no depende de que el teléfono haya podido
+       anotar nada. */
+    if (!hayRed()) return;
+
+    if (!seGuardo) {
+      alServidor(cuerpo)
+        .then(function (r) {
+          if (r && r.ok && r.token) {
+            escribir(K_YO, { id: r.id, token: r.token });
+            try { window.dispatchEvent(new CustomEvent('cxv:alta', { detail: { id: r.id } })); } catch (e) {}
+          }
+        })
+        .catch(function () {});
+      return;
+    }
     enviarPendientes();
   }
 
@@ -117,11 +157,28 @@
     // Se recorre la cola entera, no sólo el primero. Con el modelo viejo, un
     // solo envío que el servidor no aceptaba tapaba a todos los de atrás y no
     // volvía a salir ninguno nunca más.
-    var pendiente = null;
+    //
+    // ⚠️ `x && x.cuerpo`: un elemento corrupto o nulo tiraba una excepción que
+    // se llevaba puesto el arranque entero de la página, y con él el enganche
+    // del formulario.
+    var ahora = Date.now();
+    var pendiente = null, esperando = false;
     for (var i = 0; i < cola.length; i++) {
-      if ((cola[i].intentos || 0) < MAX_INTENTOS) { pendiente = cola[i]; break; }
+      var x = cola[i];
+      if (!x || !x.cuerpo) continue;
+      if ((x.intentos || 0) >= MAX_INTENTOS) continue;
+      if (x.proximo && x.proximo > ahora) { esperando = true; continue; }
+      pendiente = x; break;
     }
-    if (!pendiente) return;
+    /* Todos los que quedan están esperando su turno: se vuelve cuando toque.
+       Sin esto, los seis intentos se quemaban en doscientos milisegundos
+       seguidos y el registro quedaba muerto para siempre — cinco minutos de
+       caída de Apps Script mataban todo lo que se hubiera registrado en esos
+       cinco minutos. */
+    if (!pendiente) {
+      if (esperando) setTimeout(enviarPendientes, 5000);
+      return;
+    }
 
     enviando = true;
     alServidor(pendiente.cuerpo)
@@ -147,11 +204,21 @@
         if (listo || irrecuperable) {
           if (!sacarDeCola(pendiente.id)) { enviando = false; return; }
         } else {
+          /* El servidor contestó, pero mal. Se cuenta el intento y se espera
+             cada vez más antes del siguiente: 2, 4, 8, 16 segundos. Insistir de
+             corrido sólo sirve para quemar los seis intentos contra una caída
+             que iba a durar un minuto. */
           var cola2 = leerCola();
           for (var k = 0; k < cola2.length; k++) {
-            if (cola2[k].id === pendiente.id) { cola2[k].intentos = (cola2[k].intentos || 0) + 1; }
+            if (cola2[k] && cola2[k].id === pendiente.id) {
+              cola2[k].intentos = (cola2[k].intentos || 0) + 1;
+              cola2[k].proximo = Date.now() + Math.min(Math.pow(2, cola2[k].intentos) * 1000, 60000);
+            }
           }
           if (!escribir(K_PENDIENTES, cola2)) { enviando = false; return; }
+          enviando = false;
+          setTimeout(enviarPendientes, 2000);
+          return;
         }
         enviando = false;
         enviarPendientes();
@@ -164,6 +231,19 @@
   // Volver a la pestaña o recuperar la señal alcanzan.
   function arrancarCola() {
     if (!hayRed()) return;
+    /* ⚠️ CADA VISITA LES DA OTRA OPORTUNIDAD A LOS QUE SE RINDIERON. Lo que
+       agotó sus intentos contra una caída de Apps Script no está mal: está
+       esperando a que Google vuelva. Sin esto quedaba en el teléfono para
+       siempre, sin que nadie —ni la persona, ni el equipo, ni la bitácora— se
+       enterara de que existía. */
+    var cola = leerCola(), tocado = false;
+    for (var i = 0; i < cola.length; i++) {
+      if (cola[i] && (cola[i].intentos || 0) >= MAX_INTENTOS) {
+        cola[i].intentos = 0; cola[i].proximo = 0; tocado = true;
+      }
+    }
+    if (tocado) escribir(K_PENDIENTES, cola);
+
     enviarPendientes();
     window.addEventListener('online', enviarPendientes);
     document.addEventListener('visibilitychange', function () {

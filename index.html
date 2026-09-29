@@ -894,7 +894,10 @@
       <div class="redes" id="redes"></div>
 
       <div class="qr-caja">
-        <form class="activar" id="form-pase" novalidate>
+        <!-- `onsubmit="return false"` es el cinturón: aunque el script no
+             llegue a engancharse, el navegador no manda los datos por la
+             dirección. -->
+        <form class="activar" id="form-pase" novalidate onsubmit="return false">
           <h3 class="activar-titulo">Activa tu Boarding Pass</h3>
           <p class="activar-intro">Completa tus datos y entras a tu Boarding Pass: ahí ves la ruta
             que estás financiando, encargas lo que quieras y puedes invitar a otros.
@@ -1361,8 +1364,16 @@ document.addEventListener('DOMContentLoaded', function () {
   var K_INVITA = 'cxv.invita';
   var K_PERFIL = 'cxv.perfil';
 
-  var leer     = window.CXV.leer;
-  var escribir = window.CXV.escribir;
+  /* ⚠️ SIN GUARDA, ESTO TIRABA Y SE LLEVABA PUESTO EL FORMULARIO ENTERO. Si
+     `cola.js` no llega —una red que corta un subrecurso, la caché de GitHub
+     Pages sirviendo un estado intermedio—, `window.CXV` no existe, la
+     excepción abortaba el arranque, el manejador del submit no se enganchaba
+     nunca, y el navegador hacía un envío suyo: la página recargaba con el
+     nombre, el correo y el teléfono escritos en la barra de direcciones, y
+     nada llegaba al servidor. */
+  var CXV = window.CXV || {};
+  var leer     = CXV.leer     || function (c, d) { return d; };
+  var escribir = CXV.escribir || function () { return false; };
 
   // Quien llega por el enlace de otra persona trae `?de=` en la dirección. Se
   // guarda acá y viaja con el registro, así esa persona puede ver después
@@ -1382,7 +1393,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {}
   })();
 
-  window.CXV.arrancarCola();
+  if (CXV.arrancarCola) CXV.arrancarCola();
 
   // ── Activar el boarding pass ───────────────────────────────────────────
   // Hace dos cosas: abre WhatsApp con los datos (como siempre) y los manda al
@@ -1440,7 +1451,9 @@ document.addEventListener('DOMContentLoaded', function () {
       // Además no se puede esperar aunque se quisiera: Apps Script arrancando
       // en frío tarda más de 20 segundos, y nadie se queda mirando eso.
       try {
-        window.CXV.guardarPersona(valores, { invitadoPor: leer(K_INVITA, '') || '' });
+        if (CXV.guardarPersona) {
+          CXV.guardarPersona(valores, { invitadoPor: leer(K_INVITA, '') || '' });
+        }
       } catch (e) {}
 
       // ⚠️ ACÁ NO SE ABRE WHATSAPP, Y ES EL CAMBIO IMPORTANTE. El formulario
