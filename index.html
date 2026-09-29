@@ -404,7 +404,7 @@
      cualquier `display:flex` puesto por clase se lo lleva por delante y el
      elemento sigue a la vista. Pasó: al enviar el formulario aparecía el
      mensaje de «listo» con el formulario todavía debajo. */
-  .activar[hidden]{display:none;}
+  [hidden]{display:none!important;}
   .activar-titulo{font-family:var(--sans);font-weight:700;font-size:1.15rem;color:var(--navy);margin:0;}
   .activar-intro{font-size:.95rem;color:var(--ink);margin:0 0 .3rem;}
   .activar label{display:flex;flex-direction:column;gap:.25rem;

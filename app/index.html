@@ -43,6 +43,12 @@
     --lado:max(16px,env(safe-area-inset-left),env(safe-area-inset-right));
   }
   *{box-sizing:border-box;}
+  /* ⚠️ EL ATRIBUTO `hidden` VALE display:none CON MUY POCA FUERZA, y cualquier
+     `display` puesto por clase se lo lleva por delante. Ya pasó dos veces en
+     este proyecto: el formulario que seguía a la vista bajo el mensaje de
+     «listo», y «Reintentar» apareciendo junto a «Buscar mi pase». Esta regla lo
+     cierra para todos los casos de una vez. */
+  [hidden]{display:none!important;}
   body{margin:0;background:var(--celeste);color:var(--navy);
        font:400 1rem/1.55 var(--sans);-webkit-font-smoothing:antialiased;
        padding:0 var(--lado) calc(24px + env(safe-area-inset-bottom));}
