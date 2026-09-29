@@ -400,6 +400,11 @@
   /* El formulario no manda nada a ningún servidor: arma un mensaje de WhatsApp,
      que es como funciona todo el resto del sitio. */
   .activar{display:flex;flex-direction:column;gap:.7rem;text-align:left;}
+  /* ⚠️ El atributo `hidden` vale `display:none` con muy poca fuerza, así que
+     cualquier `display:flex` puesto por clase se lo lleva por delante y el
+     elemento sigue a la vista. Pasó: al enviar el formulario aparecía el
+     mensaje de «listo» con el formulario todavía debajo. */
+  .activar[hidden], .activar-listo[hidden]{display:none;}
   .activar-titulo{font-family:var(--sans);font-weight:700;font-size:1.15rem;color:var(--navy);margin:0;}
   .activar-intro{font-size:.95rem;color:var(--ink);margin:0 0 .3rem;}
   .activar label{display:flex;flex-direction:column;gap:.25rem;
@@ -414,6 +419,13 @@
   .activar input[aria-invalid="true"]{border-color:#a5372b;}
   .activar .btn{margin-top:.5rem;width:100%;}
   .activar-error{margin:0;font-size:.92rem;font-weight:600;color:#a5372b;}
+  .activar-vuelve{margin:0;font-size:.92rem;color:var(--ink);}
+  .activar-vuelve a{color:var(--navy);font-weight:600;}
+  /* Ocupa el lugar del formulario cuando se envía: sin esto la persona quedaba
+     mirando los mismos campos llenos, sin señal de que algo hubiera pasado. */
+  .activar-listo{display:flex;flex-direction:column;gap:.7rem;text-align:left;}
+  .activar-listo p{font-size:.95rem;color:var(--ink);margin:0;}
+  .activar-listo .btn{width:100%;}
 
   /* Apilado por defecto: el formulario es bastante más ancho que el oso, y a
      dos columnas en un teléfono el peluche quedaba aplastado a 51 px. */
@@ -904,11 +916,20 @@
             <input name="telefono" type="tel" autocomplete="tel" required>
           </label>
           <p class="activar-error" id="activar-error" role="status" hidden></p>
+          <p class="activar-vuelve" id="activar-vuelve" hidden>
+            ¿Ya te registraste? <a href="app/">Abre tu Boarding Pass</a>.
+          </p>
           <button class="btn btn-3" type="submit">
             <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
             Enviar por WhatsApp
           </button>
         </form>
+        <div class="activar-listo" id="activar-listo" role="status" hidden>
+          <h3 class="activar-titulo">Tu pase está listo</h3>
+          <p id="listo-texto">Abrimos WhatsApp para confirmar tu adopción. Mientras tanto,
+            ya puedes ver tu Boarding Pass y seguir la ruta que estás financiando.</p>
+          <a class="btn btn-3" href="app/">Ver mi Boarding Pass</a>
+        </div>
         <figure class="qr-pieza">
           <picture>
             <source srcset="img/oso-compartir.avif" type="image/avif">
@@ -1578,7 +1599,23 @@ document.addEventListener('DOMContentLoaded', function () {
       var texto = 'Hola, vengo de la web de Un Check-in por la Vida. '
                 + 'Los datos de mi Boarding Pass son:\n\n' + datos.join('\n');
       window.open('https://wa.me/' + TEL + '?text=' + encodeURIComponent(texto), '_blank', 'noopener');
+
+      // WhatsApp se abre en otra pestaña, así que acá no pasaba nada visible:
+      // la persona volvía y veía los mismos campos llenos, sin saber si se
+      // había enviado. Y sobre todo, no había forma de llegar a la app: existía
+      // pero no se la nombraba en ningún lado del sitio.
+      var pila = (valores.nombre || '').trim().split(/\s+/)[0];
+      if (pila) {
+        document.getElementById('listo-texto').textContent =
+          'Listo, ' + pila + '. Abrimos WhatsApp para confirmar tu adopción. Mientras tanto, '
+          + 'ya puedes ver tu Boarding Pass y seguir la ruta que estás financiando.';
+      }
+      formPase.hidden = true;
+      document.getElementById('activar-listo').hidden = false;
     });
+
+    // Quien ya se registró antes en este teléfono llega directo a lo suyo.
+    if (leer(K_YO, null)) document.getElementById('activar-vuelve').hidden = false;
   }
 
   var redes = [
