@@ -345,17 +345,37 @@
     $('cierre').hidden = false;
   }
 
+  /* ⚠️ REGISTRADO NO ES LO MISMO QUE ACTIVADO. Quien completó el formulario
+     está adentro y sus datos están guardados —que es lo que la campaña
+     necesita—, pero el pase, la ruta y las misiones son de quien adoptó un
+     Héroe de verdad. Sin código: el pase se ve a la espera, sin número, y lo
+     primero que aparece es cómo activarlo. */
+  function pintarActivacion(yo) {
+    var activo = !!(yo && yo.activo);
+    $('activar-pase').hidden = activo;
+    $('pase-falta').hidden   = activo;
+    if (activo) $('pase').removeAttribute('data-falta');
+    else        $('pase').setAttribute('data-falta', '');
+    // Las secciones que hablan de «tu» aporte no aplican a quien no aportó.
+    var aporte = document.querySelector('.aporte');
+    if (aporte) aporte.hidden = !activo;
+    $('misiones').hidden = !activo;
+    return activo;
+  }
+
   function pintarPersona(yo) {
     // El completo en el pase —en un boarding pass el nombre es el documento— y
     // el de pila en el rótulo, que tiene que entrar en una línea.
     $('d-nombre').textContent = yo.nombreCompleto || yo.nombre || '—';
-    $('d-pase').textContent   = yo.ticket || yo.id || '—';
+    /* Sin activar no hay número de pase. Antes se mostraba el `id` interno
+       —`P67905F0891`—, que para quien lo lee parece un error del sistema. */
+    $('d-pase').textContent = yo.activo ? (yo.ticket || yo.id || '—') : '—';
     // El nombre arriba del todo: es el pase de esa persona, no un pase genérico.
     var pila = primerNombre(yo.nombre || yo.nombreCompleto || '');
     $('pase-rotulo').textContent = pila ? ('Boarding de ' + pila) : 'Boarding Pass solidario';
     $('pase').hidden   = false;
     $('entrar').hidden = true;
-    $('misiones').hidden = false;
+    pintarActivacion(yo);
   }
 
   // A quien no reconocemos se le muestra la ruta igual, y se le ofrece entrar.
@@ -446,6 +466,24 @@
     $('btn-reintentar').hidden = true;
   }
 
+  /* ⚠️ `arrancar()` SE LLAMABA UNA SOLA VEZ. Si ese pedido fallaba —y Apps
+     Script devuelve HTML más seguido de lo que parece: cuota, despliegue,
+     arranque en frío— la app se quedaba con los valores de respaldo del HTML,
+     la etapa del vuelo equivocada incluida, sin ninguna señal y sin forma de
+     recuperarse salvo recargar a mano. Comprobado en producción: la hoja decía
+     «en vuelo» y la pantalla seguía en «reuniendo Héroes».
+     Ahora insiste, con espera creciente, y recién avisa cuando de verdad no
+     hay caso. */
+  var REINTENTOS = 4;
+  var intento = 0;
+
+  function reintentarEstado() {
+    if (intento >= REINTENTOS) return false;
+    intento++;
+    setTimeout(arrancar, Math.min(Math.pow(2, intento) * 1000, 20000));
+    return true;
+  }
+
   function arrancar() {
     // Sin servidor configurado la app igual sirve: muestra la ruta con los
     // valores que ya están en el HTML. Vale también para un navegador sin
@@ -467,13 +505,15 @@
       var yoLocal = { nombre: primerNombre(perfil.nombre), nombreCompleto: perfil.nombre,
                       ticket: perfil.ticket || '', id: (leer(K_YO, {}) || {}).id || '',
                       tripulacion: 0 };
+      /* Lo que el teléfono sabe no incluye si está activa: eso lo dice el
+         servidor. Hasta que conteste se asume que falta, que es el caso más
+         probable de alguien que acaba de llegar. */
       pintarPersona(yoLocal);
       /* ⚠️ Y LAS MISIONES TAMBIÉN. `pintarPersona` muestra el bloque, pero
          dibujarlo es otra función: sin esta línea, quien se acababa de
          registrar veía el panel de misiones con el contador «1 de 4» del HTML
          y la lista vacía debajo. Es lo primero que le apareció a Krea. */
-      pintarMisiones(yoLocal);
-      $('d-pase').textContent = perfil.ticket || 'Activando…';
+      $('d-pase').textContent = '—';
     }
 
     if (!API || typeof fetch !== 'function') { pintarDesconocido(); return; }
@@ -492,15 +532,25 @@
 
     conTope(alServidor({ action: 'estado', token: (yo && yo.token) || '' }))
       .then(function (r) {
-        limpiarSinConexion();
         // El servidor no contestó JSON: es un problema de conexión o de
-        // despliegue, no que esta persona no exista.
-        if (!r || (!r.ok && r.motivo === 'respuesta_no_json')) { pintarSinConexion(); return; }
+        // despliegue, no que esta persona no exista. Se vuelve a intentar antes
+        // de contarle nada a nadie.
+        if (!r || (!r.ok && r.motivo === 'respuesta_no_json')) {
+          if (reintentarEstado()) return;
+          limpiarSinConexion();
+          pintarSinConexion();
+          return;
+        }
+        limpiarSinConexion();
+        intento = 0;
         if (!r.ok) { pintarDesconocido(); return; }
         pintarVuelo(r.vuelo);
         pintarAporte(r.vuelo);
         pintarCierre(r.vuelo);
-        if (r.yo) { pintarPersona(r.yo); pintarMisiones(r.yo); }
+        if (r.yo) {
+          pintarPersona(r.yo);
+          if (r.yo.activo) pintarMisiones(r.yo);
+        }
         else {
           // El token guardado ya no vale: se descarta para no volver a
           // mandarlo en cada arranque.
@@ -508,7 +558,10 @@
           pintarDesconocido();
         }
       })
-      .catch(function () { pintarSinConexion(); });
+      .catch(function () {
+        if (reintentarEstado()) return;
+        pintarSinConexion();
+      });
   }
 
   // ── Enganches ────────────────────────────────────────────────────────────
@@ -726,6 +779,57 @@
       .catch(function () { aviso.textContent = 'No pudimos conectarnos. Revisa tu conexión.'; });
   }
 
+  // ── Activar el pase ──────────────────────────────────────────────────────
+
+  var MOTIVOS = {
+    codigo_invalido:    'Ese código no tiene la forma correcta. Debe ser como ONCO-4K7M.',
+    codigo_desconocido: 'No encontramos ese código. Revisa que esté bien escrito.',
+    codigo_usado:       'Ese código ya se usó. Si crees que es un error, escríbenos.',
+    ya_activo:          'Tu pase ya está activo.',
+    token_invalido:     'Espera unos segundos a que termine tu registro y vuelve a intentarlo.',
+    sin_token:          'Espera unos segundos a que termine tu registro y vuelve a intentarlo.'
+  };
+
+  $('form-activar').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var campo = this.elements.codigo;
+    var aviso = $('activar-aviso');
+    var c = (campo.value || '').trim();
+    campo.setAttribute('aria-invalid', 'false');
+    if (!c) {
+      aviso.textContent = 'Escribe el código que vino con tu Héroe.';
+      campo.setAttribute('aria-invalid', 'true'); campo.focus(); return;
+    }
+    var yo = leer(K_YO, null);
+    if (!yo || !yo.token) {
+      aviso.textContent = MOTIVOS.sin_token;
+      return;
+    }
+    aviso.textContent = 'Activando…';
+    conTope(alServidor({ action: 'activar', token: yo.token, codigo: c }))
+      .then(function (r) {
+        if (r && r.ok) {
+          aviso.textContent = '';
+          var perfil = leer(K_PERFIL, {}) || {};
+          perfil.codigo = r.codigo;
+          escribir(K_PERFIL, perfil);
+          arrancar();          // se vuelve a pedir todo: ahora hay pase
+          return;
+        }
+        campo.setAttribute('aria-invalid', 'true');
+        aviso.textContent = (r && MOTIVOS[r.motivo])
+          || 'No pudimos activarlo. Intenta de nuevo en un momento.';
+      })
+      .catch(function () { aviso.textContent = 'No pudimos conectarnos. Revisa tu conexión.'; });
+  });
+
+  $('btn-quiero').addEventListener('click', function () {
+    var perfil = leer(K_PERFIL, null);
+    var quien = (perfil && perfil.nombre) ? (' Soy ' + perfil.nombre + '.') : '';
+    window.open(textoWa('Hola, vengo de Un Check-in por la Vida y quiero adoptar un Héroe de Rescate.'
+      + quien + ' ¿Cómo lo hago?'), '_blank', 'noopener');
+  });
+
   // ── Instalable ───────────────────────────────────────────────────────────
 
   var yaInstalada = window.matchMedia('(display-mode: standalone)').matches ||
@@ -780,6 +884,7 @@
     $('entrar-titulo').textContent = 'Buscando tu Boarding Pass…';
     $('entrar-texto').textContent = 'Un momento.';
     $('btn-reintentar').hidden = true;
+    intento = 0;          // el toque de la persona reabre el crédito de intentos
     arrancar();
   });
 

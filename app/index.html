@@ -407,6 +407,35 @@
   .cierre .btn + .btn{margin-top:10px;}
 
 
+  /* ── Activación ── */
+  .activar-pase{background:var(--paper);color:var(--navy);border-radius:16px;
+                padding:22px 20px;margin-top:18px;border:2px solid var(--orange);}
+  .activar-pase h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;
+                   margin:0 0 6px;letter-spacing:.02em;}
+  .activar-pase > p{margin:0 0 16px;font-size:.95rem;color:var(--ink);}
+  .activar-fila{display:flex;gap:8px;}
+  .activar-fila input{flex:1;min-width:0;min-height:52px;font:700 1.05rem/1.3 var(--sans);
+                      letter-spacing:.1em;text-transform:uppercase;color:var(--navy);
+                      background:#fff;border:1.5px solid var(--ink-soft);
+                      border-radius:10px;padding:0 14px;}
+  .activar-fila input::placeholder{font-weight:400;letter-spacing:.06em;color:#9aa6bd;}
+  .activar-fila input:focus-visible{border-color:var(--navy);}
+  .activar-fila input[aria-invalid="true"]{border-color:#a5372b;}
+  .activar-fila .btn{flex:none;padding:0 22px;}
+  .activar-sin{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--paper-edge);
+               font-size:.9rem;color:var(--ink);}
+  .activar-sin button{font:600 .9rem/1 var(--sans);color:var(--navy);background:transparent;
+                      border:0;border-bottom:2px solid var(--orange);cursor:pointer;
+                      min-height:44px;padding:0 2px;}
+
+  /* El pase sin activar: presente, pero claramente a la espera. Que se vea que
+     falta un paso, no que está roto. */
+  .pase[data-falta]{opacity:.72;}
+  .pase[data-falta] .pase-bajo{filter:grayscale(1);}
+  .pase-falta{margin:6px 0 0;display:inline-block;font:700 .68rem/1 var(--sans);
+              letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-boton);
+              background:var(--orange);border-radius:999px;padding:5px 10px;}
+
   /* ── Tu aporte ── */
   .aporte{background:var(--paper);color:var(--navy);border-radius:16px;
           padding:22px 20px;margin-top:18px;}
@@ -505,6 +534,7 @@
     <section class="pase" id="pase" hidden>
       <div class="pase-top">
         <p class="pase-rotulo" id="pase-rotulo">Boarding Pass solidario</p>
+        <p class="pase-falta" id="pase-falta" hidden>Falta activación</p>
         <h2 class="pase-titulo" id="vuelo-titulo">Ruta ONCO 001</h2>
       </div>
       <div class="ruta">
@@ -551,6 +581,26 @@
       <h2 id="cierre-titulo">La ruta se completó</h2>
       <p id="cierre-nota">Gracias. Tu Héroe de Rescate ayudó a que esta ruta despegara.</p>
       <button class="btn btn-1" id="btn-otra-ruta" type="button">Sumarme a la próxima ruta</button>
+    </section>
+
+    <!-- ── Activación ──────────────────────────────────────────────────────
+         Completar el formulario deja a la persona adentro; el código la deja a
+         bordo. Este bloque es la diferencia entre las dos cosas, y por eso va
+         arriba de todo lo demás. -->
+    <section class="activar-pase" id="activar-pase" hidden aria-labelledby="t-activar">
+      <h2 id="t-activar">Activa tu Boarding Pass</h2>
+      <p>Tu Héroe de Rescate viene con un código. Escríbelo aquí y tu pase queda
+        listo, con tu nombre y tu ruta.</p>
+      <form class="activar-fila" id="form-activar" novalidate>
+        <input name="codigo" type="text" autocomplete="off" autocapitalize="characters"
+               spellcheck="false" aria-label="Tu código de activación"
+               placeholder="ONCO-4K7M" maxlength="12">
+        <button class="btn btn-1" type="submit">Activar</button>
+      </form>
+      <p class="aviso" id="activar-aviso" role="alert"></p>
+      <p class="activar-sin">¿Todavía no tienes uno?
+        <button type="button" id="btn-quiero">Adopta tu Héroe de Rescate</button>
+        y te lo enviamos por WhatsApp.</p>
     </section>
 
     <!-- ── A dónde fue tu dinero ───────────────────────────────────────────
