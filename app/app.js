@@ -382,8 +382,15 @@
     // momento de más entusiasmo.
     var perfil = leer(K_PERFIL, null);
     if (perfil && perfil.nombre) {
-      pintarPersona({ nombre: primerNombre(perfil.nombre), nombreCompleto: perfil.nombre,
-                      ticket: perfil.ticket || '', id: '' });
+      var yoLocal = { nombre: primerNombre(perfil.nombre), nombreCompleto: perfil.nombre,
+                      ticket: perfil.ticket || '', id: (leer(K_YO, {}) || {}).id || '',
+                      tripulacion: 0 };
+      pintarPersona(yoLocal);
+      /* ⚠️ Y LAS MISIONES TAMBIÉN. `pintarPersona` muestra el bloque, pero
+         dibujarlo es otra función: sin esta línea, quien se acababa de
+         registrar veía el panel de misiones con el contador «1 de 4» del HTML
+         y la lista vacía debajo. Es lo primero que le apareció a Krea. */
+      pintarMisiones(yoLocal);
       $('d-pase').textContent = perfil.ticket || 'Activando…';
     }
 
