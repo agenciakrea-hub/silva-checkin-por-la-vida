@@ -56,7 +56,11 @@
      el ambiente, con el papel apoyado encima.
      El punteado repite el troquel del pase, muy tenue, para que el fondo tenga
      materia sin competir con nada. */
-  body{margin:0;background:var(--navy-deep);color:var(--navy);
+  /* Claro, porque lo único que se ve directamente sobre el body es el fondo
+     oscuro. Cada tarjeta declara el suyo: heredar el navy acá dejaba texto
+     navy sobre navy a 1,2:1, y heredar el claro lo dejaba invisible sobre el
+     papel. */
+  body{margin:0;background:var(--navy-deep);color:#e8eefb;
        background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.6px);
        background-size:22px 22px;
        font:400 1rem/1.55 var(--sans);-webkit-font-smoothing:antialiased;
@@ -76,8 +80,10 @@
   .volver:hover{background:rgba(255,255,255,.12);}
 
   /* ── El pase ── */
-  .pase{background:var(--paper);border-radius:16px;overflow:hidden;
-        box-shadow:0 14px 34px rgba(9,29,64,.24);}
+  /* Sombra neutra: una sombra de color sobre un fondo oscuro es un halo, y el
+     halo cromático es la firma visual de las interfaces generadas. */
+  .pase{background:var(--paper);color:var(--navy);border-radius:16px;overflow:hidden;
+        box-shadow:0 14px 34px rgba(0,0,0,.3);}
   .pase-top{background:var(--navy);color:#fff;padding:18px 20px 16px;}
   .pase-rotulo{font:600 .72rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;
                opacity:.82;margin:0 0 6px;}
@@ -184,7 +190,7 @@
   .btn-2:hover{background:rgba(255,255,255,.35);}
 
   /* ── Entrada de quien no tiene pase en este teléfono ── */
-  .entrar{background:var(--paper);border-radius:16px;padding:22px 20px;}
+  .entrar{background:var(--paper);color:var(--navy);border-radius:16px;padding:22px 20px;}
   .entrar h2{font:700 1.3rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;}
   .entrar p{margin:0 0 16px;color:var(--ink);font-size:.95rem;}
   .entrar label{display:flex;flex-direction:column;gap:.25rem;
@@ -217,7 +223,7 @@
   .elegir button:hover{border-color:var(--navy);}
 
   /* ── Tu oncovuelo: las etapas ── */
-  .vuelo{background:var(--celeste-papel);border-radius:16px;padding:22px 20px;margin-top:18px;}
+  .vuelo{background:var(--celeste-papel);color:var(--navy);border-radius:16px;padding:22px 20px;margin-top:18px;}
   .vuelo h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
             letter-spacing:.02em;}
   .vuelo > p{margin:0 0 18px;font-size:.95rem;color:var(--ink);}
@@ -246,13 +252,17 @@
   /* Sobre un fondo navy, un panel navy desaparece. Las misiones pasan a ser la
      pieza naranja de la pantalla: es la acción que la campaña necesita que
      ocurra, y ahora es lo único que se ve desde lejos. */
-  .misiones{background:linear-gradient(160deg,#c46a00,#a05c00);color:#fff;
+  /* El naranja hondo y plano, no el claro con degradado: sobre #c46a00 los
+     textos de apoyo daban 3,2:1 y el mínimo legible es 4,5:1. Sobre este dan
+     5:1 largos. El degradado además hacía que el contraste cambiara según la
+     altura del panel, así que no había un número que verificar. */
+  .misiones{background:var(--orange-papel);color:#fff;
             border-radius:16px;padding:22px 20px;margin-top:18px;
-            box-shadow:0 12px 30px rgba(0,0,0,.22);}
+            box-shadow:0 12px 30px rgba(0,0,0,.28);}
   .misiones-cab{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
   .misiones h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0;
                letter-spacing:.02em;color:#fff;}
-  .misiones-cuenta{margin:0;font:400 .92rem/1 var(--sans);color:#ffe4c2;white-space:nowrap;}
+  .misiones-cuenta{margin:0;font:400 .92rem/1 var(--sans);color:#ffeeda;white-space:nowrap;}
   .misiones-cuenta b{font:700 1.5rem/1 var(--cifra);color:#fff;vertical-align:-.08em;}
   .misiones-bajada{margin:6px 0 18px;font-size:.95rem;color:#ffeeda;}
 
@@ -269,7 +279,7 @@
      casi 30 px. */
   .mis-cuerpo{min-width:0;}
   .mis-cuerpo b{display:block;font:600 1rem/1.3 var(--sans);color:#fff;}
-  .mis[data-hecha] .mis-cuerpo b{color:#ffe4c2;}
+  .mis[data-hecha] .mis-cuerpo b{color:#ffeeda;}
   .mis-cuerpo p{margin:2px 0 0;font:400 .9rem/1.45 var(--sans);color:#ffeeda;}
   .mis-accion{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;
               min-height:44px;padding:0 18px;border-radius:999px;border:0;cursor:pointer;
@@ -296,7 +306,7 @@
   .mis-aviso:empty{display:none;}
 
   /* ── Encargar ── */
-  .tienda{background:var(--paper);border-radius:16px;padding:20px;margin-top:18px;}
+  .tienda{background:var(--paper);color:var(--navy);border-radius:16px;padding:20px;margin-top:18px;}
   .tienda h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
              letter-spacing:.02em;}
   .tienda > p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
@@ -327,7 +337,7 @@
   .tienda .btn[disabled]{opacity:.45;cursor:default;}
 
   /* ── Empresas ── */
-  .empresas{background:var(--celeste-papel);border-radius:16px;padding:20px;margin-top:18px;}
+  .empresas{background:var(--celeste-papel);color:var(--navy);border-radius:16px;padding:20px;margin-top:18px;}
   .empresas h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
                letter-spacing:.02em;}
   .empresas > p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
@@ -342,7 +352,7 @@
   .plan svg{flex:none;color:var(--celeste-hondo);}
 
   /* ── Cargar el pase de papel ── */
-  .papel{background:var(--paper);border-radius:14px;padding:16px 18px;margin-top:12px;}
+  .papel{background:var(--paper);color:var(--navy);border-radius:14px;padding:16px 18px;margin-top:12px;}
   .papel h2{font:700 1.05rem/1.2 var(--titulo);text-transform:uppercase;margin:0 0 4px;
             letter-spacing:.04em;}
   .papel p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
@@ -366,7 +376,7 @@
 
 
   /* ── Instalar ── */
-  .instalar{background:var(--paper);border-radius:14px;padding:16px 18px;margin-top:12px;}
+  .instalar{background:var(--paper);color:var(--navy);border-radius:14px;padding:16px 18px;margin-top:12px;}
   .instalar h2{font:700 1.05rem/1.2 var(--titulo);text-transform:uppercase;margin:0 0 4px;
             letter-spacing:.04em;}
   .instalar p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
