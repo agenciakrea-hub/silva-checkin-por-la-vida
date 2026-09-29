@@ -627,6 +627,14 @@
   @keyframes latido{0%,100%{opacity:1;}50%{opacity:.25;}}
   @media (prefers-reduced-motion:reduce){.latido::before{animation:none!important;}}
 
+  /* ── Avisos ── */
+  .avisos{background:var(--paper);color:var(--navy);border-radius:16px;
+          padding:22px 20px;margin-top:18px;}
+  .avisos h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
+             letter-spacing:.02em;}
+  .avisos-bajada{margin:0 0 16px;font-size:.95rem;color:var(--ink);}
+  .avisos .btn{width:100%;}
+
   /* ── Quiénes más suman ── */
   .rank{background:var(--paper);color:var(--navy);border-radius:16px;
         padding:22px 20px;margin-top:18px;}
@@ -1044,6 +1052,21 @@
 
       <p class="tripu-ya" id="tripu-ya" hidden>Llegaste por la invitación de
         alguien, y ya quedó anotado. Gracias por sumarte a su tripulación.</p>
+    </section>
+
+    <!-- ── Avisos ──────────────────────────────────────────────────────────
+         ⚠️ SÓLO APARECE DESPUÉS DE ACTIVAR EL PASE, nunca al entrar. Pedir el
+         permiso de notificaciones apenas alguien abre una app es la forma más
+         rápida de que lo niegue para siempre: el navegador recuerda el «no» y
+         no vuelve a preguntar. Se ofrece cuando la persona ya tiene algo que
+         esperar, que es cuando la respuesta va a ser «sí». -->
+    <section class="avisos" id="avisos" hidden aria-labelledby="t-avisos">
+      <h2 id="t-avisos">¿Te avisamos cuando despegue?</h2>
+      <p class="avisos-bajada">Una notificación cuando tu ruta cambie de etapa —y
+        otra cuando llegue—. Nada más: ni promociones, ni recordatorios, ni nada
+        que no sea este vuelo.</p>
+      <button class="btn btn-1" type="button" id="btn-avisos">Sí, avísenme</button>
+      <p class="aviso" id="avisos-aviso" role="status"></p>
     </section>
 
     <!-- ── Quiénes más suman ───────────────────────────────────────────────

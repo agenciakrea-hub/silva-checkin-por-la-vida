@@ -722,6 +722,7 @@
           }
           pintarPersona(r.yo);
           pintarInvitacion(r.yo);
+          pintarAvisos(r.yo);
           if (r.yo.activo) pintarMisiones(r.yo);
           if (!r.yo.invitadoPor) anotarQuienInvito(yo);
           else { try { localStorage.removeItem(K_INVITO); } catch (e) {} }
@@ -906,6 +907,109 @@
       vos.textContent = 'Todavía no trajiste a nadie que haya activado su pase. '
         + 'Comparte tu código y esta lista te espera.';
     }
+  }
+
+  // ── Notificaciones ───────────────────────────────────────────────────────
+
+  var K_AVISOS = 'cxv.avisos';   // 'si' cuando ya se suscribió en este teléfono
+
+  function hayPush() {
+    return 'serviceWorker' in navigator && 'PushManager' in window &&
+           typeof Notification !== 'undefined';
+  }
+
+  /**
+   * Ofrece las notificaciones, y sólo cuando corresponde.
+   *
+   * ⚠️ NUNCA AL ENTRAR, y nunca sin el pase activado. El navegador recuerda un
+   * «no» para siempre: pedir el permiso apenas alguien abre la app es gastar
+   * la única oportunidad en el peor momento. Se ofrece a quien ya activó, que
+   * es quien tiene algo que esperar.
+   *
+   * ⚠️ Y EL BOTÓN NO PIDE EL PERMISO: lo pide el toque de la persona. Llamar a
+   * `requestPermission()` sin un gesto lo bloquean los navegadores, y encima
+   * el cuadro del sistema aparecería sin que nadie lo haya pedido.
+   */
+  function pintarAvisos(yo) {
+    var caja = $('avisos');
+    if (!caja) return;
+    var activo = !!(yo && yo.activo);
+    if (!activo || !hayPush()) { caja.hidden = true; return; }
+    /* Ya dijo que sí en este teléfono, o ya lo negó: en los dos casos no hay
+       nada que ofrecer. Un «no» del navegador no se puede revertir desde acá
+       —hay que ir a los ajustes del sitio— y ofrecerlo igual sería mentir. */
+    if (Notification.permission !== 'default') { caja.hidden = true; return; }
+    if (leer(K_AVISOS, null) === 'si') { caja.hidden = true; return; }
+    caja.hidden = false;
+  }
+
+  /** base64url → Uint8Array, que es lo que `subscribe` espera. */
+  function claveABytes(b64) {
+    var t = String(b64).replace(/-/g, '+').replace(/_/g, '/');
+    while (t.length % 4) t += '=';
+    var crudo = atob(t), salida = new Uint8Array(crudo.length);
+    for (var i = 0; i < crudo.length; i++) salida[i] = crudo.charCodeAt(i);
+    return salida;
+  }
+
+  al('btn-avisos', 'click', function () {
+    var aviso = $('avisos-aviso'), yo = leer(K_YO, null);
+    if (!hayPush() || !yo || !yo.token) return;
+    aviso.textContent = 'Un momento…';
+
+    Notification.requestPermission().then(function (permiso) {
+      if (permiso !== 'granted') {
+        /* Dijo que no. Se acepta y no se vuelve a ofrecer: insistir con esto
+           es de las cosas que hacen desinstalar una app. */
+        aviso.textContent = 'Está bien. Puedes activarlas más adelante desde los ajustes del navegador.';
+        $('avisos').hidden = true;
+        return;
+      }
+      /* ⚠️ LA CLAVE PÚBLICA SE PIDE AL SERVIDOR, no está escrita acá. Escrita
+         en dos lados, el día que no coincida con la privada el servicio de
+         push devuelve un 401 que no dice por qué, y se busca en el lugar
+         equivocado durante horas. */
+      return alServidor({ action: 'vapid' }).then(function (r) {
+        if (!r || !r.ok || !r.clave) throw new Error('sin clave');
+        return navigator.serviceWorker.ready.then(function (reg) {
+          return reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: claveABytes(r.clave)
+          }).then(function (sus) {
+            var j = sus.toJSON ? sus.toJSON() : {};
+            return alServidor({
+              action: 'suscripcion_guardar', token: yo.token,
+              endpoint: j.endpoint || sus.endpoint, dispositivo: dispositivoId()
+            }).then(function (g) {
+              if (!g || !g.ok) throw new Error(g && g.motivo);
+              escribir(K_AVISOS, 'si');
+              /* ⚠️ EL WORKER NO TIENE `localStorage`: lo que va a necesitar
+                 cuando lo despierten se lo dejamos en IndexedDB, por mensaje. */
+              if (reg.active) {
+                reg.active.postMessage({ tipo: 'push-datos', api: API, token: yo.token });
+              }
+              aviso.textContent = 'Listo. Te avisamos cuando la ruta cambie de etapa.';
+              setTimeout(function () { $('avisos').hidden = true; }, 2600);
+            });
+          });
+        });
+      });
+    }).catch(function () {
+      aviso.textContent = 'No pudimos activarlas ahora. Puedes intentar más tarde.';
+    });
+  });
+
+  /* Quien ya se suscribió antes: se le refrescan los datos del worker en cada
+     arranque. El token puede haber cambiado —al recuperar el pase desde otro
+     teléfono se emite uno nuevo— y un worker con el token viejo despierta,
+     pregunta, y el servidor no lo reconoce. */
+  function refrescarDatosDelWorker() {
+    if (!hayPush() || leer(K_AVISOS, null) !== 'si') return;
+    var yo = leer(K_YO, null);
+    if (!yo || !yo.token) return;
+    navigator.serviceWorker.ready.then(function (reg) {
+      if (reg.active) reg.active.postMessage({ tipo: 'push-datos', api: API, token: yo.token });
+    }).catch(function () {});
   }
 
   function pintarInvitacion(yo) {
@@ -1446,6 +1550,7 @@
      por debajo, que es justamente para lo que sirve. */
   bienvenida();
   registrarServicio();
+  refrescarDatosDelWorker();
   pintarTienda();
   window.CXV.arrancarCola();
   arrancar();

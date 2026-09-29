@@ -19,7 +19,7 @@
  */
 'use strict';
 
-const VERSION = 'v15';
+const VERSION = 'v16';
 const CACHE   = 'checkin-app-' + VERSION;
 
 /* Lo que hace falta para que la pantalla se dibuje entera sin red. Las cifras
@@ -130,4 +130,121 @@ self.addEventListener('fetch', event => {
 /* La app pide saltar la espera cuando el usuario acepta actualizar. */
 self.addEventListener('message', event => {
   if (event.data === 'actualizar') self.skipWaiting();
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NOTIFICACIONES
+
+   ⚠️ EL PUSH LLEGA VACÍO. Cifrar la carga de un push exige AES-GCM y Apps
+   Script no lo tiene, así que el servidor manda un push SIN CUERPO: sólo sirve
+   para despertar a este worker. El texto lo pide acá, por el mismo camino de
+   siempre, y nunca pasa por el servicio de push de Google o Apple.
+
+   ⚠️ UN SERVICE WORKER NO TIENE `localStorage`. Lo que necesita para preguntar
+   —a dónde, y con qué token— lo deja la app en IndexedDB `cxv-push`. Si eso
+   no está, igual hay que mostrar ALGO: un push que despierta y no muestra nada
+   hace que el navegador muestre su propio aviso genérico («Esta página se
+   actualizó en segundo plano»), que es peor que cualquier texto propio.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const PUSH_BD = 'cxv-push';
+const PUSH_ALMACEN = 'datos';
+
+function abrirBD() {
+  return new Promise((ok, mal) => {
+    const p = indexedDB.open(PUSH_BD, 1);
+    p.onupgradeneeded = () => {
+      if (!p.result.objectStoreNames.contains(PUSH_ALMACEN)) {
+        p.result.createObjectStore(PUSH_ALMACEN, { keyPath: 'id' });
+      }
+    };
+    p.onsuccess = () => ok(p.result);
+    p.onerror = () => mal(p.error);
+  });
+}
+
+function leerBD(id) {
+  return abrirBD().then(bd => new Promise(ok => {
+    const p = bd.transaction(PUSH_ALMACEN, 'readonly').objectStore(PUSH_ALMACEN).get(id);
+    p.onsuccess = () => ok(p.result || null);
+    p.onerror = () => ok(null);
+  })).catch(() => null);
+}
+
+function guardarBD(valor) {
+  return abrirBD().then(bd => new Promise(ok => {
+    const p = bd.transaction(PUSH_ALMACEN, 'readwrite').objectStore(PUSH_ALMACEN).put(valor);
+    p.onsuccess = () => ok(true);
+    p.onerror = () => ok(false);
+  })).catch(() => false);
+}
+
+/* La app deja acá lo que el worker va a necesitar cuando lo despierten. */
+self.addEventListener('message', event => {
+  if (event.data && event.data.tipo === 'push-datos') {
+    event.waitUntil(guardarBD({ id: 'yo', api: event.data.api, token: event.data.token }));
+  }
+});
+
+self.addEventListener('push', event => {
+  event.waitUntil((async () => {
+    const POR_DEFECTO = {
+      titulo: 'Un Check-in por la Vida',
+      texto: 'Hay novedades de la ruta que ayudaste a financiar.'
+    };
+    let aviso = POR_DEFECTO, estado = '';
+    try {
+      const yo = await leerBD('yo');
+      if (yo && yo.api) {
+        /* ⚠️ CON TOPE DE TIEMPO. El navegador le da a un worker despertado unos
+           pocos segundos; si el `fetch` no vuelve, la promesa queda colgada y
+           el aviso no se muestra nunca. Apps Script en frío tarda más que eso,
+           así que el respaldo genérico no es un caso raro: es lo que se ve la
+           primera vez del día. */
+        const corte = new Promise(r => setTimeout(() => r(null), 8000));
+        const pedido = fetch(yo.api, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'avisos', token: yo.token || '' })
+        }).then(r => r.text()).then(t => { try { return JSON.parse(t); } catch (e) { return null; } })
+          .catch(() => null);
+        const r = await Promise.race([pedido, corte]);
+        if (r && r.ok && r.aviso && r.aviso.titulo) { aviso = r.aviso; estado = r.estado || ''; }
+      }
+    } catch (e) {}
+
+    /* ⚠️ NO SE REPITE EL MISMO AVISO. El servicio de push puede entregar el
+       mismo mensaje más de una vez, y `avisarDelVuelo` se puede tocar dos
+       veces sin querer. Con `tag` el navegador reemplaza el anterior en vez de
+       apilar dos iguales, y la marca en IndexedDB evita volver a sonar por una
+       etapa que esta persona ya vio. */
+    const visto = await leerBD('visto');
+    if (estado && visto && visto.estado === estado) {
+      /* Ya se avisó de esta etapa. Igual HAY QUE MOSTRAR ALGO: un `push`
+         atendido sin notificación hace que el navegador muestre la suya. Se
+         muestra el mismo, con el mismo `tag`, así que reemplaza y no suma. */
+    }
+    if (estado) await guardarBD({ id: 'visto', estado: estado });
+
+    return self.registration.showNotification(aviso.titulo, {
+      body: aviso.texto,
+      icon: '../img/icon-192.png',
+      badge: '../img/icon-192.png',
+      tag: 'cxv-vuelo' + (estado ? '-' + estado : ''),
+      renotify: false,
+      data: { url: './' }
+    });
+  })());
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const abiertas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    /* Si la app ya está abierta se la trae al frente en vez de abrir otra: dos
+       pestañas de la misma app es lo que pasa si no se mira. */
+    for (const c of abiertas) {
+      if (c.url.indexOf('/app/') > -1 && 'focus' in c) return c.focus();
+    }
+    if (self.clients.openWindow) return self.clients.openWindow('./');
+  })());
 });
