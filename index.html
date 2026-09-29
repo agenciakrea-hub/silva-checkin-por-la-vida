@@ -378,6 +378,12 @@
     #preguntas .faq{grid-column:2;}
 
   }
+  /* ── Tu foto con el Héroe ── */
+  .tufoto{margin-top:2.2rem;padding-top:1.8rem;border-top:1.5px dashed var(--paper-edge);}
+  .tufoto-texto{max-width:52ch;margin:0 0 1.1rem;}
+  .tufoto-btn{width:100%;max-width:26rem;}
+  .tufoto-nota{margin:.9rem 0 0;max-width:52ch;
+               font:400 .86rem/1.5 var(--sans);color:var(--ink-soft);}
   .grafico h3{font-family:var(--sans);font-weight:600;font-size:1.25rem;margin-bottom:.3rem;}
   .grafico-nota{max-width:62ch;margin-top:1.2rem;font-size:1rem;font-weight:400;color:var(--ink);}
 
@@ -838,6 +844,30 @@
         <figure><picture><source srcset="img/galeria/09-600.avif" type="image/avif"><img src="img/galeria/09-600.webp" width="600" height="452" loading="lazy" decoding="async" alt="Salón del Congreso Científico Internacional de Oncología en el Hotel Eurobuilding de Caracas"></picture></figure>
       </div>
 
+      <!-- ── Tu foto con el Héroe ─────────────────────────────────────────
+           Va pegado a la galería porque es la misma idea: quien ve a otros
+           adoptando, adopta. La diferencia es que estas fotos las manda la
+           gente, no el equipo. -->
+      <div class="tufoto">
+        <h3 class="rotulo">Y tú, ¿ya tienes el tuyo?</h3>
+        <p class="tufoto-texto">Mándanos por WhatsApp una <b>foto con tu Héroe de
+          Rescate</b> y la publicamos en nuestras redes y acá mismo, en esta
+          página. Ver a alguien con su Héroe es lo que hace que otro quiera el
+          suyo.</p>
+        <a class="btn btn-1 tufoto-btn" data-wa="foto" href="https://wa.me/584241466595" target="_blank" rel="noopener">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 8.5h3.2l1.4-2h7.8l1.4 2H20a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1v-9a1 1 0 011-1z"/><circle cx="11.5" cy="13.5" r="3.4"/>
+          </svg>
+          Enviar mi foto por WhatsApp
+        </a>
+        <!-- ⚠️ EL PERMISO SE PIDE ANTES, NO DESPUÉS. Publicar la foto de
+             alguien sin que sepa que se va a publicar no se arregla borrándola
+             más tarde. También se ofrece la salida de mandar sólo al oso:
+             mucha gente quiere participar y no quiere salir. -->
+        <p class="tufoto-nota">Al enviarla nos autorizas a publicarla con la
+          campaña. Si prefieres no salir tú, manda sólo a tu Héroe: vale igual.</p>
+      </div>
+
       <div class="grafico" id="grafico">
         <h3>Los aportes que logramos en dos días</h3>
         <ul class="aportes">
@@ -1212,7 +1242,11 @@ document.addEventListener('DOMContentLoaded', function () {
     general: '¡Hola! Vengo de la web de la campaña Un Check-in por la Vida y quiero adoptar un Héroe de Rescate. ¿Me puedes dar más información?',
     padrino: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Padrino de Ruta, con un aporte de 600 osos para financiar un vuelo completo. ¿Me pueden enviar la información?',
     copiloto: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, con compra de bloques fraccionados de la ruta. ¿Cómo se calcula el aporte?',
-    lotes: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero cotizar Héroes de Rescate como regalo institucional. ¿Cuál es el mínimo y los precios por cantidad?'
+    lotes: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero cotizar Héroes de Rescate como regalo institucional. ¿Cuál es el mínimo y los precios por cantidad?',
+    /* El permiso va escrito en el mensaje que la propia persona envía: así
+       queda de su puño y letra en la conversación, no en una letra chica que
+       nadie leyó. */
+    foto: '¡Hola! Vengo de la web de Un Check-in por la Vida y les mando una foto con mi Héroe de Rescate. Pueden publicarla en las redes y en la página de la campaña.'
   };
   Object.keys(nombres).forEach(function (id) {
     var precio = (precios[id] && precios[id].precio) || respaldo[id];

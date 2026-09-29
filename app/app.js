@@ -232,6 +232,11 @@
                 '<path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-7 2-7 4.5V21h14v-2.5C19 16 16 14 12 14z"/></svg>';
 
   function pintarMisiones(yo) {
+    /* ⚠️ APAGAR CON CSS NO ALCANZA. La tarjeta bloqueada se ve apagada, pero
+       sus botones siguen respondiendo al toque: alguien sin el pase activado
+       podía abrir WhatsApp desde «Regalar» o mandar un ticket a vincular. Se
+       apagan de verdad al final de esta función. */
+    var conLlave = !!(yo && yo.activo);
     var n = Number(yo && yo.tripulacion) || 0;
     /* Los que entraron por su enlace y todavía no activaron. Se restan los que
        sí, porque el servidor manda el total de registrados, no la diferencia. */
@@ -402,6 +407,17 @@
     $('misiones-bajada').textContent = hechas >= lista.length
       ? 'Las completaste todas. Gracias de verdad.'
       : 'Cada una acerca la ruta a despegar.';
+
+    /* Sin el pase activado, los botones se apagan de verdad. El CSS los pinta
+       apagados; esto es lo que impide que respondan al toque. */
+    if (!conLlave) {
+      var caja = $('lista-mis');
+      var tocables = caja.querySelectorAll('button, input');
+      for (var t = 0; t < tocables.length; t++) {
+        tocables[t].disabled = true;
+        tocables[t].setAttribute('tabindex', '-1');
+      }
+    }
   }
 
   // ── Tu aporte y la fecha de las cifras ───────────────────────────────────
@@ -450,14 +466,34 @@
      primero que aparece es cómo activarlo. */
   function pintarActivacion(yo) {
     var activo = !!(yo && yo.activo);
-    $('activar-pase').hidden = activo;
-    $('pase-falta').hidden   = activo;
+
+    /* ⚠️ LA SECCIÓN NO SE OCULTA ENTERA AL ACTIVAR. Adentro está la pieza del
+       pase de papel girando, y no hay motivo para que desaparezca: el objeto
+       sigue existiendo después de activarlo. Se va el formulario, se queda la
+       pieza, y el título cambia para que no siga diciendo «activa» algo que ya
+       está activo. */
+    $('activar-pase').hidden = false;
+    $('activar-form').hidden = activo;
+    $('activar-listo').hidden = !activo;
+    $('t-activar').textContent = activo ? 'Tu Boarding Pass de papel'
+                                        : 'Activa tu Boarding Pass';
+
+    $('pase-falta').hidden = activo;
     if (activo) $('pase').removeAttribute('data-falta');
     else        $('pase').setAttribute('data-falta', '');
+
     // Las secciones que hablan de «tu» aporte no aplican a quien no aportó.
     var aporte = document.querySelector('.aporte');
     if (aporte) aporte.hidden = !activo;
-    $('misiones').hidden = !activo;
+
+    /* ⚠️ LAS MISIONES SE VEN SIEMPRE, BLOQUEADAS SI FALTA ACTIVAR. Antes no
+       aparecían: quien no había activado no tenía forma de saber qué se estaba
+       perdiendo, que es justamente lo que da ganas de activar. */
+    $('misiones').hidden = false;
+    $('misiones-llave').hidden = activo;
+    $('misiones-bajada').hidden = !activo;
+    if (activo) $('misiones').removeAttribute('data-bloqueada');
+    else        $('misiones').setAttribute('data-bloqueada', '');
     return activo;
   }
 
@@ -714,6 +750,8 @@
         pintarAporte(r.vuelo);
         pintarCierre(r.vuelo);
         if (r.yo) {
+          /* Las misiones se dibujan haya activado o no: bloqueadas se tienen
+             que ver igual, o la cinta quedaría sobre una tarjeta vacía. */
           /* El código de invitación se guarda en el teléfono: el botón de
              compartir tiene que armar el enlace sin esperar al servidor. */
           if (yo && r.yo.invitacion && yo.invitacion !== r.yo.invitacion) {
@@ -723,7 +761,7 @@
           pintarPersona(r.yo);
           pintarInvitacion(r.yo);
           pintarAvisos(r.yo);
-          if (r.yo.activo) pintarMisiones(r.yo);
+          pintarMisiones(r.yo);
           if (!r.yo.invitadoPor) anotarQuienInvito(yo);
           else { try { localStorage.removeItem(K_INVITO); } catch (e) {} }
         }

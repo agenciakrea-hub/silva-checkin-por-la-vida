@@ -326,6 +326,45 @@
   .misiones{background:var(--orange-papel);color:#fff;
             border-radius:16px;padding:22px 20px;margin-top:18px;
             box-shadow:0 12px 30px rgba(0,0,0,.28);}
+
+  /* ── Las misiones, todavía sin llave ───────────────────────────────────
+     Quien no activó su pase las VE pero no las puede tocar. Antes ni
+     aparecían, así que no había forma de saber qué te estabas perdiendo, que
+     es justamente lo que convence de activar.
+
+     ⚠️ LA SEÑAL ES LA CINTA, NO EL GRIS. Es la misma lección que costó dos
+     intentos en el pase: bajarle el color a un bloque comunica «apagado» o
+     «roto», no «te falta un paso». La cinta lo dice con palabras y en
+     diagonal, que es como se marca algo que todavía no está disponible; el
+     apagado del fondo es lo secundario, y **el texto no se toca** para que
+     siga leyéndose entero. */
+  .misiones[data-bloqueada]{position:relative;overflow:hidden;
+                            background:#8a6a4e;box-shadow:0 8px 20px rgba(0,0,0,.22);}
+  .misiones[data-bloqueada]::after{
+    content:'Activa tu Boarding Pass';position:absolute;top:26px;right:-66px;
+    transform:rotate(45deg);pointer-events:none;
+    background:var(--orange);color:var(--tinta-boton);
+    font:700 .62rem/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+    padding:7px 70px;box-shadow:0 2px 10px rgba(0,0,0,.35);}
+  /* ⚠️ EL CONTADOR Y LA BARRA NO SE APAGAN: SE VAN. Apagados seguían ahí y
+     pasaban dos cosas, las dos malas: la cinta les caía encima —el «1 de 4»
+     quedaba debajo de la diagonal, ilegible— y el número en sí confundía,
+     porque decir «1 de 4» a alguien que todavía no activó nada invita a
+     preguntarse cuál hizo. Sin llave no hay progreso que contar. */
+  .misiones[data-bloqueada] .misiones-cuenta,
+  .misiones[data-bloqueada] .mis-barra{display:none;}
+  /* ⚠️ Los botones se APAGAN CON COLOR, no con opacidad: sobre opacidad el
+     texto cae a 2:1 y no se entiende qué es lo que no se puede tocar. */
+  .misiones[data-bloqueada] .mis-accion,
+  .misiones[data-bloqueada] .mis-fila button{
+    background:rgba(0,0,0,.22);color:#f0e2d4;cursor:not-allowed;box-shadow:none;}
+  .misiones[data-bloqueada] .mis-fila input{opacity:.5;}
+  /* La cabecera de la tarjeta necesita aire a la derecha o el «1 de 4» queda
+     debajo de la cinta. */
+  .misiones[data-bloqueada] .misiones-cab{padding-right:64px;}
+  .misiones-llave{margin:0 0 14px;padding:12px 14px;border-radius:10px;
+                  background:rgba(0,0,0,.2);font:400 .88rem/1.5 var(--sans);color:#fff;}
+  .misiones-llave b{font-weight:700;}
   .misiones-cab{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
   .misiones h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0;
                letter-spacing:.02em;color:#fff;}
@@ -501,6 +540,9 @@
   .activar-fila input:focus-visible{border-color:var(--navy);}
   .activar-fila input[aria-invalid="true"]{border-color:#a5372b;}
   .activar-fila .btn{flex:none;padding:0 22px;}
+  .activar-listo{margin:14px 0 0;font:400 .92rem/1.5 var(--sans);color:var(--ink);
+                 text-align:center;}
+  .activar-listo b{font-weight:600;color:var(--navy);}
   .activar-sin{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--paper-edge);
                font-size:.9rem;color:var(--ink);}
   /* ⚠️ EL ÁREA TÁCTIL SE DA CON UN PSEUDO-ELEMENTO, NO CON `min-height` NI CON
@@ -916,6 +958,12 @@
           </div>
         </div>
       </div>
+      <!-- ⚠️ TODO LO QUE SE VA AL ACTIVAR VIVE ACÁ ADENTRO, y la pieza 3D de
+           arriba NO. Antes se ocultaba la sección entera y el pase girando
+           desaparecía con ella; a Krea le gustaba ese efecto y tiene razón en
+           que no hay motivo para sacarlo: el objeto de papel sigue existiendo
+           después de activarlo. Se va el formulario, se queda la pieza. -->
+      <div id="activar-form">
       <p>Tu Héroe de Rescate viene con un código. Escríbelo aquí y tu pase queda
         listo, con tu nombre y tu ruta.</p>
       <form class="activar-fila" id="form-activar" novalidate>
@@ -928,6 +976,9 @@
       <p class="activar-sin">¿Todavía no tienes uno?
         <button type="button" id="btn-quiero">Adopta tu Héroe de Rescate</button>
         y te lo enviamos por WhatsApp.</p>
+      </div>
+      <p class="activar-listo" id="activar-listo" hidden>Este es el pase que vino
+        con tu Héroe de Rescate. <b>El tuyo, con tu nombre, está arriba.</b></p>
     </section>
 
     <!-- ── A dónde fue tu dinero ───────────────────────────────────────────
@@ -1009,6 +1060,9 @@
         <p class="misiones-cuenta"><b id="mis-hechas">1</b> de <span id="mis-total">4</span></p>
       </div>
       <div class="mis-barra" id="mis-barra" aria-hidden="true"></div>
+      <p class="misiones-llave" id="misiones-llave" hidden>Estas son las misiones
+        de la ruta. <b>Se abren cuando actives tu Boarding Pass</b> con el código
+        que viene con tu Héroe de Rescate.</p>
       <p class="misiones-bajada" id="misiones-bajada">Cada una acerca la ruta a despegar.</p>
       <ol class="lista-mis" id="lista-mis"></ol>
     </section>
