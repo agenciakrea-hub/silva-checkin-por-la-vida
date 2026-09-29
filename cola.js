@@ -127,10 +127,13 @@
     alServidor(pendiente.cuerpo)
       .then(function (r) {
         var listo = r && r.ok;
-        // Datos que el servidor nunca va a aceptar: insistir es quedarse
-        // trabado. El servidor los anota en su bitácora antes de rechazarlos,
-        // así que no desaparecen sin dejar rastro.
-        var irrecuperable = r && r.motivo && r.motivo.indexOf('invalido') > -1;
+        /* ⚠️ YA NO SE DESCARTA NADA POR «INVÁLIDO». Eso costó un registro real:
+           el servidor rechazaba un teléfono argentino, el cliente leía
+           «invalido» y borraba el envío de la cola, y esa persona no quedaba en
+           ninguna parte. Hoy el servidor guarda hasta lo que no entiende, así
+           que lo único que puede volver mal es un fallo de verdad — y eso se
+           reintenta, no se tira. */
+        var irrecuperable = false;
 
         if (listo && r.token) {
           escribir(K_YO, { id: r.id, token: r.token });
