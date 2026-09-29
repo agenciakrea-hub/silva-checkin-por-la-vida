@@ -18,6 +18,7 @@
   var K_YO = 'cxv.yo';
   var K_DISPOSITIVO = 'cxv.dispositivo';
   var K_PERFIL = 'cxv.perfil';   // lo que dejó el formulario, para pintar sin esperar
+  var K_REGALO = 'cxv.regalo';   // si ya encargó un Héroe para otra persona
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -84,6 +85,9 @@
     if (v.origen)  $('origen').textContent  = v.origen;
     if (v.destino) $('destino').textContent = v.destino;
     if (v.nota)    $('vuelo-nota').textContent = v.nota;
+    // Lo manda el servidor en cada respuesta y la app lo descartaba.
+    if (v.proximo) { $('proximo').textContent = v.proximo; $('proximo-caja').hidden = false; }
+    else $('proximo-caja').hidden = true;
     $('d-estado').textContent = ESTADOS[v.estado] || v.estado || 'Preparando';
     pintarEtapas(v.estado || 'preparando');
   }
@@ -150,6 +154,7 @@
 
   function pintarMisiones(yo) {
     var n = Number(yo && yo.tripulacion) || 0;
+    var regalo = leer(K_REGALO, null) === 'si';
     /* ⚠️ EL NOMBRE ALCANZA. Quien completó el formulario ya activó su pase,
        aunque el servidor tarde veinte segundos en devolverle un id. Atando
        esta misión al id, el contador le decía «0 de 4» justo en el momento en
@@ -169,6 +174,9 @@
              : n === 1 ? 'Una ya se sumó. Con una más, tu tripulación está completa.'
              : 'Ya son ' + n + '. Tu tripulación está completa.',
         asientos: n,
+        // La recompensa no puede ser sólo un tilde: la consecuencia es lo que
+        // hace que valga la pena.
+        produce: n >= META_TRIPU ? null : 'Cada persona que entra suma su Héroe a esta ruta',
         accion: n >= META_TRIPU ? null : { texto: 'Invitar', como: 'invitar' } },
 
       { hecha: compro,
@@ -177,10 +185,20 @@
                       : '¿Compraste tu Héroe en el evento? Escribe el número de tu pase.',
         campo: !compro },
 
-      { hecha: false,
+      { hecha: regalo,
         titulo: 'Regala un Héroe de Rescate',
-        texto: 'A alguien que quieras, o a un paciente de la próxima ruta.',
-        accion: { texto: 'Regalar', como: 'regalar', suave: true } }
+        texto: regalo ? 'Gracias. Ese Héroe viaja por alguien más.'
+                      : 'A alguien que quieras, o a un paciente de la próxima ruta.',
+        /* ⚠️ ESTA MISIÓN ERA IMPOSIBLE. Estaba en `hecha: false` fijo, así que
+           el techo real del contador era «3 de 4» y el mensaje de «las
+           completaste todas» nunca corría: código muerto. Una lista donde la
+           última tarea no se puede terminar entrena a la persona a ignorar el
+           contador entero.
+           Se resuelve preguntando: se abre WhatsApp y al volver la app pregunta
+           si lo encargó. En una campaña solidaria, confiar en la respuesta es
+           lo correcto y no cuesta nada. */
+        accion: regalo ? null : { texto: 'Regalar', como: 'regalar', suave: true },
+        confirmar: !regalo && leer(K_REGALO, null) === 'preguntando' }
     ];
 
     var caja = $('lista-mis');
@@ -205,6 +223,13 @@
       cuerpo.appendChild(b); cuerpo.appendChild(pp);
 
       // La tripulación se ve, no se cuenta de memoria.
+      if (m.produce) {
+        var pr = document.createElement('p');
+        pr.className = 'mis-produce';
+        pr.textContent = m.produce;
+        cuerpo.appendChild(pr);
+      }
+
       if (typeof m.asientos === 'number') {
         var fila = document.createElement('div');
         fila.className = 'mis-asientos';
@@ -236,6 +261,20 @@
         cuerpo.appendChild(f); cuerpo.appendChild(av);
       }
 
+      // «¿Ya lo encargaste?» — aparece al volver de WhatsApp.
+      if (m.confirmar) {
+        var pre = document.createElement('div');
+        pre.className = 'mis-confirma';
+        var si = document.createElement('button');
+        si.type = 'button'; si.className = 'mis-accion'; si.textContent = 'Sí, ya lo encargué';
+        si.addEventListener('click', function () { escribir(K_REGALO, 'si'); arrancar(); });
+        var no = document.createElement('button');
+        no.type = 'button'; no.className = 'mis-accion suave'; no.textContent = 'Todavía no';
+        no.addEventListener('click', function () { escribir(K_REGALO, null); arrancar(); });
+        pre.appendChild(si); pre.appendChild(no);
+        cuerpo.appendChild(pre);
+      }
+
       if (m.accion) {
         var btn = document.createElement('button');
         btn.type = 'button';
@@ -252,6 +291,14 @@
       caja.appendChild(li);
     });
 
+    var barra = $('mis-barra');
+    barra.innerHTML = '';
+    for (var b2 = 0; b2 < lista.length; b2++) {
+      var seg = document.createElement('i');
+      if (b2 < hechas) seg.setAttribute('data-hecha', '');
+      barra.appendChild(seg);
+    }
+
     $('mis-hechas').textContent = String(hechas);
     $('mis-total').textContent  = String(lista.length);
     $('misiones-bajada').textContent = hechas >= lista.length
@@ -259,10 +306,38 @@
       : 'Cada una acerca la ruta a despegar.';
   }
 
+  // ── Tu aporte y la fecha de las cifras ───────────────────────────────────
+
+  function pintarAporte(vuelo) {
+    var c = cifrasDeLaCampana();
+    if (c) $('a-meta').textContent = String(c.meta);
+    if (vuelo && vuelo.origen)  $('a-origen').textContent  = vuelo.origen;
+    if (vuelo && vuelo.destino) $('a-destino').textContent = vuelo.destino;
+  }
+
+  // «Cuándo fue verdad esto» es señal de confianza para quien aportó, y el dato
+  // ya viene en datos.js: el sitio lo muestra y la app lo ignoraba.
+  function pintarFecha() {
+    var d = window.CAMPANA;
+    if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d.actualizado || '')) return;
+    var partes = d.actualizado.split('-');
+    var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+                 'septiembre','octubre','noviembre','diciembre'];
+    var mes = meses[parseInt(partes[1], 10) - 1];
+    if (!mes) return;
+    $('pie-fecha').textContent =
+      'Cifras actualizadas el ' + parseInt(partes[2], 10) + ' de ' + mes + ' de ' + partes[0] + '.';
+    $('pie-fecha').hidden = false;
+  }
+
   // ── Cierre de la ruta ────────────────────────────────────────────────────
 
   function pintarCierre(vuelo) {
     if (!vuelo || vuelo.estado !== 'completado') { $('cierre').hidden = true; return; }
+    /* Con la ruta terminada, la barra de avance y el «próximo paso» sobran y se
+       contradicen con el cartel que dice que se completó. */
+    $('barra-caja').hidden = true;
+    $('proximo-caja').hidden = true;
     if (vuelo.titulo) $('cierre-titulo').textContent = vuelo.titulo + ' se completó';
     /* El equipo escribe el cierre en la hoja: quiénes viajaron, cómo salió. Sin
        eso queda un agradecimiento genérico, que es lo justo pero no dice nada. */
@@ -379,6 +454,8 @@
     // portada y tienen que coincidir con ella aunque Apps Script no conteste.
     var c = cifrasDeLaCampana();
     if (c) pintarAvance(c.adoptados, c.meta);
+    pintarAporte(null);
+    pintarFecha();
 
     // ⚠️ SE PINTA EL PASE ANTES DE HABLAR CON EL SERVIDOR, con lo que el
     // formulario acaba de guardar en el teléfono. Apps Script en frío tarda más
@@ -421,6 +498,7 @@
         if (!r || (!r.ok && r.motivo === 'respuesta_no_json')) { pintarSinConexion(); return; }
         if (!r.ok) { pintarDesconocido(); return; }
         pintarVuelo(r.vuelo);
+        pintarAporte(r.vuelo);
         pintarCierre(r.vuelo);
         if (r.yo) { pintarPersona(r.yo); pintarMisiones(r.yo); }
         else {
@@ -606,6 +684,9 @@
   }
 
   function regalar() {
+    // Se anota que se preguntó: al volver, la misión ofrece confirmarlo.
+    escribir(K_REGALO, 'preguntando');
+    setTimeout(arrancar, 400);
     window.open(textoWa(
       'Hola, vengo de mi Boarding Pass de Un Check-in por la Vida. Quiero regalar un Héroe de Rescate. '
       + '¿Me puedes decir cómo?'), '_blank', 'noopener');
@@ -700,6 +781,13 @@
     $('entrar-texto').textContent = 'Un momento.';
     $('btn-reintentar').hidden = true;
     arrancar();
+  });
+
+  $('btn-ayuda').addEventListener('click', function () {
+    var perfil = leer(K_PERFIL, null);
+    var quien = (perfil && perfil.nombre) ? (' Soy ' + perfil.nombre + '.') : '';
+    window.open(textoWa('Hola, tengo una consulta sobre mi Boarding Pass de Un Check-in por la Vida.' + quien),
+                '_blank', 'noopener');
   });
 
   $('btn-instalar').addEventListener('click', function () {

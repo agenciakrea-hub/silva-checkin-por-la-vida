@@ -248,6 +248,13 @@
   .etapa[data-ahora] .etapa-txt b{color:var(--navy);font-weight:700;font-size:1.08rem;}
   .etapa[data-ahora] .etapa-txt span{color:var(--ink);}
 
+  /* Sin barra de color al costado: es el cliché más reconocible de las
+     interfaces generadas, y el rótulo en naranja ya distingue el bloque. */
+  .proximo{margin:0 0 20px;padding:14px 16px;background:#fff;border-radius:12px;}
+  .proximo span{display:block;font:600 .75rem/1.2 var(--sans);letter-spacing:.12em;
+                text-transform:uppercase;color:var(--orange-papel);}
+  .proximo b{display:block;font:400 1rem/1.5 var(--sans);color:var(--navy);margin-top:3px;}
+
   /* ── Misiones ── */
   /* Sobre un fondo navy, un panel navy desaparece. Las misiones pasan a ser la
      pieza naranja de la pantalla: es la acción que la campaña necesita que
@@ -266,12 +273,27 @@
   .misiones-cuenta b{font:700 1.5rem/1 var(--cifra);color:#fff;vertical-align:-.08em;}
   .misiones-bajada{margin:6px 0 18px;font-size:.95rem;color:#ffeeda;}
 
+  /* Cuatro segmentos: «2 de 4» con el 2 grande y el «de 4» chico se lee como
+     un número suelto con una nota al pie, no como una fracción. */
+  .mis-barra{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:14px 0 0;}
+  .mis-barra i{height:5px;border-radius:3px;background:rgba(255,255,255,.28);}
+  .mis-barra i[data-hecha]{background:#fff;}
+
+  .mis-produce{margin:8px 0 0;font:600 .82rem/1.4 var(--sans);color:#fff;
+               display:inline-block;background:rgba(0,0,0,.2);border-radius:8px;
+               padding:6px 10px;}
+
+  .mis-confirma{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .mis-confirma .mis-accion{margin-top:0;}
+
   .lista-mis{list-style:none;margin:0;padding:0;}
+  /* El separador estaba a 1,63:1 sobre el fondo: invisible. Las cuatro filas se
+     leían como un muro de texto con puntos. */
   .mis{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;
-       padding:14px 0;border-top:1px solid rgba(255,255,255,.16);}
+       padding:16px 0;border-top:1px solid rgba(255,255,255,.3);}
   .mis:first-child{border-top:0;padding-top:0;}
   .mis-marca{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.6);
-             display:grid;place-items:center;color:rgba(255,255,255,.75);margin-top:2px;}
+             display:grid;place-items:center;color:rgba(255,255,255,.75);margin-top:-3px;}
   .mis[data-hecha] .mis-marca{background:#fff;border-color:#fff;color:var(--orange-papel);}
   .mis-marca svg{width:15px;height:15px;}
   /* ⚠️ `min-width:0`. Sin esto, un item de grid no se encoge por debajo del
@@ -287,7 +309,9 @@
   .mis-accion:hover{background:#fff6e8;}
   .mis-accion.suave{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.6);}
   .mis-accion.suave:hover{background:rgba(255,255,255,.14);}
-  .mis-asientos{display:flex;gap:7px;margin-top:9px;}
+  /* 6 arriba y 16 abajo: con 9 y 10 el grupo de asientos no pertenecía ni al
+     texto de arriba ni al botón de abajo. */
+  .mis-asientos{display:flex;gap:7px;margin:6px 0 16px;}
   .mis-asiento{width:30px;height:30px;border-radius:8px;border:2px solid rgba(255,255,255,.5);
                display:grid;place-items:center;color:rgba(255,255,255,.7);}
   .mis-asiento[data-ocupado]{border-color:#fff;color:var(--orange-papel);background:#fff;}
@@ -312,15 +336,22 @@
   .tienda > p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
   .prod{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
         padding:12px 0;border-bottom:1px solid var(--paper-edge);}
+  /* Sin esto la línea de la última fila parecía del Total y la lista se veía
+     cortada. */
+  .prod:last-child{border-bottom:0;}
   .prod-nombre{font:600 .98rem/1.3 var(--sans);color:var(--navy);margin:0;}
   .prod-precio{font:700 .88rem/1.3 var(--cifra);color:var(--ink-soft);margin:2px 0 0;}
-  .cant{display:flex;align-items:center;gap:0;border:1.5px solid var(--paper-edge);
+  /* Era el control que hay que encontrar para comprar, con un borde a 1,20:1
+     sobre el papel: no se veía que fuera un control. */
+  .cant{display:flex;align-items:center;gap:0;border:1.5px solid var(--ink-soft);
         border-radius:10px;overflow:hidden;background:#fff;}
   /* 44 px de lado: por debajo de eso, un dedo falla. */
   .cant button{width:44px;height:44px;border:0;background:transparent;cursor:pointer;
                font:700 1.25rem/1 var(--sans);color:var(--navy);}
   .cant button:hover{background:var(--paper);}
-  .cant button:disabled{color:var(--paper-edge);cursor:default;}
+  /* El «−» apagado en el color del borde hacía que el control pareciera tener
+     un solo botón. */
+  .cant button:disabled{color:#9aa6bd;cursor:default;}
   .cant output{min-width:34px;text-align:center;font:700 1rem/1 var(--cifra);color:var(--navy);
                font-variant-numeric:tabular-nums;}
   .para-quien{border:0;margin:16px 0 0;padding:0;}
@@ -331,7 +362,8 @@
   .para-quien input{width:20px;height:20px;accent-color:var(--navy);flex:none;}
 
   .total{display:flex;justify-content:space-between;align-items:baseline;
-         margin:16px 0 0;font:600 .95rem/1.3 var(--sans);color:var(--ink);}
+         margin:24px 0 0;padding-top:16px;border-top:1.5px solid var(--paper-edge);
+         font:600 .95rem/1.3 var(--sans);color:var(--ink);}
   .total b{font:700 1.5rem/1 var(--cifra);color:var(--navy);}
   .tienda .btn{width:100%;margin-top:14px;}
   .tienda .btn[disabled]{opacity:.45;cursor:default;}
@@ -374,6 +406,59 @@
   .cierre .btn{width:100%;}
   .cierre .btn + .btn{margin-top:10px;}
 
+
+  /* ── Tu aporte ── */
+  .aporte{background:var(--paper);color:var(--navy);border-radius:16px;
+          padding:22px 20px;margin-top:18px;}
+  .aporte h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 10px;
+             letter-spacing:.02em;}
+  .aporte-grande{margin:0 0 18px;font:400 1.12rem/1.5 var(--sans);color:var(--navy);}
+  .aporte-grande b{font-weight:600;}
+  .aporte-como{margin:0;display:grid;gap:14px;}
+  .aporte-como dt{font:600 .75rem/1.2 var(--sans);letter-spacing:.12em;
+                  text-transform:uppercase;color:var(--ink-soft);}
+  .aporte-como dd{margin:3px 0 0;font:400 .92rem/1.5 var(--sans);color:var(--ink);}
+
+  /* ── La red completa ── */
+  .red{background:var(--celeste-papel);color:var(--navy);border-radius:16px;
+       padding:22px 20px;margin-top:18px;}
+  .red h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 4px;
+          letter-spacing:.02em;}
+  .red > p{margin:0 0 16px;font-size:.95rem;color:var(--ink);}
+  .rutas{list-style:none;margin:0;padding:0;}
+  .rutas li{padding:11px 0;border-top:1px solid rgba(14,42,92,.14);}
+  .rutas li:first-child{border-top:0;padding-top:0;}
+  .rutas b{display:block;font:600 .98rem/1.3 var(--sans);color:var(--ink-soft);}
+  /* Los códigos son de la campaña, no un adorno: dicen «avión» sin dibujar nada. */
+  .rutas span{display:block;font:600 .8rem/1.4 var(--sans);letter-spacing:.16em;
+              color:var(--ink-soft);margin-top:2px;}
+  .rutas i{display:block;font:400 .84rem/1.4 var(--sans);font-style:normal;
+           color:var(--ink-soft);margin-top:1px;}
+  .rutas li[data-tuya] b{color:var(--navy);}
+  .rutas li[data-tuya] span{color:var(--orange-papel);}
+  /* La ruta propia se marca diciéndolo, no con una franja: «LA TUYA» dice más
+     y no se parece a una plantilla. */
+  .rutas li[data-tuya] b::after{content:'La tuya';margin-left:9px;
+    font:700 .64rem/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+    color:var(--tinta-boton);background:var(--orange);
+    border-radius:999px;padding:4px 8px;vertical-align:.12em;}
+
+  /* ── Quién vuela ── */
+  .quien{background:var(--paper);color:var(--navy);border-radius:16px;
+         padding:20px;margin-top:18px;}
+  .quien h2{font:700 1.05rem/1.2 var(--titulo);text-transform:uppercase;margin:0 0 14px;
+            letter-spacing:.04em;}
+  .credenciales{list-style:none;margin:0;padding:0;display:grid;
+                grid-template-columns:1fr 1fr;gap:14px;}
+  .credenciales b{display:block;font:600 .95rem/1.25 var(--sans);color:var(--navy);}
+  .credenciales span{display:block;font:400 .82rem/1.35 var(--sans);color:var(--ink-soft);}
+  .ayuda{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--paper-edge);
+         font-size:.9rem;color:var(--ink);}
+  .ayuda button{font:600 .9rem/1 var(--sans);color:var(--navy);background:transparent;
+                border:0;border-bottom:2px solid var(--orange);cursor:pointer;
+                min-height:44px;padding:0 2px;}
+
+  .pie span{display:block;margin-bottom:4px;}
 
   /* ── Instalar ── */
   .instalar{background:var(--paper);color:var(--navy);border-radius:14px;padding:16px 18px;margin-top:12px;}
@@ -462,6 +547,29 @@
       <button class="btn btn-1" id="btn-reintentar" type="button" hidden>Reintentar</button>
     </section>
 
+    <section class="cierre" id="cierre" hidden aria-labelledby="cierre-titulo">
+      <h2 id="cierre-titulo">La ruta se completó</h2>
+      <p id="cierre-nota">Gracias. Tu Héroe de Rescate ayudó a que esta ruta despegara.</p>
+      <button class="btn btn-1" id="btn-otra-ruta" type="button">Sumarme a la próxima ruta</button>
+    </section>
+
+    <!-- ── A dónde fue tu dinero ───────────────────────────────────────────
+         Es la primera pregunta de alguien que acaba de aportar, y la app no la
+         contestaba en ninguna parte. El texto es el mismo que la campaña ya
+         publica: no se inventa nada, se pone donde hace falta. -->
+    <section class="aporte" aria-labelledby="t-aporte">
+      <h2 id="t-aporte">Tu aporte</h2>
+      <p class="aporte-grande">Los <b id="a-meta">609</b> Héroes de esta ruta pagan
+        un vuelo completo de <b id="a-origen">Maracaibo</b> a <b id="a-destino">Caracas</b>,
+        con tripulación médica a bordo.</p>
+      <dl class="aporte-como">
+        <div><dt>Selección</dt><dd>Los pacientes llegan a través de fundaciones oncológicas
+          regionales, que hacen la selección y el seguimiento médico.</dd></div>
+        <div><dt>Transparencia</dt><dd>Cada aporte es la compra formal de la ruta aeromédica,
+          con factura, del servicio ordinario de Aeroambulancias Silva.</dd></div>
+      </dl>
+    </section>
+
     <!-- ── Tu oncovuelo: el proceso, no sólo el número ────────────────────
          La persona puso plata y quiere saber en qué anda. Un porcentaje no
          cuenta nada; las etapas sí: dónde está hoy su vuelo y qué falta. -->
@@ -470,7 +578,10 @@
       <p id="vuelo-nota">Estamos reuniendo los Héroes de Rescate para la primera ruta.</p>
 
       <ol class="etapas" id="etapas">
-        <li class="etapa" data-etapa="preparando">
+        <!-- Nace marcada: «reuniendo Héroes» siempre es verdad, y el servidor
+             tarda más de 20 s en frío. Sin esto las cuatro salían apagadas
+             durante todo el arranque. -->
+        <li class="etapa" data-etapa="preparando" data-ahora aria-current="step">
           <span class="etapa-punto" aria-hidden="true"></span>
           <span class="etapa-txt"><b>Reuniendo Héroes</b><span>Cada adopción suma horas de vuelo</span></span>
         </li>
@@ -487,6 +598,13 @@
           <span class="etapa-txt"><b>Llegaron</b><span>Los pacientes están en su tratamiento</span></span>
         </li>
       </ol>
+
+      <!-- El servidor manda `proximo` en cada respuesta y la app lo descartaba
+           sin leerlo: una ranura de contenido ya cableada que el equipo puede
+           escribir desde la hoja y que nadie veía. -->
+      <p class="proximo" id="proximo-caja" hidden>
+        <span>Próximo paso</span><b id="proximo"></b>
+      </p>
 
       <p class="cifra-grande">Ya somos <b id="c-osos">44</b> pasajeros de honor</p>
       <p class="cifra-resto">Faltan <b id="c-faltan">565</b> para completar la ruta</p>
@@ -505,6 +623,7 @@
         <h2 id="t-misiones">Tus misiones</h2>
         <p class="misiones-cuenta"><b id="mis-hechas">1</b> de <span id="mis-total">4</span></p>
       </div>
+      <div class="mis-barra" id="mis-barra" aria-hidden="true"></div>
       <p class="misiones-bajada" id="misiones-bajada">Cada una acerca la ruta a despegar.</p>
       <ol class="lista-mis" id="lista-mis"></ol>
     </section>
@@ -528,6 +647,36 @@
       <button class="btn btn-1" id="btn-encargar" type="button" disabled>Encargar por WhatsApp</button>
     </section>
 
+    <!-- ── La red completa ─────────────────────────────────────────────────
+         Da escala y da el motivo para volver: la ruta de esta persona es una
+         de seis. Los códigos son los que la campaña ya publica. -->
+    <section class="red" aria-labelledby="t-red">
+      <h2 id="t-red">La red completa</h2>
+      <p>Esta es la Ruta 1. Faltan cinco por financiar.</p>
+      <ol class="rutas">
+        <li data-tuya><b>Ruta 1 · Occidente</b><span>SVMC → SVCS</span><i>Maracaibo → Caracas</i></li>
+        <li><b>Ruta 2 · Andina</b><span>SVSO → SVCS</span><i>Santo Domingo del Táchira → Caracas</i></li>
+        <li><b>Ruta 3 · Llano Central</b><span>SVBI → SVCS</span><i>Barinas → Caracas</i></li>
+        <li><b>Ruta 4 · Llano Sur</b><span>SVPA → SVCS</span><i>Puerto Ayacucho → Caracas</i></li>
+        <li><b>Ruta 5 · Sur</b><span>SVPR → SVCS</span><i>Puerto Ordaz → Caracas</i></li>
+        <li><b>Ruta 6 · Oriente</b><span>SVGI → SVCS</span><i>Güiria → Caracas</i></li>
+      </ol>
+    </section>
+
+    <!-- ── Quién opera esto ────────────────────────────────────────────────
+         La pregunta real de alguien que ya pagó es «¿esto es serio?». -->
+    <section class="quien" aria-labelledby="t-quien">
+      <h2 id="t-quien">Quién vuela esta ruta</h2>
+      <ul class="credenciales">
+        <li><b>Más de 80 años</b><span>de historia</span></li>
+        <li><b>ACLS / BLS</b><span>personal certificado</span></li>
+        <li><b>Lifeport</b><span>UCI de altura</span></li>
+        <li><b>24 horas</b><span>coordinación médica</span></li>
+      </ul>
+      <p class="ayuda">¿Algo no cuadra con tu pase?
+        <button type="button" id="btn-ayuda">Escríbenos y lo revisamos</button></p>
+    </section>
+
     <section class="empresas" id="empresas" aria-labelledby="t-empresas">
       <h2 id="t-empresas">¿Vienes de una empresa?</h2>
       <p>Tres formas de que tu empresa sume a la campaña.</p>
@@ -543,12 +692,6 @@
         <span><b>Regalos con propósito</b><span>Héroes de Rescate para tus clientes o tu equipo</span></span>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
       </button>
-    </section>
-
-    <section class="cierre" id="cierre" hidden aria-labelledby="cierre-titulo">
-      <h2 id="cierre-titulo">La ruta se completó</h2>
-      <p id="cierre-nota">Gracias. Tu Héroe de Rescate ayudó a que esta ruta despegara.</p>
-      <button class="btn btn-1" id="btn-otra-ruta" type="button">Sumarme a la próxima ruta</button>
     </section>
 
     <section class="instalar" id="instalar" hidden>
@@ -568,7 +711,10 @@
     </p>
   </main>
 
-  <footer class="pie">Un Check-in por la Vida · <a href="../">Aeroambulancias Silva</a></footer>
+  <footer class="pie">
+    <span id="pie-fecha" hidden></span>
+    Un Check-in por la Vida · <a href="../">Aeroambulancias Silva</a>
+  </footer>
 </div>
 
 <!-- Las cifras de la campaña salen de datos.js, el mismo archivo que usa el
