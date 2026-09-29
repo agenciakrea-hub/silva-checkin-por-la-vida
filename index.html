@@ -1349,6 +1349,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var API_URL = (window.CXV_API || '').trim();
 
   var K_DISPOSITIVO = 'cxv.dispositivo';
+  var K_INVITA      = 'cxv.invita';
   var K_PENDIENTES  = 'cxv.pendientes';
   var K_YO          = 'cxv.yo';
   var MAX_COLA      = 40;   // tope de altas guardadas esperando señal
@@ -1385,6 +1386,24 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!id) { id = idUnico(); escribir(K_DISPOSITIVO, id); }
     return id;
   }
+
+  // Quien llega por el enlace de otra persona trae `?de=` en la dirección. Se
+  // guarda acá y viaja con el registro, así esa persona puede ver después
+  // cuánta gente se sumó por ella.
+  //
+  // ⚠️ SE LIMPIA LA DIRECCIÓN ENSEGUIDA. Si no, quien comparte la página
+  // después de haber llegado por el enlace de otro reparte el enlace ajeno, y
+  // el crédito de todo lo que venga detrás se lo lleva alguien que no invitó a
+  // nadie. Se reemplaza sin recargar, así que no se pierde el lugar en la página.
+  (function () {
+    try {
+      var de = new URLSearchParams(location.search).get('de') || '';
+      if (!/^P[0-9A-F]{10}$/.test(de)) return;
+      if (!leer(K_INVITA, null)) escribir(K_INVITA, de);
+      var limpia = location.pathname + location.hash;
+      if (history.replaceState) history.replaceState(null, '', limpia);
+    } catch (e) {}
+  })();
 
   // ⚠️ SIN CABECERA Content-Type, a propósito. Poniéndola, el navegador manda
   // antes una petición OPTIONS de permiso, y Apps Script no contesta ese tipo
@@ -1423,7 +1442,8 @@ document.addEventListener('DOMContentLoaded', function () {
       cuerpo: {
         action: 'registro', origen: 'web', dispositivo: dispositivoId(),
         nombre: valores.nombre || '', telefono: valores.telefono || '',
-        correo: valores.correo || '', ticket: valores.ticket || ''
+        correo: valores.correo || '', ticket: valores.ticket || '',
+        invitadoPor: leer(K_INVITA, '') || ''
       }
     });
     // Se descarta por el principio sólo cuando de verdad hay demasiado: lo más

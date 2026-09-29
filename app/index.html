@@ -144,6 +144,31 @@
                  cursor:pointer;text-align:left;}
   .elegir button:hover{border-color:var(--navy);}
 
+  /* ── Tripulación ── */
+  .tripu{background:var(--paper);border-radius:16px;padding:20px;margin-top:18px;}
+  .tripu h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
+            letter-spacing:.02em;}
+  .tripu p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
+  .tripu .btn{width:100%;}
+  /* Asientos que se ocupan, no puntos de un juego: esta campaña es sobre niños
+     con cáncer y un marcador con premios estaría fuera de lugar. */
+  .asientos{display:flex;gap:9px;margin:0 0 16px;flex-wrap:wrap;}
+  .asiento{width:34px;height:34px;border-radius:9px;border:2px solid var(--paper-edge);
+           display:grid;place-items:center;color:var(--paper-edge);background:#fff;}
+  .asiento[data-ocupado]{border-color:var(--orange);color:var(--orange-papel);
+                         background:#fff6e8;}
+  .asiento svg{width:19px;height:19px;}
+
+  /* ── Cierre de la ruta ── */
+  .cierre{background:var(--navy);color:#fff;border-radius:16px;padding:22px 20px;margin-top:18px;}
+  .cierre h2{font:700 clamp(1.3rem,5.5vw,1.6rem)/1.1 var(--titulo);text-transform:uppercase;
+             margin:0 0 8px;letter-spacing:.01em;}
+  .cierre p{margin:0 0 16px;font-size:.97rem;color:#dbe6f7;}
+  .cierre .btn{width:100%;}
+  .cierre .btn + .btn{margin-top:10px;}
+  .cierre .btn-2{color:#fff;border-color:rgba(255,255,255,.6);}
+  .cierre .btn-2:hover{background:rgba(255,255,255,.14);}
+
   /* ── Instalar ── */
   .instalar{background:var(--paper);border-radius:16px;padding:20px;margin-top:18px;}
   .instalar h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
@@ -224,6 +249,20 @@
       <div class="barra" role="img" aria-label="Avance de la ruta" id="barra-caja">
         <i id="barra"></i>
       </div>
+    </section>
+
+    <section class="cierre" id="cierre" hidden>
+      <h2 id="cierre-titulo">La ruta se completó</h2>
+      <p id="cierre-nota">Gracias. Tu Héroe de Rescate ayudó a que esta ruta despegara.</p>
+      <a class="btn btn-1" id="btn-otra-ruta" href="#">Sumarme a la próxima ruta</a>
+      <button class="btn btn-2" id="btn-regalar" type="button">Regalar un Héroe a alguien</button>
+    </section>
+
+    <section class="tripu" id="tripu" hidden>
+      <h2>Tu tripulación</h2>
+      <p id="tripu-texto">Comparte tu enlace: vas a ver aquí a quienes se sumen por ti.</p>
+      <div class="asientos" id="asientos"></div>
+      <button class="btn btn-1" id="btn-invitar" type="button">Invitar a alguien</button>
     </section>
 
     <div class="acciones">

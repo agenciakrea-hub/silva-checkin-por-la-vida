@@ -106,6 +106,60 @@
       adoptados + ' de ' + meta + ' Héroes de Rescate adoptados');
   }
 
+  // ── La tripulación ───────────────────────────────────────────────────────
+
+  var META_TRIPU = 2;   // lo que pidió el cliente: «compartir con dos contactos»
+
+  function enlacePropio(id) {
+    return location.origin + '/?de=' + encodeURIComponent(id);
+  }
+
+  function pintarTripulacion(yo) {
+    var n = Number(yo.tripulacion) || 0;
+    var caja = $('asientos');
+    caja.innerHTML = '';
+    /* Se dibujan al menos los dos asientos de la meta, y más si ya los pasó:
+       a quien invitó a cinco no se le esconden tres. */
+    var total = Math.max(META_TRIPU, n);
+    for (var i = 0; i < total; i++) {
+      var d = document.createElement('span');
+      d.className = 'asiento';
+      if (i < n) d.setAttribute('data-ocupado', '');
+      d.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+        '<path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-7 2-7 4.5V21h14v-2.5C19 16 16 14 12 14z"/></svg>';
+      caja.appendChild(d);
+    }
+    caja.setAttribute('role', 'img');
+    caja.setAttribute('aria-label',
+      n === 0 ? 'Todavía no se sumó nadie por tu enlace'
+              : (n === 1 ? 'Una persona se sumó por tu enlace'
+                         : n + ' personas se sumaron por tu enlace'));
+
+    $('tripu-texto').textContent =
+      n === 0 ? 'Comparte tu enlace: vas a ver aquí a quienes se sumen por ti.'
+    : n === 1 ? 'Una persona se sumó por ti. Con una más, completas tu tripulación.'
+    : n < META_TRIPU ? n + ' personas se sumaron por ti.'
+    : n === META_TRIPU ? 'Tu tripulación está completa: ' + n + ' personas se sumaron por ti.'
+    : n + ' personas se sumaron por ti. Tu tripulación va más que completa.';
+
+    $('tripu').hidden = false;
+  }
+
+  // ── Cierre de la ruta ────────────────────────────────────────────────────
+
+  function pintarCierre(vuelo) {
+    if (!vuelo || vuelo.estado !== 'completado') { $('cierre').hidden = true; return; }
+    /* Con la ruta terminada, el bloque de avance sobra y además se contradice:
+       decía «estamos reuniendo los Héroes» con la barra a medias justo arriba
+       del cartel que anuncia que la ruta se completó. */
+    $('avance').hidden = true;
+    if (vuelo.titulo) $('cierre-titulo').textContent = vuelo.titulo + ' se completó';
+    /* El equipo escribe el cierre en la hoja: quiénes viajaron, cómo salió. Sin
+       eso queda un agradecimiento genérico, que es lo justo pero no dice nada. */
+    if (vuelo.cierre) $('cierre-nota').textContent = vuelo.cierre;
+    $('cierre').hidden = false;
+  }
+
   function pintarPersona(yo) {
     $('d-nombre').textContent = yo.nombre || '—';
     $('d-pase').textContent   = yo.ticket || yo.id || '—';
@@ -187,7 +241,8 @@
       .then(function (r) {
         if (!r || !r.ok) { pintarDesconocido(); return; }
         pintarVuelo(r.vuelo);
-        if (r.yo) pintarPersona(r.yo);
+        pintarCierre(r.vuelo);
+        if (r.yo) { pintarPersona(r.yo); pintarTripulacion(r.yo); }
         else {
           // El token guardado ya no vale: se descarta para no volver a
           // mandarlo en cada arranque.
@@ -217,15 +272,35 @@
     window.open(textoWa(m), '_blank', 'noopener');
   });
 
-  $('btn-compartir').addEventListener('click', function () {
-    var url = location.origin + '/';
-    var texto = 'Adopté un Héroe de Rescate para que personas con cáncer lleguen a su tratamiento. Súmate:';
+  function compartir(texto, url) {
     if (navigator.share) {
       navigator.share({ title: 'Un Check-in por la Vida', text: texto, url: url })
         .catch(function () {});
       return;
     }
     window.open(textoWa(texto + ' ' + url), '_blank', 'noopener');
+  }
+
+  $('btn-compartir').addEventListener('click', function () {
+    compartir('Adopté un Héroe de Rescate para que personas con cáncer lleguen a su tratamiento. Súmate:',
+              location.origin + '/');
+  });
+
+  $('btn-invitar').addEventListener('click', function () {
+    var yo = leer(K_YO, null);
+    // Sin id no hay enlace propio que compartir, pero la campaña sí: se comparte
+    // igual en vez de dejar el botón muerto.
+    var url = (yo && yo.id) ? enlacePropio(yo.id) : location.origin + '/';
+    compartir('Adopté un Héroe de Rescate para que personas con cáncer lleguen a su tratamiento en Caracas. Súmate a mi tripulación:', url);
+  });
+
+  $('btn-otra-ruta').addEventListener('click', function (e) {
+    e.preventDefault();
+    window.open(textoWa('Hola, mi ruta se completó y quiero sumarme a la próxima con otro Héroe de Rescate.'), '_blank', 'noopener');
+  });
+
+  $('btn-regalar').addEventListener('click', function () {
+    window.open(textoWa('Hola, quiero regalar un Héroe de Rescate a otra persona. ¿Cómo lo hago?'), '_blank', 'noopener');
   });
 
   // ── Instalable ───────────────────────────────────────────────────────────
