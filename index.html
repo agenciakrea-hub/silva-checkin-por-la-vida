@@ -1662,7 +1662,10 @@ document.addEventListener('DOMContentLoaded', function () {
       // esa respuesta antes de mostrar algo sería una pantalla vacía.
       escribir(K_PERFIL, { nombre: valores.nombre || '', ticket: valores.ticket || '' });
 
-      location.href = 'app/';
+      /* `?nuevo=1` es lo que le dice a la app que muestre la bienvenida. No se
+         deduce de tener perfil guardado: eso también es verdad en cada visita
+         posterior, y la pantalla aparecería siempre. */
+      location.href = 'app/?nuevo=1';
     });
 
     // Quien ya se registró antes en este teléfono llega directo a lo suyo.

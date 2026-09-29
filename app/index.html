@@ -78,14 +78,43 @@
                  box-shadow:0 0 0 3px var(--paper);border-radius:3px;}
   .env{max-width:560px;margin:0 auto;}
 
+  /* ── La bienvenida ── */
+  .bienvenida{position:fixed;inset:0;z-index:60;background:var(--navy-deep);
+              display:grid;place-items:center;padding:24px;
+              transition:opacity .4s var(--ease);}
+  .bienvenida[data-yendose]{opacity:0;pointer-events:none;}
+  .bienvenida-caja{text-align:center;max-width:22rem;}
+  .bienvenida-logo{height:56px;width:auto;display:block;margin:0 auto 18px;}
+  .bienvenida-rotulo{margin:0 0 10px;font:600 .72rem/1 var(--sans);letter-spacing:.18em;
+                     text-transform:uppercase;color:#8ea6cf;}
+  .bienvenida-paso{margin:0 0 22px;font:700 clamp(1.15rem,5.4vw,1.45rem)/1.3 var(--titulo);
+                   color:#fff;text-transform:uppercase;letter-spacing:.01em;min-height:2.6em;}
+  .bienvenida-riel{height:3px;border-radius:2px;background:rgba(255,255,255,.16);overflow:hidden;}
+  .bienvenida-riel i{display:block;height:100%;width:100%;border-radius:2px;
+                     background:var(--orange);transform:scaleX(.06);transform-origin:left center;
+                     transition:transform .6s var(--ease);}
+  @media (prefers-reduced-motion:reduce){
+    .bienvenida,.bienvenida-riel i{transition:none;}
+  }
+
   /* ── Cabecera ── */
   .top{display:flex;align-items:center;justify-content:space-between;gap:12px;
        padding:calc(14px + env(safe-area-inset-top)) 0 18px;}
   .top img{height:34px;width:auto;display:block;}
   /* Sobre el navy del fondo, el texto va claro: da 13:1. */
-  .volver{display:flex;align-items:center;min-height:44px;
+  /* ⚠️ `gap` Y NO EL ESPACIO DEL HTML. `display:flex` descarta los espacios en
+     blanco entre nodos hijos, así que «Ver la campaña <span>(ir a la web)</span>»
+     se dibujaba como «Ver la campaña(ir a la web)», todo pegado. */
+  .volver{display:flex;align-items:center;gap:.35em;min-height:44px;
           font:600 .86rem/1 var(--sans);color:#fff;text-decoration:none;
           padding:0 16px;border:1.5px solid rgba(255,255,255,.45);border-radius:999px;}
+  /* Dice a dónde lleva sin pelearle al texto principal. */
+  .volver-donde{font-weight:400;color:#b9c8e4;}
+  /* ⚠️ EL CORTE VA EN 330, NO EN 400. Con 400 la aclaración desaparecía en un
+     teléfono de 390 px —o sea, en casi todos— y el cambio no servía para nada.
+     Medido con ella puesta: el botón ocupa 195 px y deja 137 de hueco con el logo a
+     390 px, y sigue entrando a 360. Por debajo de 330 sí aprieta al logo. */
+  @media (max-width:330px){.volver-donde{display:none;}}
   .volver:hover{background:rgba(255,255,255,.12);}
 
   /* ── El pase ── */
@@ -715,15 +744,39 @@
   .pie span{display:block;margin-bottom:4px;}
 
   /* ── Instalar ── */
-  .instalar{background:var(--paper);color:var(--navy);border-radius:14px;padding:16px 18px;margin-top:12px;}
-  .instalar h2{font:700 1.05rem/1.2 var(--titulo);text-transform:uppercase;margin:0 0 4px;
+  /* ── Guardar en el teléfono: barra fija abajo ──────────────────────────
+     ⚠️ `env(safe-area-inset-bottom)` NO ES OPCIONAL. Sin eso, en un iPhone la
+     barra queda debajo de la franja del gesto de inicio y el botón no se puede
+     tocar: el dedo abre el conmutador de apps. */
+  .instalar{position:fixed;left:0;right:0;bottom:0;z-index:45;
+            background:var(--paper);color:var(--navy);
+            padding:12px var(--lado) calc(12px + env(safe-area-inset-bottom));
+            display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;
+            box-shadow:0 -8px 24px rgba(0,0,0,.35);}
+  .instalar-texto{min-width:0;}
+  .instalar h2{font:700 .95rem/1.2 var(--titulo);text-transform:uppercase;margin:0 0 2px;
             letter-spacing:.04em;}
-  .instalar p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
-  .instalar .btn{width:100%;}
+  .instalar p{margin:0;font:400 .82rem/1.35 var(--sans);color:var(--ink);}
+  .instalar .btn{min-height:44px;padding:12px 18px;font-size:.92rem;}
+  .instalar-cerrar{background:transparent;border:0;color:var(--ink-soft);cursor:pointer;
+                   width:44px;height:44px;display:grid;place-items:center;border-radius:50%;}
+  @media (hover:hover){.instalar-cerrar:hover{background:rgba(14,42,92,.09);color:var(--navy);}}
+  /* Los pasos de iPhone caen debajo de las tres columnas, a todo el ancho. */
+  .instalar .pasos{grid-column:1/-1;margin-top:4px;}
+  /* Con la barra abierta, el final de la página tiene que seguir alcanzándose. */
+  body[data-barra]{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
+  @media (max-width:360px){
+    .instalar h2{font-size:.88rem;}
+    .instalar p{display:none;}
+  }
   .pasos{margin:0;padding-left:1.2em;color:var(--ink);font-size:.95rem;}
   .pasos li{margin:.35em 0;}
   .pasos b{color:var(--navy);}
 
+  .solo-movil{margin:18px 0 0;padding:14px 16px;border-radius:12px;
+              background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
+              font:400 .88rem/1.5 var(--sans);color:#c9d4ea;text-align:center;}
+  .solo-movil b{color:#fff;font-weight:600;}
   .aviso-nuevo{margin:16px 0 0;text-align:center;font:600 .92rem/1.5 var(--sans);
                color:var(--navy);background:var(--paper);border-radius:12px;padding:12px 16px;}
   /* Es el botón que recupera la app cuando hay versión nueva: tenía 17 px de
@@ -741,13 +794,29 @@
 <body>
 <div class="env">
 
+  <!-- ⚠️ SÓLO APARECE AL LLEGAR DESDE EL FORMULARIO (`?nuevo=1`), nunca al
+       abrir la app de todos los días. Una pantalla de carga en cada visita es
+       un peaje; acá tapa el único momento en que hay algo real que esperar:
+       el alta saliendo hacia el servidor. Los tres pasos son lo que de verdad
+       está pasando, no una animación para hacer tiempo. -->
+  <div class="bienvenida" id="bienvenida" hidden role="status" aria-live="polite">
+    <div class="bienvenida-caja">
+      <img class="bienvenida-logo" src="../img/logo-silva-blanco-180.webp" width="180" height="236" alt="">
+      <p class="bienvenida-rotulo">Un Check-in por la Vida</p>
+      <p class="bienvenida-paso" id="bienvenida-paso">Guardando tus datos…</p>
+      <div class="bienvenida-riel" aria-hidden="true"><i id="bienvenida-avance"></i></div>
+    </div>
+  </div>
+
   <header class="top">
     <!-- 180×236 es la proporción real del archivo. Declararla 180×60 hacía que
          el navegador reservara un alto equivocado y la cabecera saltara al
          llegar la imagen. El .webp pesa 30 % menos que el .png. -->
     <img src="../img/logo-silva-blanco-180.webp" width="180" height="236"
          alt="Aeroambulancias Silva">
-    <a class="volver" href="../">Ver la campaña</a>
+    <!-- Dice a dónde lleva: desde una app instalada, «ver la campaña» no deja
+         claro que se sale de la app y se abre el sitio. -->
+    <a class="volver" href="../">Ver la campaña <span class="volver-donde">(ir a la web)</span></a>
   </header>
 
   <main id="app">
@@ -1056,17 +1125,31 @@
       </button>
     </section>
 
-    <section class="instalar" id="instalar" hidden>
-    <h2 id="instalar-titulo">Guárdalo en tu teléfono</h2>
-    <p id="instalar-texto">Agrégalo a tu pantalla de inicio y ábrelo como una aplicación,
-      sin buscar el enlace cada vez.</p>
-    <button class="btn btn-2" id="btn-instalar" type="button">Guardar en mi teléfono</button>
-    <ol class="pasos" id="pasos-ios" hidden>
-      <li>Toca <b>Compartir</b> en la barra de abajo.</li>
-      <li>Desliza y elige <b>Agregar a inicio</b>.</li>
-      <li>Toca <b>Agregar</b>.</li>
-    </ol>
-  </section>
+    <!-- ⚠️ ESTO ES UNA BARRA FIJA ABAJO, NO UNA TARJETA EN EL MEDIO. Como
+         tarjeta quedaba enterrada entre las demás secciones y no la veía
+         nadie: guardar la app en el teléfono es lo que hace que la persona
+         vuelva, así que tiene que estar siempre a la vista. Se puede cerrar, y
+         cerrada no vuelve a aparecer —insistir con esto es molestar—. -->
+    <section class="instalar" id="instalar" hidden aria-labelledby="instalar-titulo">
+      <div class="instalar-texto">
+        <h2 id="instalar-titulo">Guárdalo en tu teléfono</h2>
+        <p id="instalar-texto">Ábrelo como una aplicación, sin buscar el enlace cada vez.</p>
+      </div>
+      <button class="btn btn-1" id="btn-instalar" type="button">Guardar</button>
+      <button class="instalar-cerrar" id="btn-cerrar-instalar" type="button" aria-label="Ahora no">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <ol class="pasos" id="pasos-ios" hidden>
+        <li>Toca <b>Compartir</b> en la barra de abajo.</li>
+        <li>Desliza y elige <b>Agregar a inicio</b>.</li>
+        <li>Toca <b>Agregar</b>.</li>
+      </ol>
+    </section>
+
+    <!-- En computadora no hay nada que instalar y el botón no existiría: en
+         vez de no decir nada, se dice qué pasa. -->
+    <p class="solo-movil" id="solo-movil" hidden>Esta app se guarda en el teléfono.
+      <b>Ábrela desde tu celular</b> para tenerla a mano como una aplicación.</p>
 
     <p class="aviso-nuevo" id="aviso-nuevo" role="status" hidden>
       Hay una versión nueva. <button type="button" id="btn-recargar">Actualizar</button>

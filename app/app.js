@@ -584,6 +584,59 @@
     return true;
   }
 
+  /* ── La bienvenida ────────────────────────────────────────────────────────
+     Los tres pasos son lo que de verdad está pasando: el alta ya está en la
+     cola del teléfono y saliendo hacia el servidor.
+
+     ⚠️ NO ESPERA AL SERVIDOR PARA IRSE. Apps Script en frío tarda más de
+     veinte segundos: tener a alguien mirando una pantalla de carga todo ese
+     rato, justo después de dejar sus datos, es la forma más rápida de que
+     cierre y no vuelva. Se va en cuanto el pase está dibujado con lo que el
+     teléfono ya sabe —que es inmediato—, y el resto lo cuenta el latido de
+     arriba, que para eso está. */
+  var PASOS_BIENVENIDA = [
+    { texto: 'Guardando tus datos…',        avance: .18, ms: 900 },
+    { texto: 'Preparando tu Boarding Pass…', avance: .62, ms: 1000 },
+    { texto: 'Listo. Bienvenido a bordo.',   avance: 1,   ms: 700 }
+  ];
+
+  function bienvenida() {
+    var caja = $('bienvenida');
+    if (!caja) return;
+    /* Sólo al llegar desde el formulario. En una visita normal no hay nada que
+       esperar y la pantalla sería un peaje. */
+    if (location.search.indexOf('nuevo=1') === -1) return;
+
+    caja.hidden = false;
+    var paso = $('bienvenida-paso'), riel = $('bienvenida-avance'), i = 0;
+
+    var siguiente = function () {
+      if (i >= PASOS_BIENVENIDA.length) { cerrar(); return; }
+      var p = PASOS_BIENVENIDA[i++];
+      paso.textContent = p.texto;
+      if (riel) riel.style.transform = 'scaleX(' + p.avance + ')';
+      setTimeout(siguiente, p.ms);
+    };
+
+    var cerrada = false;
+    var cerrar = function () {
+      if (cerrada) return;
+      cerrada = true;
+      caja.setAttribute('data-yendose', '');
+      setTimeout(function () { caja.hidden = true; }, 420);
+      /* La dirección queda limpia: si la persona recarga, o comparte el enlace
+         de la app, la bienvenida no tiene por qué volver a aparecer. */
+      try {
+        history.replaceState(null, '', location.pathname + location.hash);
+      } catch (e) {}
+    };
+
+    /* Tope duro: pase lo que pase con los tiempos, a los cinco segundos la
+       pantalla se va. Una bienvenida que se queda pegada es una app rota. */
+    setTimeout(cerrar, 5000);
+    siguiente();
+  }
+
   function arrancar() {
     /* ⚠️ EL `?de=` SE GUARDA ANTES QUE NADA, y antes de que nada pueda fallar.
        Quien abre el enlace de un amigo y cae directo en la app —porque ya la
@@ -1267,6 +1320,28 @@
   }
 
   var pedidoDeInstalar = null;
+  var K_NO_INSTALAR = 'cxv.sininstalar';
+
+  /** Abre la barra de abajo, salvo que ya la hayan cerrado alguna vez. */
+  function ofrecerInstalar() {
+    if (yaInstalada) return;
+    if (leer(K_NO_INSTALAR, null)) return;
+    $('instalar').hidden = false;
+    /* El `padding-bottom` del body es lo que impide que la barra tape el final
+       de la página: sin esto, el último bloque queda debajo y no se alcanza. */
+    document.body.setAttribute('data-barra', '');
+  }
+
+  function cerrarBarraInstalar(paraSiempre) {
+    $('instalar').hidden = true;
+    document.body.removeAttribute('data-barra');
+    /* ⚠️ SE RECUERDA EL CIERRE. Volver a ofrecer lo mismo en cada visita a
+       quien ya dijo que no es la definición de molestar, y encima tapa
+       contenido cada vez. */
+    if (paraSiempre) escribir(K_NO_INSTALAR, '1');
+  }
+
+  al('btn-cerrar-instalar', 'click', function () { cerrarBarraInstalar(true); });
 
   window.addEventListener('beforeinstallprompt', function (e) {
     // Sin esto Chrome muestra su propia barra, que aparece donde quiere y dice
@@ -1274,12 +1349,12 @@
     // de la campaña.
     e.preventDefault();
     pedidoDeInstalar = e;
-    if (!yaInstalada) $('instalar').hidden = false;
+    ofrecerInstalar();
   });
 
   window.addEventListener('appinstalled', function () {
     pedidoDeInstalar = null;
-    $('instalar').hidden = true;
+    cerrarBarraInstalar(false);
   });
 
   al('btn-reintentar', 'click', function () {
@@ -1300,7 +1375,12 @@
   al('btn-instalar', 'click', function () {
     if (!pedidoDeInstalar) return;
     pedidoDeInstalar.prompt();
-    pedidoDeInstalar.userChoice.then(function () { pedidoDeInstalar = null; });
+    pedidoDeInstalar.userChoice.then(function (r) {
+      pedidoDeInstalar = null;
+      /* Aceptó o rechazó, pero contestó: la barra ya cumplió y se va. Si
+         aceptó, `appinstalled` la cierra igual. */
+      cerrarBarraInstalar(!!(r && r.outcome === 'dismissed'));
+    });
   });
 
   al('btn-recargar', 'click', function () {
@@ -1322,12 +1402,32 @@
     var esIOS = /iPad|iPhone|iPod/.test(ua) ||
                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (!esIOS) return;
-    $('instalar').hidden = false;
+    ofrecerInstalar();
     $('btn-instalar').hidden = true;
     $('pasos-ios').hidden = false;
-    $('instalar-texto').textContent =
-      'Agrégalo a tu pantalla de inicio y ábrelo como una aplicación:';
+    $('instalar-texto').textContent = 'Agrégalo a tu pantalla de inicio:';
   })();
+
+  /**
+   * En computadora no hay nada que instalar: se dice, en vez de no mostrar nada.
+   *
+   * ⚠️ NO SE PREGUNTA POR EL ANCHO DE LA VENTANA. Un teléfono en horizontal
+   * pasa los 900 px y una ventana angosta en un escritorio no llega: las dos
+   * cosas darían el mensaje equivocado. Lo que separa a los dos aparatos acá es
+   * si el puntero es fino y no hay pantalla táctil.
+   *
+   * Y se espera un momento antes de decidir: `beforeinstallprompt` llega
+   * después de que Chrome termina de evaluar la app, no al cargar la página.
+   * Sin la espera, un Android que sí puede instalar vería «ábrela desde tu
+   * celular» durante un segundo, que es lo contrario de lo que corresponde.
+   */
+  setTimeout(function () {
+    if (yaInstalada || pedidoDeInstalar) return;
+    if (!$('instalar').hidden) return;           // iPhone: ya se está ofreciendo
+    var deEscritorio = window.matchMedia('(pointer:fine)').matches &&
+                       !window.matchMedia('(any-pointer:coarse)').matches;
+    if (deEscritorio) $('solo-movil').hidden = false;
+  }, 2500);
 
   // Cuando el alta encolada por el formulario llega al servidor, el pase deja
   // de decir «Activando…» sin que la persona tenga que recargar nada, y se
@@ -1342,6 +1442,9 @@
     arrancar();
   });
 
+  /* Primero la bienvenida: tapa la pantalla mientras todo lo demás se acomoda
+     por debajo, que es justamente para lo que sirve. */
+  bienvenida();
   registrarServicio();
   pintarTienda();
   window.CXV.arrancarCola();
