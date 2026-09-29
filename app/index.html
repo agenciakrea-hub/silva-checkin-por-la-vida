@@ -93,7 +93,11 @@
   /* La ruta. Los dos extremos y, en el medio, el avión. */
   .ruta{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;
         padding:20px 20px 18px;}
-  .punto{min-width:0;}
+  /* ⚠️ `margin:0` NO ES DECORATIVO. `.punto` es un `<p>`, así que traía el
+     `margin:16px 0` del navegador encima del padding de `.ruta`: la franja
+     medía 106,7 px de alto para 36,7 px de contenido —66 % de aire— y encima
+     desparejo, 36 arriba contra 34 abajo. Era el hueco más grande del pase. */
+  .punto{min-width:0;margin:0;}
   .punto:last-child{text-align:right;}
   /* ⚠️ `--cifra` ES UN SUBSET DE DÍGITOS. MartianMono-700-cifras.woff2 pesa
      2,6 KB porque sólo trae números: cualquier letra a la que se le aplique
@@ -117,7 +121,12 @@
   /* Los agujeros muestran el fondo de atrás: ahora es el navy, no el celeste. */
   .troquel{height:18px;background-color:var(--paper);
     background-image:radial-gradient(circle at 14px 9px,var(--navy-deep) 4px,transparent 4.5px);
-    background-size:28px 18px;background-position:center;}
+    background-size:28px 18px;background-position:center;
+    /* ⚠️ `round` Y NO `repeat`. Con `repeat` el paso de 28 px cae donde cae:
+       en una tarjeta de 560 px los centros daban justo en x=0 y x=560, así que
+       el troquel abría y cerraba con medio agujero pegado al borde. `round`
+       estira el paso para que entren enteros. */
+    background-repeat:round;}
 
   .pase-bajo{padding:18px 20px 20px;}
   .dato{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
@@ -231,7 +240,12 @@
   /* Línea de tiempo vertical. La etapa de hoy es la única con peso: las
      anteriores están hechas y las siguientes todavía no son noticia. */
   .etapas{list-style:none;margin:0 0 20px;padding:0;position:relative;}
-  .etapas::before{content:'';position:absolute;left:8px;top:10px;bottom:10px;width:2px;
+  /* ⚠️ EL RIEL LO DIBUJA CADA ETAPA MENOS LA ÚLTIMA, no la lista entera. Como
+     `.etapas::before` iba de `top:10px` a `bottom:10px` del contenedor, y el
+     último punto termina 10,5 px antes de que termine la lista, quedaba un
+     rayón punteado colgando en el aire debajo de «Llegaron». Por ítem, el riel
+     sólo existe entre dos puntos, que es lo que significa. */
+  .etapa:not(:last-child)::before{content:'';position:absolute;left:8px;top:23px;bottom:-3px;width:2px;
                   background:repeating-linear-gradient(180deg,var(--ink-soft) 0 5px,transparent 5px 11px);
                   opacity:.45;}
   .etapa{position:relative;padding:0 0 18px 30px;}
@@ -275,13 +289,20 @@
 
   /* Cuatro segmentos: «2 de 4» con el 2 grande y el «de 4» chico se lee como
      un número suelto con una nota al pie, no como una fracción. */
-  .mis-barra{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:14px 0 0;}
+  /* Pegada a lo que cuenta («1 de 4», arriba) y separada de lo que no. Estaba
+     al revés: 14 px del contador y 6 de la frase siguiente. */
+  .mis-barra{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:8px 0 16px;}
   .mis-barra i{height:5px;border-radius:3px;background:rgba(255,255,255,.28);}
   .mis-barra i[data-hecha]{background:#fff;}
 
-  .mis-produce{margin:8px 0 0;font:600 .82rem/1.4 var(--sans);color:#fff;
-               display:inline-block;background:rgba(0,0,0,.2);border-radius:8px;
-               padding:6px 10px;}
+  /* ⚠️ `block` Y NO `inline-block`. Siendo inline, su `margin-top` se lo comía
+     la caja de línea —el hueco real con el párrafo de arriba era de 1,9 px— y
+     su `padding-left` corría el texto a x=84 mientras el título y el cuerpo de
+     la misión arrancan en x=74. El margen izquierdo negativo compensa el
+     padding para que el texto vuelva al mismo eje que sus hermanos. */
+  .mis-produce{margin:10px 0 0 -10px;font:600 .82rem/1.4 var(--sans);color:#fff;
+               display:block;background:rgba(0,0,0,.2);border-radius:8px;
+               padding:6px 10px;width:max-content;max-width:100%;}
 
   .mis-confirma{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
   .mis-confirma .mis-accion{margin-top:0;}
@@ -322,7 +343,9 @@
   .mis-fila input{flex:1;min-width:0;min-height:44px;font:400 .95rem/1.3 var(--sans);
                   color:var(--navy);background:#fff;border:1.5px solid #fff;border-radius:10px;
                   padding:0 12px;}
-  .mis-fila button{flex:none;min-height:44px;padding:0 16px;border-radius:10px;border:0;
+  /* Píldora como `.mis-accion`: «Invitar», «Regalar» y «Vincular» son la misma
+     clase de acción dentro de la misma tarjeta, y tenían dos formas distintas. */
+  .mis-fila button{flex:none;min-height:44px;padding:0 16px;border-radius:999px;border:0;
                    cursor:pointer;font:600 .95rem/1 var(--sans);background:var(--navy);
                    color:#fff;}
   .mis-aviso{margin:8px 0 0;font:600 .88rem/1.4 var(--sans);color:#fff;background:rgba(0,0,0,.22);
@@ -370,9 +393,15 @@
 
   /* ── Empresas ── */
   .empresas{background:var(--celeste-papel);color:var(--navy);border-radius:16px;padding:20px;margin-top:18px;}
-  .empresas h2{font:700 1.15rem/1.15 var(--titulo);text-transform:uppercase;margin:0 0 4px;
+  /* 1.05 y no 1.15: contra el 1.05rem de `.quien` la diferencia era de 1,095,
+     que no se lee como otro nivel sino como un descuido. Son el mismo tipo de
+     bloque, así que llevan el mismo tamaño y quedan dos pasos, no tres. */
+  .empresas h2{font:700 1.05rem/1.2 var(--titulo);text-transform:uppercase;margin:0 0 4px;
                letter-spacing:.02em;}
   .empresas > p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
+  /* El `margin-bottom` del último se sumaba al padding de la tarjeta: 20 px de
+     aire arriba contra 29 abajo. */
+  .plan:last-child{margin-bottom:0;}
   .plan{display:flex;justify-content:space-between;align-items:center;gap:12px;
         width:100%;min-height:52px;text-align:left;background:#fff;
         border:1.5px solid var(--celeste-hondo);
@@ -398,8 +427,12 @@
   /* Igual que las misiones: sobre el navy del fondo, un panel navy no existe.
      El cierre es el momento más importante de todo el recorrido, así que va en
      el papel de la campaña con el borde naranja que lo separa del resto. */
+  /* ⚠️ EL BORDE NARANJA VA POR DENTRO, CON `box-shadow`. Como `border` de
+     verdad sumaba 2 px al retiro: el texto de esta tarjeta arrancaba en x=22 y
+     el de las otras ocho en x=20, así que la pila entera pegaba un salto justo
+     en la tarjeta más importante. */
   .cierre{background:var(--paper);color:var(--navy);border-radius:16px;
-          padding:22px 20px;margin-top:18px;border:2px solid var(--orange);}
+          padding:22px 20px;margin-top:18px;box-shadow:inset 0 0 0 2px var(--orange);}
   .cierre h2{font:700 clamp(1.3rem,5.5vw,1.6rem)/1.1 var(--titulo);text-transform:uppercase;
              margin:0 0 8px;letter-spacing:.01em;}
   .cierre p{margin:0 0 16px;font-size:.97rem;color:var(--ink);}
@@ -409,7 +442,7 @@
 
   /* ── Activación ── */
   .activar-pase{background:var(--paper);color:var(--navy);border-radius:16px;
-                padding:22px 20px;margin-top:18px;border:2px solid var(--orange);}
+                padding:22px 20px;margin-top:18px;box-shadow:inset 0 0 0 2px var(--orange);}
   .activar-pase h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;
                    margin:0 0 6px;letter-spacing:.02em;}
   .activar-pase > p{margin:0 0 16px;font-size:.95rem;color:var(--ink);}
@@ -424,17 +457,117 @@
   .activar-fila .btn{flex:none;padding:0 22px;}
   .activar-sin{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--paper-edge);
                font-size:.9rem;color:var(--ink);}
-  .activar-sin button{font:600 .9rem/1 var(--sans);color:var(--navy);background:transparent;
-                      border:0;border-bottom:2px solid var(--orange);cursor:pointer;
-                      min-height:44px;padding:0 2px;}
+  /* ⚠️ EL ÁREA TÁCTIL SE DA CON UN PSEUDO-ELEMENTO, NO CON `min-height` NI CON
+     PADDING. Las dos formas obvias fallan, y fallan distinto:
 
-  /* El pase sin activar: presente, pero claramente a la espera. Que se vea que
-     falta un paso, no que está roto. */
-  .pase[data-falta]{opacity:.72;}
-  .pase[data-falta] .pase-bajo{filter:grayscale(1);}
-  .pase-falta{margin:6px 0 0;display:inline-block;font:700 .68rem/1 var(--sans);
+       · `min-height:44px` centra el texto en una caja de 44 px y deja el
+         `border-bottom` naranja QUINCE píxeles más abajo, como una regla suelta
+         en el medio del párrafo.
+       · `padding-bottom:11px` con margen negativo arregla el renglón —la línea
+         deja de estirarse— pero el borde SIGUE dibujándose al pie del padding:
+         once píxeles abajo, tachando la palabra del renglón siguiente.
+
+     El borde tiene que salir pegado al texto, punto. Los 44 px del dedo los da
+     una caja invisible y absoluta, que no ocupa lugar ni mueve nada. */
+  .enlace-texto,.activar-sin button,.ayuda button,.aviso-nuevo button{
+    position:relative;border:0;background:transparent;cursor:pointer;
+    border-bottom:2px solid var(--orange);padding:0 2px 2px;margin:0;}
+  .enlace-texto::after,.activar-sin button::after,.ayuda button::after,
+  .aviso-nuevo button::after{
+    content:'';position:absolute;left:0;right:0;top:50%;height:44px;
+    transform:translateY(-50%);}
+  .activar-sin button{font:600 .9rem/1 var(--sans);color:var(--navy);}
+
+  /* El pase sin activar.
+
+     ⚠️ NO SE HACE CON `opacity` NI CON `grayscale`. Se intentó y Krea lo
+     rechazó con razón: «solo se ve con menos color ahora». Bajarle el color a
+     un documento no comunica «te falta un paso» — comunica «esto está apagado»,
+     o peor, «esto está roto». Un pase sin validar no es un pase descolorido:
+     es un pase SIN SELLAR. El lenguaje visual correcto de un documento
+     pendiente es el sello, y así se hace acá:
+
+       · marca de agua «SIN VALIDAR» atravesada sobre la zona de datos,
+       · trama diagonal en la cabecera, la del papel provisorio,
+       · troquel punteado en el borde, que dice «esto todavía no se emitió»,
+       · y la etiqueta sólida arriba, que es la única que pide la acción.
+
+     Todo a color pleno. El pase se ve entero y real, porque lo es: lo que
+     falta es el sello, no los datos. */
+  /* El offset es -4 y no -6: a -6 la línea caía en la banda de 6 a 8 px y se
+     superponía a los agujeros del troquel, que llegan hasta los 15. */
+  .pase[data-falta]{outline:2px dashed var(--orange);outline-offset:-4px;}
+
+  /* La cabecera, con la trama del papel sin emitir. 6 px de paso y 5 % de
+     blanco: se percibe la textura sin que el título pierda contraste. */
+  .pase[data-falta] .pase-top{
+    background-image:repeating-linear-gradient(135deg,
+      rgba(255,255,255,.055) 0 6px,transparent 6px 12px);}
+
+  /* La marca de agua. Va sobre `.pase-bajo`, que es donde están los datos que
+     el sello valida. `pointer-events:none` para que no se coma un toque, y
+     `overflow:hidden` en `.pase` la recorta en los bordes, como un sello de
+     verdad que se sale del papel. */
+  /* ⚠️ VA DETRÁS DEL CONTENIDO (`z-index:-1`), Y SIN ROTAR. Las dos cosas se
+     aprendieron rompiéndolo. Encima y a -13° el sello cruzaba el nombre del
+     pasajero, se apoyaba sobre la etiqueta «N.º de pase» y rozaba «Estado»:
+     tapaba tres de las cuatro líneas de datos, justo el nombre, que en un
+     boarding pass es el documento. Y para que no molestara había que bajarlo a
+     `opacity:.17`, o sea 1,30:1 sobre el papel — invisible. Quedaba en el peor
+     punto de la curva: demasiado tenue para leerse, demasiado presente para no
+     ensuciar lo de abajo.
+     Detrás, el texto siempre gana, así que el sello puede tener contraste de
+     verdad. Y horizontal no abre un tercer ángulo: la trama de la cabecera ya
+     tiene el suyo, y dos diagonales sin relación en la misma tarjeta se leen
+     como un descuido.
+     `z-index:0` en el padre es lo que hace que el `-1` quede ENCIMA del papel
+     en vez de desaparecer detrás de la tarjeta entera. */
+  .pase[data-falta] .pase-bajo{position:relative;z-index:0;}
+  /* ⚠️ VA A TODO EL ANCHO, y no es por gusto: centrado y chico caía justo
+     sobre la fila «N.º de pase» y se leía como SU VALOR —«N.º de pase: sin
+     validar»— en vez de como un sello del documento entero. Cruzando las
+     cuatro filas no hay confusión posible.
+     El `padding-left` de .2em compensa el hueco que `letter-spacing` deja
+     después de la última letra; sin eso el texto queda corrido a la izquierda
+     dentro de su propio marco. */
+  .pase[data-falta] .pase-bajo::after{
+    content:'Sin validar';position:absolute;z-index:-1;pointer-events:none;
+    left:10px;right:10px;top:50%;transform:translateY(-50%);
+    font:700 clamp(1.25rem,6.2vw,1.85rem)/1 var(--sans);
+    letter-spacing:.2em;text-transform:uppercase;text-align:center;
+    color:#a5372b;border:3px double #a5372b;border-radius:5px;
+    padding:16px 0 16px .2em;opacity:.38;}
+
+  .pase-falta{margin:6px 0;display:inline-block;font:700 .68rem/1 var(--sans);
               letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-boton);
               background:var(--orange);border-radius:999px;padding:5px 10px;}
+
+  /* ── El pase impreso, girando ──────────────────────────────────────────
+     Las dos caras del pase de papel. Va en el bloque de activación y no en
+     otro lado: ahí es donde la persona tiene el pase en la mano buscando el
+     código, y ver el objeto girando le dice cuál de las dos caras mirar.
+     Quien ya activó no lo necesita — la app le muestra SU pase, con su
+     nombre—, y por eso vive dentro de una sección que se oculta sola.
+
+     Mismo código que en `index.html`, con las mismas dos trampas anotadas
+     allá: nada de `filter` en la pieza (aplana el `preserve-3d` y el dorso se
+     ve espejado encima del frente), y la `perspective` en el padre DIRECTO de
+     lo que rota. Está repetido porque este proyecto no tiene build ni hoja
+     compartida: cada archivo lleva su CSS, como el resto del sitio. */
+  .pase3d{display:grid;place-items:center;margin:0 0 18px;}
+  .pase3d-flota{perspective:1200px;width:min(26rem,100%);
+                animation:pase3d-flota 7s ease-in-out infinite;}
+  .pase3d-pieza{position:relative;width:100%;aspect-ratio:1100/433;
+                transform-style:preserve-3d;animation:pase3d-gira 22s linear infinite;}
+  .pase3d-cara{position:absolute;inset:0;backface-visibility:hidden;
+               border-radius:8px;overflow:hidden;box-shadow:0 12px 24px rgba(0,0,0,.26);}
+  .pase3d-cara img{display:block;width:100%;height:100%;object-fit:cover;}
+  .pase3d-dorso{transform:rotateY(180deg);}
+  @keyframes pase3d-gira{from{transform:rotateY(0);}to{transform:rotateY(360deg);}}
+  @keyframes pase3d-flota{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  @media (prefers-reduced-motion:reduce){
+    .pase3d-pieza,.pase3d-flota{animation:none;}
+  }
 
   /* ── Tu aporte ── */
   .aporte{background:var(--paper);color:var(--navy);border-radius:16px;
@@ -483,9 +616,7 @@
   .credenciales span{display:block;font:400 .82rem/1.35 var(--sans);color:var(--ink-soft);}
   .ayuda{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--paper-edge);
          font-size:.9rem;color:var(--ink);}
-  .ayuda button{font:600 .9rem/1 var(--sans);color:var(--navy);background:transparent;
-                border:0;border-bottom:2px solid var(--orange);cursor:pointer;
-                min-height:44px;padding:0 2px;}
+  .ayuda button{font:600 .9rem/1 var(--sans);color:var(--navy);}
 
   .pie span{display:block;margin-bottom:4px;}
 
@@ -503,9 +634,7 @@
                color:var(--navy);background:var(--paper);border-radius:12px;padding:12px 16px;}
   /* Es el botón que recupera la app cuando hay versión nueva: tenía 17 px de
      alto, imposible de acertar con el dedo. */
-  .aviso-nuevo button{font:600 .92rem/1 var(--sans);color:var(--navy);background:transparent;
-                      border:0;border-bottom:2px solid var(--orange);cursor:pointer;
-                      min-height:44px;padding:0 4px;}
+  .aviso-nuevo button{font:600 .92rem/1 var(--sans);color:var(--navy);padding:0 4px 2px;}
 
   .pie{margin:26px 0 0;text-align:center;font-size:.84rem;color:#8fa8cc;}
   .pie a{color:#c6d6ef;}
@@ -589,6 +718,33 @@
          arriba de todo lo demás. -->
     <section class="activar-pase" id="activar-pase" hidden aria-labelledby="t-activar">
       <h2 id="t-activar">Activa tu Boarding Pass</h2>
+      <div class="pase3d" role="img"
+           aria-label="Las dos caras del boarding pass impreso que viene con tu Héroe de Rescate: al frente, el ticket con su código de barras; al dorso, el Héroe y el sello de la campaña.">
+        <div class="pase3d-flota">
+          <div class="pase3d-pieza">
+            <div class="pase3d-cara pase3d-frente">
+              <picture>
+                <source type="image/avif" sizes="(min-width:30rem) 26rem, calc(100vw - 2.5rem)"
+                        srcset="../img/pase-frente-700.avif 700w, ../img/pase-frente-1100.avif 1100w">
+                <img src="../img/pase-frente-1100.webp" width="1100" height="433"
+                     sizes="(min-width:30rem) 26rem, calc(100vw - 2.5rem)"
+                     srcset="../img/pase-frente-700.webp 700w, ../img/pase-frente-1100.webp 1100w"
+                     loading="lazy" decoding="async" alt="">
+              </picture>
+            </div>
+            <div class="pase3d-cara pase3d-dorso">
+              <picture>
+                <source type="image/avif" sizes="(min-width:30rem) 26rem, calc(100vw - 2.5rem)"
+                        srcset="../img/pase-dorso-700.avif 700w, ../img/pase-dorso-1100.avif 1100w">
+                <img src="../img/pase-dorso-1100.webp" width="1100" height="433"
+                     sizes="(min-width:30rem) 26rem, calc(100vw - 2.5rem)"
+                     srcset="../img/pase-dorso-700.webp 700w, ../img/pase-dorso-1100.webp 1100w"
+                     loading="lazy" decoding="async" alt="">
+              </picture>
+            </div>
+          </div>
+        </div>
+      </div>
       <p>Tu Héroe de Rescate viene con un código. Escríbelo aquí y tu pase queda
         listo, con tu nombre y tu ruta.</p>
       <form class="activar-fila" id="form-activar" novalidate>

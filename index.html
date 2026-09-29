@@ -135,8 +135,44 @@
      celeste-hondo y ahí el navy se quedaba en 4,1:1 para un texto de 13 px. */
   .cab-compartir{background:none;border:1.5px solid rgba(9,29,64,.45);color:var(--navy-deep);cursor:pointer;}
   @media (hover:hover){.cab-compartir:hover{border-color:var(--navy-deep);background:rgba(9,29,64,.09);}}
+  /* El acceso a la app. Tercer botón de la cabecera, y el orden importa:
+     Compartir (contorno tenue) · Mi pase (contorno naranja) · Adopta (navy
+     sólido). El naranja lo separa de Compartir sin que le gane al CTA de
+     WhatsApp, que sigue siendo el más fuerte de la barra.
+
+     Dice «Mi pase (app)» y no «OncoApp» porque el `manifest` de la PWA se
+     llama «Mi Boarding Pass»: con dos nombres, quien toca el botón y después
+     la instala ve dos cosas distintas para la misma. El «(app)» es lo que
+     avisa que no es otra sección de esta página. */
+  .cab-app{background:none;border:1.5px solid var(--orange);color:var(--navy-deep);}
+  .cab-app i{font-style:normal;font-weight:400;opacity:.72;}
+  @media (hover:hover){.cab-app:hover{background:var(--orange);color:var(--tinta-boton);}}
   .cab-wa{background:var(--navy);color:var(--paper);}
+  /* ── Qué botón conserva su palabra al angostar ──────────────────────────
+     Con tres botones ya no entran las tres palabras, y el orden en que se
+     caen NO es arbitrario: se cae primero la menos necesaria.
+
+       1. «Adopta un héroe» — el CTA de la campaña. Es la última en irse.
+       2. «Mi pase (app)» — la app no se nombra en ningún otro lugar de la barra.
+       3. «Compartir» — ya tiene su botón grande, con texto, dos veces en el
+          cuerpo de la página. Es la primera en irse.
+
+     ⚠️ ESTO INVIERTE LOS UMBRALES QUE HABÍA. Antes Compartir aguantaba hasta
+     430 px y WhatsApp se quedaba sin palabra ya en 520, así que entre 431 y
+     520 px pasaba lo de atrás para adelante: el botón más importante de la
+     barra quedaba como un ícono mudo mientras los dos secundarios gritaban su
+     nombre. Medido en el navegador a 320 / 375 / 430 / 520: ninguno desborda.
+
+     ⚠️ ESTO TAMBIÉN VA CONTRA EL COMENTARIO DE `.cab-compartir` DE MÁS ARRIBA,
+     que pedía no dejar al ícono de tres nodos solo porque no se entiende. Sigue
+     siendo cierto, pero alguno tiene que ceder y ése es el que menos cuesta:
+     conserva su `aria-label`, así que para un lector de pantalla no pierde
+     nada, y quien no entienda el ícono tiene el botón entero más abajo. */
   @media (max-width:520px){
+    .cab-compartir span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+    .cab-compartir{padding:.6rem;width:44px;justify-content:center;}
+  }
+  @media (max-width:430px){
     .cab-wa span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
     .cab-wa{padding:.6rem;width:44px;justify-content:center;}
   }
@@ -341,9 +377,6 @@
     #preguntas h2{grid-column:1;grid-row:1/span 2;margin:0;}
     #preguntas .faq{grid-column:2;}
 
-    /* La foto del boarding pass es vertical y estiraba la sección a lo alto:
-       con techo, el texto deja de flotar en el medio de una columna de aire. */
-    .pase-img img{max-height:30rem;object-fit:cover;object-position:center 60%;}
   }
   .grafico h3{font-family:var(--sans);font-weight:600;font-size:1.25rem;margin-bottom:.3rem;}
   .grafico-nota{max-width:62ch;margin-top:1.2rem;font-size:1rem;font-weight:400;color:var(--ink);}
@@ -380,7 +413,44 @@
   .pase .bloque{display:grid;gap:1.8rem;align-items:center;}
   .pase h2{color:var(--navy);}
   .pase p{color:var(--navy);font-weight:400;}
-  .pase-img{border-radius:12px;overflow:hidden;}
+  /* ── El boarding pass girando ─────────────────────────────────────────
+     Las dos caras del pase impreso, una contra la otra, girando sobre su eje
+     vertical. Reemplaza a una foto del pase en mano: la foto mostraba una
+     cara, en diagonal y con el pulgar encima. Esto muestra las dos caras
+     enteras, que es lo que alguien quiere ver antes de adoptar. (La foto no se
+     perdió: sigue en la galería y en el paso 3 del «cómo funciona».)
+
+     ⚠️ ESTA ANIMACIÓN SE SALTA LA REGLA DE ≤600 ms DE AGENTS.md, a propósito y
+     con permiso. Esa regla existe para que ninguna animación de ENTRADA tape el
+     contenido ni trabe el hilo principal; esto no entra a ningún lado, es la
+     pieza misma. Cumple lo que la regla protege: sólo `transform`, compositado
+     en GPU, la cara frontal entera desde el primer cuadro, y quieta del todo
+     con `prefers-reduced-motion`.
+
+     ⚠️ NADA DE `filter:drop-shadow` EN `.pase3d-pieza`. `filter` crea un
+     contexto de apilamiento que APLANA el `preserve-3d`, y entonces el dorso
+     deja de esconderse y se ve espejado encima del frente. La sombra va en
+     cada cara con `box-shadow`, donde no rompe nada.
+
+     ⚠️ LA `perspective` VA EN `.pase3d-flota`, NO EN `.pase3d`. `perspective`
+     sólo alcanza a los HIJOS DIRECTOS. Puesta en el abuelo, con el elemento de
+     flotación en el medio, la pieza gira en proyección plana: se encoge y se
+     estira como una persiana en vez de girar. */
+  .pase3d{display:grid;place-items:center;padding:.5rem 0;}
+  .pase3d-flota{perspective:1400px;width:min(34rem,100%);
+                animation:pase3d-flota 7s ease-in-out infinite;}
+  .pase3d-pieza{position:relative;width:100%;aspect-ratio:1100/433;
+                transform-style:preserve-3d;animation:pase3d-gira 22s linear infinite;}
+  .pase3d-cara{position:absolute;inset:0;backface-visibility:hidden;
+               border-radius:10px;overflow:hidden;
+               box-shadow:0 16px 30px rgba(0,0,0,.3);}
+  .pase3d-cara img{display:block;width:100%;height:100%;object-fit:cover;}
+  .pase3d-dorso{transform:rotateY(180deg);}
+  @keyframes pase3d-gira{from{transform:rotateY(0);}to{transform:rotateY(360deg);}}
+  @keyframes pase3d-flota{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+  @media (prefers-reduced-motion:reduce){
+    .pase3d-pieza,.pase3d-flota{animation:none;}
+  }
   @media (min-width:52rem){.pase .bloque{grid-template-columns:1fr 1fr;}}
 
   .compartir-acciones{display:flex;justify-content:center;margin-top:1.5rem;}
@@ -613,13 +683,19 @@
   <a class="cab-marca" href="#inicio">
     <img class="silva" src="img/logo-silva-blanco-180.webp" width="180" height="236" alt="Aeroambulancias Silva">
   </a>
-  <button class="cab-btn cab-compartir" id="btn-compartir-cab" type="button">
+  <button class="cab-btn cab-compartir" id="btn-compartir-cab" type="button" aria-label="Compartir la campaña">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
       <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>
     </svg>
     <span>Compartir</span>
   </button>
+  <a class="cab-btn cab-app" href="app/">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10.5 18.6h3"/>
+    </svg>
+    <span>Mi pase <i>(app)</i></span>
+  </a>
   <a class="cab-btn cab-wa" data-wa="general" href="https://wa.me/584241466595" target="_blank" rel="noopener">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
     <span>Adopta un héroe</span>
@@ -853,12 +929,32 @@
         <h2 id="t-pase">Tu Boarding Pass Solidario</h2>
         <p>Cada Héroe de Rescate llega con su <b>boarding pass</b>. En él quedas registrado como <b>pasajero de honor</b> del vuelo ONCO 001 — el vuelo que tu aporte ayuda a financiar.</p>
       </div>
-      <div class="pase-img">
-        <picture>
-          <source srcset="img/galeria/05-1200.avif" type="image/avif">
-          <img src="img/galeria/05-1200.webp" width="1200" height="1594" loading="lazy" decoding="async"
-               alt="Boarding pass solidario: check-in por la vida, pasajero de honor, vuelo ONCO 001">
-        </picture>
+      <div class="pase3d" role="img"
+           aria-label="Las dos caras del boarding pass solidario del vuelo ONCO 001: al frente, el pase con el nombre del pasajero de honor; al dorso, el mensaje de la campaña.">
+        <div class="pase3d-flota">
+          <div class="pase3d-pieza">
+            <div class="pase3d-cara pase3d-frente">
+              <picture>
+                <source type="image/avif" sizes="(min-width:36rem) 34rem, calc(100vw - 2.5rem)"
+                        srcset="img/pase-frente-700.avif 700w, img/pase-frente-1100.avif 1100w">
+                <img src="img/pase-frente-1100.webp" width="1100" height="433"
+                     sizes="(min-width:36rem) 34rem, calc(100vw - 2.5rem)"
+                     srcset="img/pase-frente-700.webp 700w, img/pase-frente-1100.webp 1100w"
+                     loading="lazy" decoding="async" alt="">
+              </picture>
+            </div>
+            <div class="pase3d-cara pase3d-dorso">
+              <picture>
+                <source type="image/avif" sizes="(min-width:36rem) 34rem, calc(100vw - 2.5rem)"
+                        srcset="img/pase-dorso-700.avif 700w, img/pase-dorso-1100.avif 1100w">
+                <img src="img/pase-dorso-1100.webp" width="1100" height="433"
+                     sizes="(min-width:36rem) 34rem, calc(100vw - 2.5rem)"
+                     srcset="img/pase-dorso-700.webp 700w, img/pase-dorso-1100.webp 1100w"
+                     loading="lazy" decoding="async" alt="">
+              </picture>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1120,14 +1216,12 @@ document.addEventListener('DOMContentLoaded', function () {
   // vendidas y de restar. Así las tres cifras no pueden contradecirse.
   var adoptados = null, pct = 7.2;
   if (Array.isArray(d.productos)) adoptados = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
-  if (adoptados !== null) { pon('pasajeros', String(adoptados)); pon('pasajeros-texto', String(adoptados)); }
-  if (num(d.metaOsos) && d.metaOsos > 0) {
-    pon('meta-osos', String(d.metaOsos));
-    if (adoptados !== null) {
-      pct = Math.round(adoptados / d.metaOsos * 1000) / 10;
-      pon('faltan', String(Math.max(d.metaOsos - adoptados, 0)));
-    }
-  }
+  var metaDeDatos = (num(d.metaOsos) && d.metaOsos > 0) ? d.metaOsos : null;
+  /* El pintado vive más abajo, en `pintarCifras`, porque necesita `ponAvance`
+     —que se define después— y porque ahora hay DOS orígenes para estos
+     números: `datos.js` y la hoja `vuelo` del Sheet. Que los pinte una sola
+     función es lo que evita que se vayan separando con el tiempo.
+     No hay demora en moverlo: el archivo entero corre en un solo tick. */
 
   // Los aportes del evento salen de datos.js. Se muestran como cifras y no como
   // barras: el tamaño del lote es información de inventario y no se publica, así
@@ -1148,8 +1242,6 @@ document.addEventListener('DOMContentLoaded', function () {
       if (celda) celda.textContent = vend;
     }
   });
-  pon('porcentaje-texto', String(pct).replace('.', ',') + ' % de la meta');
-  pon('progreso-sr', 'Progreso hacia el primer vuelo solidario: ' + String(pct).replace('.', ',') + ' por ciento de la meta.');
   // Sólo se acepta AAAA-MM-DD. El cliente edita datos.js a mano desde la web de
   // GitHub, y con «19/09/2026» esto publicaba «Actualizado el NaN de undefined».
   if (/^\d{4}-\d{2}-\d{2}$/.test(d.actualizado || '')) {
@@ -1172,7 +1264,76 @@ document.addEventListener('DOMContentLoaded', function () {
     barraAvance.style.setProperty('--avance', p / 100);
     avion.style.setProperty('--pos', p + '%');
   };
-  ponAvance(pct);
+
+  /* ── Las cifras de la campaña, vengan de donde vengan ──────────────────
+     Un solo lugar que pinta pasajeros, meta, los que faltan, el porcentaje y
+     el avance de la pista. Lo llaman dos: `datos.js` al cargar, y la hoja
+     `vuelo` del Sheet si el servidor contesta. */
+  function pintarCifras(a, m) {
+    if (typeof a === 'number' && a >= 0) { pon('pasajeros', String(a)); pon('pasajeros-texto', String(a)); }
+    if (typeof m === 'number' && m > 0) {
+      pon('meta-osos', String(m));
+      if (typeof a === 'number' && a >= 0) {
+        pct = Math.round(a / m * 1000) / 10;
+        pon('faltan', String(Math.max(m - a, 0)));
+      }
+    }
+  pon('porcentaje-texto', String(pct).replace('.', ',') + ' % de la meta');
+  pon('progreso-sr', 'Progreso hacia el primer vuelo solidario: ' + String(pct).replace('.', ',') + ' por ciento de la meta.');
+    ponAvance(pct);
+  }
+  pintarCifras(adoptados, metaDeDatos);
+
+  /* ── Y si el Sheet dice otra cosa, el Sheet manda ──────────────────────
+     Para que el jefe corrija el avance cambiando una celda, sin tocar el repo
+     ni esperar a que GitHub Pages publique. La portada ya está pintada con
+     `datos.js` cuando esto sale; si el servidor no contesta, no pasa nada.
+
+     ⚠️ SALE DESPUÉS DE QUE LA PÁGINA CARGÓ, NO ANTES. Esta campaña es para una
+     red lenta: una petición a Apps Script durante la carga compite por el ancho
+     de banda con las imágenes, y el arranque en frío pasa de 20 segundos. No hay
+     ninguna cifra que valga eso.
+
+     ⚠️ Y SE GUARDA DIEZ MINUTOS EN `sessionStorage`. Sin esto, cada navegación
+     a la portada despierta Apps Script otra vez y quema cuota de ejecuciones
+     —que es diaria y se agota— para mostrar un número que casi siempre es el
+     mismo. Diez minutos es lo que GitHub Pages ya cachea del resto del sitio. */
+  (function () {
+    if (!window.CXV || !window.CXV.alServidor || !window.CXV_API) return;
+    var CLAVE = 'cxv-cifras', VIDA = 600000;
+
+    var usar = function (a, m) {
+      var na = Number(a), nm = Number(m);
+      var hayA = String(a == null ? '' : a).trim() !== '' && isFinite(na) && na >= 0;
+      var hayM = String(m == null ? '' : m).trim() !== '' && isFinite(nm) && nm > 0;
+      /* ⚠️ SE PREGUNTA POR EL TEXTO VACÍO ANTES DE CONVERTIR. La celda
+         `adoptados` nace en blanco a propósito —en blanco significa «manda
+         `datos.js`»— y `Number('')` da 0, no NaN. Sin este chequeo, una hoja
+         recién creada pinta la campaña en cero y borra el avance de verdad. */
+      if (hayA && hayM) pintarCifras(na, nm);
+      else if (hayM)    pintarCifras(adoptados, nm);
+    };
+
+    try {
+      var g = JSON.parse(sessionStorage.getItem(CLAVE) || 'null');
+      if (g && (Date.now() - g.t) < VIDA) { usar(g.a, g.m); return; }
+    } catch (e) {}
+
+    var pedir = function () {
+      var vale = true;
+      /* Treinta segundos y se abandona. Una cifra que aparece de golpe un
+         minuto después de que la persona ya la leyó no corrige nada: confunde. */
+      var reloj = setTimeout(function () { vale = false; }, 30000);
+      window.CXV.alServidor({ action: 'estado' }).then(function (r) {
+        clearTimeout(reloj);
+        if (!vale || !r || !r.ok || !r.vuelo) return;
+        try { sessionStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados, m: r.vuelo.meta })); } catch (e) {}
+        usar(r.vuelo.adoptados, r.vuelo.meta);
+      }).catch(function () { clearTimeout(reloj); });
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(pedir, { timeout: 5000 });
+    else setTimeout(pedir, 3000);
+  })();
 
   if ('IntersectionObserver' in window) {
     var obsPista = new IntersectionObserver(function (e) {

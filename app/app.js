@@ -32,11 +32,12 @@
   // una pantalla sin nada suyo y concluía que su pase no existía.
   // Y sin corte por tiempo, una petición colgada dejaba esa pantalla así para
   // siempre: `fetch` no falla solo.
-  var TOPE_MS = 9000;
+  var TOPE_MS = 9000;          // para leer: si tarda más, se muestra el respaldo
+  var TOPE_ESCRIBIR_MS = 40000;  // para escribir: Apps Script en frío pasa de 20 s
 
-  function conTope(promesa) {
+  function conTope(promesa, ms) {
     return new Promise(function (resolver, rechazar) {
-      var reloj = setTimeout(function () { rechazar(new Error('tardó demasiado')); }, TOPE_MS);
+      var reloj = setTimeout(function () { rechazar(new Error('tardó demasiado')); }, ms || TOPE_MS);
       promesa.then(function (v) { clearTimeout(reloj); resolver(v); },
                    function (e) { clearTimeout(reloj); rechazar(e); });
     });
@@ -90,6 +91,28 @@
     else $('proximo-caja').hidden = true;
     $('d-estado').textContent = ESTADOS[v.estado] || v.estado || 'Preparando';
     pintarEtapas(v.estado || 'preparando');
+
+    /* Los números del Sheet le ganan a `datos.js`, si vienen. Sirve para que
+       el jefe corrija el avance cambiando una celda, sin tocar el repo ni
+       esperar a que GitHub Pages publique.
+
+       ⚠️ SÓLO SI VIENEN LOS DOS Y SON NÚMEROS. La hoja devuelve todo como
+       texto, y la celda arranca vacía a propósito: vacía significa «manda
+       `datos.js`», que es lo que ya pintó `arrancar()` hace rato. Un `Number('')`
+       da 0 —no NaN—, así que preguntar por el texto vacío ANTES de convertir no
+       es una precaución de más: sin eso, una celda en blanco pinta la campaña
+       en cero y borra el avance real de la portada. */
+    var a = numeroDeHoja(v.adoptados), m = numeroDeHoja(v.meta);
+    if (a !== null && m !== null && m > 0) pintarAvance(a, m);
+  }
+
+  /** Una celda de la hoja `vuelo` como número, o null si no lo es. */
+  function numeroDeHoja(t) {
+    if (t === null || t === undefined) return null;
+    var s = String(t).trim();
+    if (s === '') return null;
+    var n = Number(s);
+    return (isFinite(n) && n >= 0) ? n : null;
   }
 
   /**
@@ -761,7 +784,7 @@
       return;
     }
     aviso.textContent = 'Vinculando…';
-    conTope(alServidor({ action: 'vincular', token: yo.token, ticket: t }))
+    conTope(alServidor({ action: 'vincular', token: yo.token, ticket: t }), TOPE_ESCRIBIR_MS)
       .then(function (r) {
         if (r && r.ok) {
           aviso.textContent = '';
@@ -808,7 +831,13 @@
       return;
     }
     aviso.textContent = 'Activando…';
-    conTope(alServidor({ action: 'activar', token: yo.token, codigo: c }))
+    /* ⚠️ CUARENTA SEGUNDOS, NO NUEVE, Y EL MOTIVO ES CARO. Con el tope de
+       lectura, Apps Script arrancando en frío —más de 20 s medidos— hacía que
+       la app cortara la espera y dijera «revisa tu conexión». Pero el servidor
+       SÍ había activado el código: la persona veía un error, su código quedaba
+       gastado, y creía que lo había perdido. Le pasó a Krea con ONCO-7TXA.
+       Escribir no es leer: si el pedido salió, hay que esperarlo. */
+    conTope(alServidor({ action: 'activar', token: yo.token, codigo: c }), TOPE_ESCRIBIR_MS)
       .then(function (r) {
         if (r && r.ok) {
           aviso.textContent = '';
@@ -822,7 +851,27 @@
         aviso.textContent = (r && MOTIVOS[r.motivo])
           || 'No pudimos activarlo. Intenta de nuevo en un momento.';
       })
-      .catch(function () { aviso.textContent = 'No pudimos conectarnos. Revisa tu conexión.'; });
+      .catch(function () {
+        /* ⚠️ NO SE PUEDE DECIR QUE FALLÓ. El pedido pudo haber llegado y haber
+           activado el código igual; decir «no se pudo» empuja a la persona a
+           intentar con otro código y a gastar dos. Se mira cómo quedó todo
+           antes de contarle nada. */
+        aviso.textContent = 'Está tardando más de lo normal. Verificando…';
+        conTope(alServidor({ action: 'estado', token: yo.token }), TOPE_ESCRIBIR_MS)
+          .then(function (r2) {
+            if (r2 && r2.ok && r2.yo && r2.yo.activo) {
+              aviso.textContent = '';
+              arrancar();
+              return;
+            }
+            aviso.textContent = 'No pudimos confirmarlo. Espera un momento y vuelve a intentar '
+              + 'con el mismo código: si ya quedó activado, te lo vamos a decir.';
+          })
+          .catch(function () {
+            aviso.textContent = 'No pudimos conectarnos. Tu código sigue siendo válido: '
+              + 'vuelve a intentar con el mismo en un momento.';
+          });
+      });
   });
 
   $('btn-quiero').addEventListener('click', function () {
