@@ -675,8 +675,26 @@
   }
 
   // ── Enganches ────────────────────────────────────────────────────────────
+  //
+  /* ⚠️ SE ENGANCHA CON `al()` Y NUNCA CON `$('x').addEventListener` DIRECTO.
+     Esto rompió la app en producción una vez y va a volver a romperla si se
+     olvida.
+     El service worker sirve CACHÉ PRIMERO: al publicar una versión nueva, la
+     primera visita de cada persona recibe el `index.html` VIEJO —el que tenía
+     guardado— junto con el `app.js` NUEVO, que ya está pidiendo elementos que
+     ese HTML todavía no tiene. `$('id')` devuelve `null`, `.addEventListener`
+     revienta, y como estos enganches corren al cargar el archivo, la excepción
+     se lleva puesto TODO lo que viene después: la app queda en blanco hasta
+     que la persona la recarga.
+     `al()` no engancha lo que no existe y sigue de largo. La app queda sin ese
+     botón durante una carga, que es infinitamente mejor que no quedar. */
+  function al(id, evento, fn) {
+    var el = $(id);
+    if (el) el.addEventListener(evento, fn);
+  }
 
-  $('form-entrar').addEventListener('submit', function (e) {
+
+  al('form-entrar', 'submit', function (e) {
     e.preventDefault();
     var campo = this.elements.telefono;
     var v = (campo.value || '').trim();
@@ -815,7 +833,7 @@
     $('tripu-ya').hidden = !tiene;
   }
 
-  $('btn-copiar-codigo').addEventListener('click', function () {
+  al('btn-copiar-codigo', 'click', function () {
     var c = $('tripu-codigo').textContent.trim();
     var aviso = $('tripu-aviso');
     if (!c || c === '—') return;
@@ -832,9 +850,9 @@
     }
   });
 
-  $('btn-invitar-tripu').addEventListener('click', invitar);
+  al('btn-invitar-tripu', 'click', invitar);
 
-  $('form-invito').addEventListener('submit', function (e) {
+  al('form-invito', 'submit', function (e) {
     e.preventDefault();
     var campo = this.elements.codigo;
     var aviso = $('invito-aviso');
@@ -891,7 +909,7 @@
       });
   });
 
-  $('btn-otra-ruta').addEventListener('click', function () {
+  al('btn-otra-ruta', 'click', function () {
     window.open(textoWa('Hola, mi ruta se completó y quiero sumarme a la próxima con otro Héroe de Rescate.'), '_blank', 'noopener');
   });
 
@@ -996,7 +1014,7 @@
     return DESTINO[(r && r.value) || 'mio'] || DESTINO.mio;
   }
 
-  $('btn-encargar').addEventListener('click', function () {
+  al('btn-encargar', 'click', function () {
     var lineas = [], t = total();
     if (!t.piezas) return;
     catalogo().forEach(function (p) {
@@ -1091,7 +1109,7 @@
     sin_token:          'Espera unos segundos a que termine tu registro y vuelve a intentarlo.'
   };
 
-  $('form-activar').addEventListener('submit', function (e) {
+  al('form-activar', 'submit', function (e) {
     e.preventDefault();
     var campo = this.elements.codigo;
     var aviso = $('activar-aviso');
@@ -1150,7 +1168,7 @@
       });
   });
 
-  $('btn-quiero').addEventListener('click', function () {
+  al('btn-quiero', 'click', function () {
     var perfil = leer(K_PERFIL, null);
     var quien = (perfil && perfil.nombre) ? (' Soy ' + perfil.nombre + '.') : '';
     window.open(textoWa('Hola, vengo de Un Check-in por la Vida y quiero adoptar un Héroe de Rescate.'
@@ -1207,7 +1225,7 @@
     $('instalar').hidden = true;
   });
 
-  $('btn-reintentar').addEventListener('click', function () {
+  al('btn-reintentar', 'click', function () {
     $('entrar-titulo').textContent = 'Buscando tu Boarding Pass…';
     $('entrar-texto').textContent = 'Un momento.';
     $('btn-reintentar').hidden = true;
@@ -1215,20 +1233,20 @@
     arrancar();
   });
 
-  $('btn-ayuda').addEventListener('click', function () {
+  al('btn-ayuda', 'click', function () {
     var perfil = leer(K_PERFIL, null);
     var quien = (perfil && perfil.nombre) ? (' Soy ' + perfil.nombre + '.') : '';
     window.open(textoWa('Hola, tengo una consulta sobre mi Boarding Pass de Un Check-in por la Vida.' + quien),
                 '_blank', 'noopener');
   });
 
-  $('btn-instalar').addEventListener('click', function () {
+  al('btn-instalar', 'click', function () {
     if (!pedidoDeInstalar) return;
     pedidoDeInstalar.prompt();
     pedidoDeInstalar.userChoice.then(function () { pedidoDeInstalar = null; });
   });
 
-  $('btn-recargar').addEventListener('click', function () {
+  al('btn-recargar', 'click', function () {
     if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
       navigator.serviceWorker.getRegistration().then(function (reg) {
         if (reg && reg.waiting) reg.waiting.postMessage('actualizar');

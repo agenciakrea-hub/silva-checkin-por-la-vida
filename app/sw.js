@@ -19,7 +19,7 @@
  */
 'use strict';
 
-const VERSION = 'v12';
+const VERSION = 'v13';
 const CACHE   = 'checkin-app-' + VERSION;
 
 /* Lo que hace falta para que la pantalla se dibuje entera sin red. Las cifras
@@ -84,6 +84,31 @@ self.addEventListener('fetch', event => {
       if (resp && resp.ok && resp.type === 'basic') cache.put(req, resp.clone());
       return resp;
     }).catch(() => null);
+
+    /* ⚠️ EL DOCUMENTO VA A LA RED PRIMERO, CON UN TOPE CORTO. El resto sigue
+       siendo caché primero.
+
+       Con caché primero para todo, al publicar una versión nueva la primera
+       visita de cada persona recibía el `index.html` VIEJO junto con el
+       `app.js` NUEVO —porque el JS entra por otra petición y a veces llega
+       fresco—. El JS buscaba elementos que ese HTML todavía no tenía, y la app
+       quedaba en blanco hasta recargar. Pasó de verdad, con el bloque del
+       ranking recién publicado.
+
+       El HTML es lo que define qué elementos existen, así que es lo único que
+       no puede ir atrasado respecto del código. Pesa unos 60 kB y va solo: mil
+       quinientos milisegundos es lo que se le da para llegar. Si no llega
+       —que en la red de esta campaña pasa— se sirve el guardado, igual que
+       antes, y no se pierde nada. */
+    if (guardado && req.mode === 'navigate') {
+      const carrera = await Promise.race([
+        enLaRed,
+        new Promise(r => setTimeout(() => r(null), 1500))
+      ]);
+      if (carrera) return carrera;
+      event.waitUntil(enLaRed);
+      return guardado;
+    }
 
     /* Caché primero: la pantalla se dibuja en milisegundos en vez de esperar a
        la red. En una red lenta —la de esta campaña— la diferencia es entre ver
