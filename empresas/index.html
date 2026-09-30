@@ -319,8 +319,10 @@
     .modelo .btn{margin-top:1.6rem;}
     .modelo-n{grid-column:1/-1;}
     .modelo-cab,.modelo > p{grid-column:1;}
-    .modelo dl{grid-column:2;grid-row:2/5;margin-top:0;
-               padding-left:2.6rem;border-left:1px solid var(--paper-edge);}
+    .detalle{grid-column:2;grid-row:1/6;margin-top:0;border-top:0;
+             padding-left:2.6rem;border-left:1px solid var(--paper-edge);}
+    .detalle summary{padding-top:0;}
+    .modelo dl{margin-top:1rem;}
     .modelo .btn{grid-column:1;width:auto;justify-self:start;}
   }
   .modelo-cab{margin-bottom:1rem;}
@@ -328,7 +330,25 @@
              text-transform:uppercase;color:var(--navy);letter-spacing:.01em;}
   .modelo-que{font:600 1rem/1.4 var(--sans);color:var(--orange-papel);margin-top:.15rem;}
   .modelo > p{color:var(--ink);}
-  .modelo dl{margin:1.1rem 0 0;display:flex;flex-direction:column;gap:.9rem;}
+  /* ⚠️ EL DETALLE SE PLIEGA, y es `<details>` nativo: sin JavaScript, accesible
+     por teclado y por lector de pantalla, y abierto por el buscador cuando
+     busca dentro de la página. Los tres modelos sumaban nueve párrafos de
+     detalle uno debajo del otro — la sección era una pared. Plegado, cada
+     modelo se lee en cuatro líneas y quien quiere el detalle lo abre. */
+  .detalle{margin-top:1.2rem;border-top:1px solid var(--paper-edge);}
+  .detalle summary{list-style:none;cursor:pointer;padding:.85rem 0 .1rem;
+                   display:flex;align-items:center;gap:.5rem;min-height:44px;
+                   font:600 .95rem/1.3 var(--sans);color:var(--navy);}
+  .detalle summary::-webkit-details-marker{display:none;}
+  /* El triángulo, dibujado: el marcador nativo varía entre navegadores y en
+     Safari es un triángulo relleno que no se puede alinear. */
+  .detalle summary::after{content:"";width:.5rem;height:.5rem;
+    border-right:2px solid var(--orange-papel);border-bottom:2px solid var(--orange-papel);
+    transform:rotate(45deg) translateY(-.1em);transition:transform var(--dur-1,180ms) ease;}
+  .detalle[open] summary::after{transform:rotate(-135deg) translateY(-.1em);}
+  @media (hover:hover){.detalle summary:hover{color:var(--orange-papel);}}
+  @media (prefers-reduced-motion:reduce){.detalle summary::after{transition:none;}}
+  .modelo dl{margin:.9rem 0 .4rem;display:flex;flex-direction:column;gap:.9rem;}
   .modelo dt{font-weight:700;color:var(--navy);font-size:1rem;}
   .modelo dd{margin:.1rem 0 0;color:var(--ink);font-size:1rem;}
   .modelo .btn{margin-top:1.3rem;width:100%;}
@@ -652,25 +672,28 @@
         <p>Financiamiento integral de un corredor aéreo completo, de punta a punta:
           el equivalente al fondo de los <b>609 Héroes</b> de una ruta, o a una
           ruta quirúrgica o crítica completa.</p>
-        <dl>
-          <div>
-            <dt>Elección de modalidad</dt>
-            <dd>Dedicada: el traslado directo de un paciente crítico en UCI aérea.
-              Consolidada: una ruta itinerante que conecta varias regiones y atiende
-              hasta seis pacientes en condiciones especiales.</dd>
-          </div>
-          <div>
-            <dt>Asociación nominal exclusiva</dt>
-            <dd>La ruta lleva la denominación oficial de su empresa en la orden de
-              vuelo y en los reportes de misión.</dd>
-          </div>
-          <div>
-            <dt>Retorno reputacional y fiscal</dt>
-            <dd>Certificado de inversión social, donación deducible de ISLR, dossier
-              audiovisual para su memoria de sostenibilidad e indicadores alineados
-              a los ODS 3 y 17 de la Agenda 2030.</dd>
-          </div>
-        </dl>
+        <details class="detalle">
+          <summary>Ver qué incluye el patrocinio</summary>
+          <dl>
+            <div>
+              <dt>Elección de modalidad</dt>
+              <dd>Dedicada: el traslado directo de un paciente crítico en UCI aérea.
+                Consolidada: una ruta itinerante que conecta varias regiones y atiende
+                hasta seis pacientes en condiciones especiales.</dd>
+            </div>
+            <div>
+              <dt>Asociación nominal exclusiva</dt>
+              <dd>La ruta lleva la denominación oficial de su empresa en la orden de
+                vuelo y en los reportes de misión.</dd>
+            </div>
+            <div>
+              <dt>Retorno reputacional y fiscal</dt>
+              <dd>Certificado de inversión social, donación deducible de ISLR, dossier
+                audiovisual para su memoria de sostenibilidad e indicadores alineados
+                a los ODS 3 y 17 de la Agenda 2030.</dd>
+            </div>
+          </dl>
+        </details>
         <a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener">
           <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
           Patrocinar una ruta completa
@@ -687,30 +710,33 @@
           dentro de una Ruta Sanitaria, o de cupos de escolta médica
           <i lang="en">(medical escort)</i> para pacientes en tratamiento
           continuo.</p>
-        <dl>
-          <div>
-            <dt>Exposición proporcional</dt>
-            <!-- El ejemplo original era «Tramo Coro – Maracaibo». Misma razón
-                 que arriba: Coro no es ninguna de las seis rutas publicadas. -->
-            <dd>Su marca queda asociada al tramo patrocinado —por ejemplo, el
-              tramo Barinas – Caracas—, con métricas claras sobre cuántos
-              pacientes se beneficiaron.</dd>
-          </div>
-          <div>
-            <dt>Sello de sostenibilidad</dt>
-            <dd>Distintivo digital «Co-patrocinador de Rutas Sanitarias» para su
-              sitio web y sus reportes corporativos.</dd>
-          </div>
-          <div>
-            <dt>Auditoría ESG</dt>
-            <!-- ⚠️ «HORAS DE VUELO», NO «MILLAS VOLADAS». El texto original decía
-                 millas; el resto del sitio, la app y el Sheet miden esta campaña
-                 en horas de vuelo, y dos unidades para la misma cosa hacen que
-                 los reportes no se puedan cruzar con lo que la campaña publica. -->
-            <dd>Reportes semestrales con desglose de horas de vuelo y trazabilidad
-              médica.</dd>
-          </div>
-        </dl>
+        <details class="detalle">
+          <summary>Ver qué incluye el patrocinio</summary>
+          <dl>
+            <div>
+              <dt>Exposición proporcional</dt>
+              <!-- El ejemplo original era «Tramo Coro – Maracaibo». Misma razón
+                   que arriba: Coro no es ninguna de las seis rutas publicadas. -->
+              <dd>Su marca queda asociada al tramo patrocinado —por ejemplo, el
+                tramo Barinas – Caracas—, con métricas claras sobre cuántos
+                pacientes se beneficiaron.</dd>
+            </div>
+            <div>
+              <dt>Sello de sostenibilidad</dt>
+              <dd>Distintivo digital «Co-patrocinador de Rutas Sanitarias» para su
+                sitio web y sus reportes corporativos.</dd>
+            </div>
+            <div>
+              <dt>Auditoría ESG</dt>
+              <!-- ⚠️ «HORAS DE VUELO», NO «MILLAS VOLADAS». El texto original decía
+                   millas; el resto del sitio, la app y el Sheet miden esta campaña
+                   en horas de vuelo, y dos unidades para la misma cosa hacen que
+                   los reportes no se puedan cruzar con lo que la campaña publica. -->
+              <dd>Reportes semestrales con desglose de horas de vuelo y trazabilidad
+                médica.</dd>
+            </div>
+          </dl>
+        </details>
         <a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener">
           <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
           Financiar tramos de ruta
@@ -728,24 +754,27 @@
         <p>Adquisición de Kits de Contención Emocional y Bioseguridad —el Héroe de
           Rescate en empaque estéril, o Kits Sensoriales TEA— que acompañan a los
           pacientes a lo largo de la Ruta Sanitaria.</p>
-        <dl>
-          <div>
-            <dt>Co-branding en el kit</dt>
-            <dd>Cada kit incluye una tarjeta personalizada con el mensaje
-              institucional de su empresa: <q>Obsequiado por [su empresa] para
-              acompañar esta Ruta Sanitaria</q>.</dd>
-          </div>
-          <div>
-            <dt>Material hipoalergénico</dt>
-            <dd>Apto para pacientes neutropénicos u oncológicos, concepto validado
-              en el Congreso Oncoaliados.</dd>
-          </div>
-          <div>
-            <dt>Uso versátil</dt>
-            <dd>Obsequio corporativo con propósito, material de responsabilidad
-              social o jornadas de voluntariado con sus colaboradores.</dd>
-          </div>
-        </dl>
+        <details class="detalle">
+          <summary>Ver qué incluye la compra</summary>
+          <dl>
+            <div>
+              <dt>Co-branding en el kit</dt>
+              <dd>Cada kit incluye una tarjeta personalizada con el mensaje
+                institucional de su empresa: <q>Obsequiado por [su empresa] para
+                acompañar esta Ruta Sanitaria</q>.</dd>
+            </div>
+            <div>
+              <dt>Material hipoalergénico</dt>
+              <dd>Apto para pacientes neutropénicos u oncológicos, concepto validado
+                en el Congreso Oncoaliados.</dd>
+            </div>
+            <div>
+              <dt>Uso versátil</dt>
+              <dd>Obsequio corporativo con propósito, material de responsabilidad
+                social o jornadas de voluntariado con sus colaboradores.</dd>
+            </div>
+          </dl>
+        </details>
         <a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener">
           <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
           Solicitar kits corporativos

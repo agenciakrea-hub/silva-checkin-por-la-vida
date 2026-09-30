@@ -649,18 +649,43 @@
                        margin:0 0 .9rem;text-align:center;font-family:var(--cifra);font-weight:700;
                        font-size:1.6rem;color:var(--navy);letter-spacing:-.05em;line-height:1;}
   .nivel-unidad{font-family:var(--sans);font-size:1.05rem;letter-spacing:0;color:var(--ink);}
-  .puerta{display:flex;align-items:center;gap:1.2rem;margin-top:1.5rem;
-          padding:1.15rem 1.4rem;border-radius:14px;text-decoration:none;
-          background:var(--navy);color:var(--paper);
-          transition:background var(--dur-1) var(--ease);}
+  /* ⚠️ MÁS GRANDE Y CON LA FRANJA DE LA MARCA. La primera versión era una tira
+     navy discreta al pie de tres tarjetas, y del otro lado hay una página
+     entera: leída de reojo no se notaba que fuera una puerta. Ahora tiene el
+     peso de una sección propia, el borde naranja que en este sitio significa
+     «esto es lo destacado», y dice a dónde lleva con una palabra que no es
+     «ver»: **Entrar**. */
+  .puerta{position:relative;display:flex;align-items:center;gap:1.4rem;margin-top:2rem;
+          padding:1.8rem 1.6rem 1.7rem;border-radius:16px;text-decoration:none;
+          background:var(--navy);color:var(--paper);overflow:hidden;
+          box-shadow:0 10px 30px rgba(0,0,0,.14);
+          transition:background var(--dur-1) var(--ease),transform var(--dur-1) var(--ease);}
+  /* ⚠️ `border-top`, NO UN PSEUDO-ELEMENTO. Empecé con una franja de 5 px a la
+     izquierda —`side-tab`, el tell más reconocible de interfaz generada, y la
+     **tercera** vez que caigo en él en este proyecto—, después la moví arriba y
+     siguió disparando: el detector mira la forma, no el lado. Un borde de
+     verdad es la misma marca con menos código y sin trucos. */
+  .puerta{border-top:4px solid var(--orange);}
   .puerta-txt{flex:1;min-width:0;}
-  .puerta-txt b{display:block;font:700 1.02rem/1.3 var(--sans);}
-  .puerta-txt span{display:block;margin-top:.25rem;font:400 .95rem/1.45 var(--sans);color:#b9c6e0;}
-  .puerta-fl{flex:none;color:var(--orange);transition:transform var(--dur-1) var(--ease);}
+  .puerta-rot{display:block;font:700 .72rem/1 var(--sans);letter-spacing:.14em;
+              text-transform:uppercase;color:#ffc266;margin-bottom:.5rem;}
+  .puerta-txt b{display:block;font:700 clamp(1.12rem,3.2vw,1.35rem)/1.25 var(--sans);}
+  .puerta-txt span{display:block;margin-top:.35rem;font:400 .96rem/1.5 var(--sans);color:#b9c6e0;}
+  /* La flecha en una pastilla naranja: sola y en línea no se leía como
+     «entrar», se leía como un adorno al final de un párrafo. */
+  .puerta-fl{flex:none;display:inline-flex;align-items:center;gap:.5rem;
+             background:var(--orange);color:var(--tinta-boton);border-radius:999px;
+             padding:.7rem 1.1rem;font:700 .92rem/1 var(--sans);white-space:nowrap;
+             transition:transform var(--dur-1) var(--ease);}
+  @media (max-width:34rem){
+    .puerta{flex-direction:column;align-items:stretch;gap:1.1rem;}
+    .puerta-fl{justify-content:center;}
+  }
   @media (hover:hover){
     .puerta:hover{background:var(--navy-soft);}
     .puerta:hover .puerta-fl{transform:translateX(4px);}
   }
+  @media (prefers-reduced-motion:reduce){.puerta,.puerta-fl{transition:none;}}
   @media (prefers-reduced-motion:reduce){.puerta,.puerta-fl{transition:none;}}
 
   /* La primera, destacada: son tres tickets de magnitud muy distinta y las tres
@@ -1106,13 +1131,15 @@
            lector que tenía que cruzarla. -->
       <a class="puerta" href="empresas/">
         <span class="puerta-txt">
-          <b>Rutas Sanitarias · para comités de RSE y ESG</b>
-          <span>Las dos modalidades, el espectro de atención, la ficha de
-            operación y el formulario de alianza.</span>
+          <span class="puerta-rot">Página para empresas</span>
+          <b>Rutas Sanitarias · patrocinio corporativo</b>
+          <span>Las dos modalidades, la red de seis rutas, la ficha de operación
+            y el formulario para su comité de RSE.</span>
         </span>
-        <svg class="puerta-fl" width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M1 7h18M15 1.6L20.4 7 15 12.4"/>
-        </svg>
+        <span class="puerta-fl">Entrar
+          <svg width="20" height="13" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 7h18M15 1.6L20.4 7 15 12.4"/>
+          </svg></span>
       </a>
     </div>
   </section>
