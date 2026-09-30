@@ -1095,11 +1095,17 @@
        su código funciona igual, y compartir la campaña no depende de nada. */
     var activo = !!(yo && yo.activo);
     $('tripu-falta').hidden = activo;
+    /* ⚠️ EL BOTÓN DE INVITAR **NO** SE APAGA, y antes sí. Lo que el pedido dejó
+       inactivo es la PARTICIPACIÓN EN EL RANKING, no repartir el código:
+       apagarlo contradecía al párrafo pegado arriba —«Tu código de invitación
+       ya funciona: quien entre con él queda contigo»— en el mismo recuadro, y
+       quien tenía el código en la mano concluía que no le servía. Encima le
+       cerraba a la campaña la única puerta que tiene para crecer: alguien que
+       todavía no activó igual puede traer gente, y esa gente sí activa.
+       Lo que el ranking exige se dice con palabras, arriba, no con un botón en
+       gris que no explica nada. */
     var bInv = $('btn-invitar-tripu');
-    if (bInv) {
-      bInv.disabled = !activo;
-      bInv.textContent = activo ? 'Invitar con mi código' : 'Invitar (activa tu pase)';
-    }
+    if (bInv) bInv.textContent = 'Invitar con mi código';
     /* El campo para anotar a quien la invitó sólo tiene sentido mientras no
        haya nadie anotado: después es una puerta que no lleva a ningún lado. */
     var tiene = !!(yo && yo.invitadoPor);
