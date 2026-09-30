@@ -98,16 +98,41 @@
   }
   /* A 380 px los dos botones con texto no entran junto con la marca: el de la
      campaña se queda sin palabra antes que el de WhatsApp, que es la acción. */
-  @media (max-width:26rem){.cab-campana span{display:none;}.cab-campana{padding:.6rem .7rem;}}
+  /* ⚠️ A 390 px la cabecera tenía tres pesos incompatibles y un hueco de 112 px
+     en el medio: el logo a 21×28 —el 12 % de su tamaño, con el texto de la marca
+     ilegible—, un círculo mudo con una flecha ← que se lee como el «atrás» del
+     navegador, y un botón naranja de 163 px, el 42 % del ancho.
+     Debajo de 30rem: el logo crece, la flecha recupera su palabra y el CTA se
+     achica. Tres cosas del mismo peso pesan menos que una grande y dos mudas. */
+  @media (max-width:30rem){
+    .cab{gap:.5rem;}
+    .cab-marca img{height:2.15rem;}
+    .cab-btn{font-size:.78rem;padding:.55rem .75rem;}
+    .cab-wa svg{width:16px;height:16px;}
+  }
+  @media (max-width:22rem){.cab-campana span{display:none;}.cab-campana{padding:.55rem .6rem;}}
 
   .bloque{max-width:64rem;margin:0 auto;padding:3.2rem var(--gutter);}
+  /* ⚠️ LAS CUATRO SECCIONES TENÍAN 51,2 px ARRIBA Y ABAJO, AL PÍXEL. Eso no es
+     ritmo, es metrónomo: la página avanza sin que nada indique qué pesa más.
+     Tres pasos —56 / 72 / 88— asignados por peso de sección: la explicación
+     respira, los modelos son el corazón y el cierre necesita aire antes de
+     pedirle los datos a alguien. */
+  #ruta-sanitaria .bloque{padding-top:3.5rem;padding-bottom:3.5rem;}
+  #modelos .bloque{padding-top:4.5rem;padding-bottom:4.5rem;}
+  #espectro .bloque{padding-top:3.5rem;padding-bottom:3.5rem;}
+  #contacto .bloque{padding-top:5rem;padding-bottom:5rem;}
   section[id]{scroll-margin-top:4.4rem;}
   .papel{background:var(--paper);color:var(--navy);}
   .celeste{background:var(--celeste-papel);color:var(--navy);}
   /* ⚠️ 2,55rem DE TOPE, NO 3. Los cuatro h2 medían 48 px y el h1 58: diez
      píxeles de diferencia entre el título de la página y el de cada sección es
      no tener jerarquía. Ahora el h1 llega a 65,6 y los h2 a 40,8. */
-  .bloque h2{font-size:clamp(1.85rem,4.4vw,2.55rem);margin-bottom:.6rem;letter-spacing:.005em;}
+  /* ⚠️ RAZÓN 1,5 ENTRE TÍTULO DE PÁGINA Y DE SECCIÓN, EN LOS DOS EXTREMOS.
+     En móvil el h1 daba 39,2 y el h2 32: ratio 1,22, o sea que el título de la
+     página y el de cada sección se leían del mismo tamaño. Ahora 40 contra 26,4
+     abajo y 68,8 contra 44,8 arriba. */
+  .bloque h2{font-size:clamp(1.65rem,3.9vw,2.8rem);margin-bottom:.6rem;letter-spacing:.005em;}
   .bajada{color:var(--ink);max-width:52ch;margin-bottom:2rem;font-size:1.08rem;font-weight:600;}
   .rotulo{font:600 .78rem/1.4 var(--sans);letter-spacing:.11em;text-transform:uppercase;
           color:var(--orange-papel);margin-bottom:.5rem;}
@@ -140,11 +165,18 @@
      ojo y el título flotaba. No es una textura de relleno —son dos franjas que
      siguen la misma inclinación de la flecha de las rutas— y a 4 % de opacidad
      se percibe como profundidad, no como decoración. */
-  .hero::before{content:"";position:absolute;inset:-20% -10% auto auto;width:70%;height:170%;
-                background:linear-gradient(107deg,transparent 46%,rgba(41,185,233,.10) 46.4%,
-                           rgba(41,185,233,.10) 52%,transparent 52.4%,transparent 61%,
-                           rgba(255,153,0,.07) 61.4%,rgba(255,153,0,.07) 64%,transparent 64.4%);
-                pointer-events:none;}
+  /* ⚠️ SÓLO EN ESCRITORIO Y MÁS TENUE. A 390 px la franja cruzaba la nota y la
+     ficha: el contraste caía de 7,2:1 a 5,95:1 —seguía pasando AA— pero axe
+     dejaba **27 nodos como «indeterminados»** porque no puede calcular el fondo
+     detrás de un pseudo-elemento. Una decoración que vuelve inauditable medio
+     hero no vale lo que aporta. */
+  @media (min-width:62rem){
+    .hero::before{content:"";position:absolute;inset:-20% -6% auto auto;width:44%;height:170%;
+                  background:linear-gradient(107deg,transparent 46%,rgba(41,185,233,.055) 46.4%,
+                             rgba(41,185,233,.055) 52%,transparent 52.4%,transparent 61%,
+                             rgba(255,153,0,.04) 61.4%,rgba(255,153,0,.04) 64%,transparent 64.4%);
+                  pointer-events:none;}
+  }
   .hero .bloque{padding-top:2.8rem;padding-bottom:3.2rem;position:relative;}
   .hero .rotulo{color:#ffc266;}
 
@@ -152,17 +184,27 @@
      y dejaba **677 px de navy vacío a su derecha**: casi la mitad del hero sin
      nada. Un hero que es sólo una columna de texto centrada en el aire es el
      tell más rápido de plantilla. */
+  /* ⚠️ EL HERO SE VEÍA MEJOR A 768 QUE A 1440, Y ÉSTE ERA EL MOTIVO. Con
+     `max-width:64rem` (1024 px) menos el gutter quedan 912 útiles; con el gap y
+     el reparto 1.12/.88, la columna del título se comía en **482 px** justo
+     cuando aparece más espacio disponible. De ahí salían las cinco líneas del
+     h1, los botones apilados y 494 px de navy liso bajo la ficha.
+     El hero usa su propio ancho: 78rem, y el reparto le da más al titular. */
   @media (min-width:62rem){
-    .hero-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(19rem,.88fr);
-               gap:3.2rem;align-items:start;}
-    .hero .bloque{padding-top:3.6rem;padding-bottom:4rem;}
+    .hero .bloque{max-width:78rem;padding-top:3.8rem;padding-bottom:4.2rem;}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(21rem,1fr);
+               gap:3.6rem;align-items:start;}
+  }
+  @media (min-width:100rem){
+    .hero .bloque{max-width:86rem;}
+    .hero-grid{gap:4.4rem;}
   }
 
   /* ⚠️ SIN `max-width:20ch`. En 390 px eso dejaba el título en 295 px — 55 px de
      aire muerto a la derecha — y lo partía en cuatro líneas cortas y desparejas.
      El límite lo pone la columna, no un contador de caracteres. */
   .hero h1{font-family:var(--titulo);font-weight:700;
-           font-size:clamp(2.45rem,8.2vw,4.1rem);line-height:.98;letter-spacing:-.005em;
+           font-size:clamp(2.5rem,7.6vw,4.3rem);line-height:.97;letter-spacing:-.008em;
            color:var(--paper);margin-bottom:1.1rem;}
   /* La parte que nombra el producto, en el celeste de marca: el título deja de
      ser un bloque uniforme y el ojo encuentra dónde agarrarse. */
@@ -238,7 +280,7 @@
     width:2.1rem;height:2.1rem;border-radius:9px;display:grid;place-items:center;
     font:700 1.15rem/1 var(--titulo);letter-spacing:0;
     background:var(--navy);color:var(--paper);}
-  .modalidad h3{font-family:var(--sans);font-weight:700;font-size:1.16rem;color:var(--navy);
+  .modalidad h3{font-family:var(--sans);font-weight:700;font-size:1.32rem;color:var(--navy);
                 line-height:1.25;margin-bottom:.3rem;}
   .modalidad-cuantos{font-size:.95rem;color:var(--ink-soft);margin-bottom:1rem;}
   .modalidad ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.7rem;}
@@ -306,16 +348,26 @@
             position:relative;}
   @media (min-width:52rem){
     .espectro{gap:1.9rem;}
-    .caso + .caso::before{content:"";position:absolute;left:-1.35rem;top:50%;
-      width:.75rem;height:.75rem;margin-top:-.4rem;
+    .caso + .caso::before{content:"";position:absolute;left:-1.25rem;top:1.15rem;
+      width:.75rem;height:.75rem;
       border-top:2px solid var(--ink-soft);border-right:2px solid var(--ink-soft);
       transform:rotate(45deg);opacity:.55;}
     .caso{position:relative;}
   }
-  .caso{background:#fff;border:1.5px solid var(--paper-edge);border-radius:14px;padding:1.3rem;}
-  .caso-num{font:700 .78rem/1 var(--sans);letter-spacing:.11em;color:var(--orange-papel);
-            margin-bottom:.5rem;}
-  .caso h3{font-family:var(--sans);font-weight:700;font-size:1.08rem;color:var(--navy);
+  /* ⚠️ SIN CAJA. Entre modalidades, modelos y casos había **ocho** tarjetas con
+     el mismo fondo casi blanco, el mismo borde de 1,5 px y el mismo radio de
+     14: cuatro bloques distintos con una sola firma visual. El espectro no
+     necesita caja —son tres perfiles, no tres productos— y con un filete a la
+     izquierda se distingue del resto sin agregar peso. */
+  /* ⚠️ SIN CAJA **Y SIN FILETE LATERAL**. La primera versión sin caja usó
+     `border-left:3px` y `impeccable` la marcó como `side-tab`, que es el tell
+     más reconocible de interfaz generada — ya me lo había cazado antes en la
+     app y lo repetí igual. Acá lo que distingue a los tres casos es el número
+     grande, que es lo único que tienen que leer de un vistazo. */
+  .caso{padding:0;}
+  .caso-num{font:700 2.6rem/1 var(--titulo);letter-spacing:-.02em;color:var(--celeste-hondo);
+            margin-bottom:.35rem;}
+  .caso h3{font-family:var(--sans);font-weight:700;font-size:1.22rem;color:var(--navy);
            line-height:1.3;margin-bottom:.45rem;}
   .caso p{color:var(--ink);font-size:1rem;}
 
@@ -324,8 +376,14 @@
      formulario B2B que flota sin contenedor se lee como un borrador; encerrado,
      se lee como un documento que se completa y se firma, que es el gesto que le
      estamos pidiendo a la persona. */
+  /* Dos columnas: el formulario y, al lado, lo que pasa después de enviarlo. */
+  .contacto-grid{display:grid;gap:1.6rem;}
+  @media (min-width:62rem){
+    .contacto-grid{grid-template-columns:minmax(0,1.5fr) minmax(17rem,1fr);
+                   gap:2.8rem;align-items:start;}
+  }
   .form-caja{background:#fff;border:1.5px solid var(--paper-edge);border-radius:16px;
-             padding:1.6rem;max-width:44rem;}
+             padding:1.6rem;}
   @media (min-width:46rem){.form-caja{padding:2.1rem 2.2rem;}}
   .form-campos{display:grid;gap:1.1rem;border:0;padding:0;margin:0;min-width:0;}
   /* Dos columnas en los campos cortos: empresa y contacto piden ancho, correo y
@@ -336,6 +394,7 @@
   }
   .campo{display:flex;flex-direction:column;gap:.35rem;}
   .campo label{font-weight:600;font-size:.98rem;color:var(--navy);}
+  .opcional{font-weight:400;color:var(--ink-soft);}
   .campo input,.campo select{font:400 1.02rem/1.4 var(--sans);color:var(--navy);
     background:#fff;border:1.5px solid var(--paper-edge);border-radius:10px;
     padding:.8rem .9rem;min-height:52px;width:100%;}
@@ -349,6 +408,26 @@
   .form-envio .btn{width:100%;}
   @media (min-width:46rem){.form-envio .btn{width:auto;padding-inline:2.2rem;}}
   .form-nota{margin-top:.9rem;font-size:.94rem;color:var(--ink-soft);max-width:52ch;}
+  .contacto-lado h3{font-family:var(--titulo);font-weight:700;text-transform:uppercase;
+                    font-size:1.18rem;letter-spacing:.02em;color:var(--navy);margin-bottom:1rem;}
+  /* Lista numerada, no tarjetas: es una secuencia en el tiempo y ya hay
+     demasiadas cajas en esta página. */
+  .pasos-b2b{margin:0;padding:0;list-style:none;counter-reset:paso;
+             display:flex;flex-direction:column;gap:1rem;}
+  .pasos-b2b li{position:relative;padding-left:2.1rem;font-size:.98rem;line-height:1.5;
+                color:var(--ink);}
+  .pasos-b2b li::before{counter-increment:paso;content:counter(paso);
+    position:absolute;left:0;top:-.05rem;width:1.5rem;height:1.5rem;border-radius:50%;
+    display:grid;place-items:center;background:var(--navy);color:var(--paper);
+    font:700 .8rem/1 var(--sans);}
+  .pasos-b2b b{font-weight:700;color:var(--navy);}
+  .contacto-directo{margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--paper-edge);
+                    font-size:.95rem;color:var(--ink);}
+  .contacto-directo a{display:block;margin-top:.3rem;color:var(--navy);font-weight:600;
+                      padding-block:.15rem;}
+  .contacto-directo a span{display:block;font-weight:400;font-size:.88rem;color:var(--ink-soft);}
+  .contacto-directo b{font-size:1.05rem;}
+
   /* El aviso de campo faltante: `role="alert"` para que el lector de pantalla
      lo anuncie sin que la persona tenga que ir a buscarlo. */
   .form-aviso{margin-top:.9rem;padding:.8rem 1rem;border-radius:10px;
@@ -361,7 +440,12 @@
   .pie-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.8rem;}
   .pie h3{font-family:var(--sans);font-size:.78rem;font-weight:700;letter-spacing:.1em;
           text-transform:uppercase;color:#9fb0d0;margin:0 0 .7rem;}
-  .pie a{color:#d6ddec;}
+  /* ⚠️ MEDÍAN 22 px DE ALTO Y EL MÍNIMO DE WCAG 2.2 AA (2.5.8) SON 24. Axe no
+     lo marca porque en 4.13 esa regla corre sólo en el conjunto AAA. El
+     `padding` sube el blanco de toque y el `gap` más chico lo compensa: cero
+     píxeles netos de alto en el pie. */
+  .pie a{color:#d6ddec;display:inline-block;padding-block:.15rem;}
+  .pie ul{gap:.2rem;}
   .pie ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.45rem;}
   .pie-redes{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem;}
   .pie-red{width:42px;height:42px;border-radius:999px;border:1px solid rgba(246,241,231,.25);
@@ -675,6 +759,7 @@
            todo el resto del sitio, así que funciona desde el primer día y no
            promete un envío que no existe. La fase 3 le agrega el guardado en una
            hoja propia del Sheet, sin cambiar lo que la persona ve. -->
+      <div class="contacto-grid">
       <form class="form-caja" id="form-empresa" novalidate>
         <fieldset class="form-campos">
           <legend class="sr">Datos de contacto de su empresa</legend>
@@ -695,7 +780,11 @@
             <input id="e-telefono" name="telefono" type="tel" autocomplete="tel" inputmode="tel" required>
           </p>
           <p class="campo">
-            <label for="e-modalidad">Modalidad de interés</label>
+            <!-- ⚠️ SE MARCA EL ÚNICO OPCIONAL, no los cuatro obligatorios. Cuatro
+                 asteriscos son ruido; una palabra en el que sobra dice lo mismo.
+                 Sin esto, la persona se enteraba de qué faltaba recién al
+                 presionar Enviar. -->
+            <label for="e-modalidad">Modalidad de interés <span class="opcional">(opcional)</span></label>
             <select id="e-modalidad" name="modalidad">
               <option value="Padrino de Ruta Sanitaria">Padrino de Ruta Sanitaria</option>
               <option value="Copiloto Solidario (tramos y asientos)">Copiloto Solidario (tramos y asientos)</option>
@@ -715,6 +804,32 @@
             para que usted la revise antes de mandarla.</p>
         </div>
       </form>
+
+      <!-- ⚠️ ESTO OCUPA LOS 424 px QUE SOBRABAN AL LADO DEL FORMULARIO. La
+           sección medía 926 px de alto con el formulario solo en el medio de un
+           campo celeste, y después el pie: ningún argumento de cierre, ninguna
+           salida que no fuera llenar cinco campos. Lo que un gerente quiere
+           saber antes de dejar sus datos es a quién le llegan y qué pasa
+           después. -->
+      <aside class="contacto-lado" aria-label="Qué pasa después">
+        <h3>Qué pasa cuando envía</h3>
+        <ol class="pasos-b2b">
+          <li><b>Le responde alianzas corporativas</b>, no un formulario
+            automático.</li>
+          <li><b>En el primer correo van tres cosas</b>: el dossier ESG, el
+            presupuesto de la modalidad que eligió y las fechas disponibles.</li>
+          <li><b>Si quiere avanzar</b>, se firma una carta de intención y la ruta
+            queda reservada a nombre de su empresa.</li>
+        </ol>
+        <!-- ⚠️ DENTRO DEL `<a href="tel:">` VA SÓLO EL NÚMERO. Con el rótulo
+             adentro, `tel-non-breaking` lee el espacio entre las dos partes
+             como un corte dentro del teléfono y falla. Misma trampa que en el
+             pie de esta página. -->
+        <p class="contacto-directo"><span>¿Prefiere hablar antes de escribir?
+          Atención corporativa:</span>
+          <a href="tel:+584241466595"><b class="pie-tel">(0424)&nbsp;146.65.95</b></a></p>
+      </aside>
+      </div>
     </div>
   </section>
 </main>
