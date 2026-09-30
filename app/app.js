@@ -1297,9 +1297,9 @@
   // ── Empresas ─────────────────────────────────────────────────────────────
 
   var PLANES = {
-    padrino:  'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Padrino de Ruta. ¿Me puedes dar más información?',
-    copiloto: 'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario. ¿Me puedes dar más información?',
-    lotes:    'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y quiero cotizar Héroes de Rescate como regalo con propósito. ¿Me puedes dar más información?'
+    padrino:  'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y me interesa ser Padrino de una Ruta Sanitaria. ¿Me puedes dar más información?',
+    copiloto: 'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, por tramos y asientos médicos. ¿Me puedes dar más información?',
+    lotes:    'Hola, vengo de Un Check-in por la Vida. Represento a una empresa y quiero cotizar Kits Pedelton con propósito. ¿Me puedes dar más información?'
   };
 
   document.querySelectorAll('[data-plan]').forEach(function (b) {

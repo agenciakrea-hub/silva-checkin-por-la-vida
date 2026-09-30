@@ -161,12 +161,17 @@
      cabecera entera cuatro píxeles. */
   .cab-app{background:none;border:1.5px solid var(--orange);color:var(--navy-deep);
            white-space:nowrap;}
-  /* ⚠️ .82 Y NO .72. A 0,72 el «(app)» daba 4,17:1 sobre el celeste de la
-     cabecera y el mínimo es 4,5 — lo marcó axe-core como violación seria.
-     Medido: 0,78 es donde cruza; 0,82 da 5,2 y deja margen para cuando la
-     cabecera pasa a `celeste-hondo` al hacer scroll. Sigue leyéndose como
-     secundario, que es para lo que estaba la opacidad. */
-  .cab-app i{font-style:normal;font-weight:400;opacity:.82;}
+  /* ⚠️ SIN OPACIDAD. Tenía `opacity:.82` con una nota que decía «da 5,2 y
+     deja margen para cuando la cabecera pasa a celeste-hondo al scrollear».
+     Esa medición estaba hecha contra `--celeste` (#29b9e9), el estado SIN
+     scroll: ahí da 5,11. **Sobre `--celeste-hondo` (#1596c2), que es el estado
+     con scroll, el mismo .82 cae a 3,79** y Lighthouse lo marcó —A11y 96—.
+     Sobre ese fondo la opacidad no sirve: harían falta 0,95 para llegar a 4,56,
+     y a 0,95 ya no se distingue de opaco.
+     Pleno da **4,90 sobre celeste-hondo y 7,24 sobre celeste**, los dos pasan.
+     Lo secundario lo dice el peso 400 contra el 600 del botón, que es como lo
+     resuelve la app con `.volver-donde` y por eso ella sí daba 100. */
+  .cab-app i{font-style:normal;font-weight:400;}
   @media (hover:hover){.cab-app:hover{background:var(--orange);color:var(--tinta-boton);}}
   .cab-wa{background:var(--navy);color:var(--paper);}
   /* ── Qué botón conserva su palabra al angostar ──────────────────────────
@@ -1020,25 +1025,43 @@
 
   <section class="papel" id="empresas" aria-labelledby="t-empresas">
     <div class="bloque">
-      <h2 id="t-empresas">Para empresas</h2>
-      <p class="bajada">Formas de apoyar la campaña con <b>retorno reputacional</b> para la organización.</p>
+      <h2 id="t-empresas">Para empresas y RSE</h2>
+      <p class="bajada">Financiamiento de Rutas Sanitarias con <b>retorno reputacional</b>, impacto ESG y deducibilidad fiscal.</p>
       <div class="niveles">
         <article class="nivel">
-          <h3 class="nivel-nombre">Padrino de Ruta</h3>
-          <p class="nivel-precio"><b class="nivel-cifra">600</b> <span class="nivel-unidad">osos</span></p>
-          <p>Financia <b>un vuelo completo</b>. Su empresa queda asociada <b>nominalmente</b> a la ruta patrocinada.</p>
+          <h3 class="nivel-nombre">Padrino de Ruta Sanitaria</h3>
+          <!-- ⚠️ LA CIFRA SALE DE `datos.js`, no del HTML. Decía 600 mientras la
+               meta era 609: un número escrito a mano en una tarjeta es un número
+               que se desincroniza el día que el jefe cambia la celda. `pon()`
+               pinta TODOS los `data-cifra` con la misma clave, así que con el
+               atributo alcanza y no hay que tocar el JS. -->
+          <p class="nivel-precio"><b class="nivel-cifra" data-cifra="meta-osos">609</b> <span class="nivel-unidad">Héroes</span></p>
+          <p>Financia una <b>Ruta Sanitaria completa</b>: un vuelo crítico directo
+            (Maracaibo – Caracas) o un corredor itinerante que mueve <b>hasta 6
+            pacientes</b> en condiciones especiales (Maracaibo – Barinas – Caracas).
+            Su empresa queda asociada <b>nominalmente</b> a la misión patrocinada.</p>
           <p class="nivel-accion"><a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Escribir por WhatsApp</a></p>
         </article>
         <article class="nivel">
           <h3 class="nivel-nombre">Copiloto Solidario</h3>
-          <p class="nivel-precio nivel-precio--texto">Por tramos</p>
-          <p>Compra de <b>bloques fraccionados</b> y su empresa queda asociada a la ruta patrocinada, con <b>exposición proporcional</b> al aporte.</p>
+          <p class="nivel-precio nivel-precio--texto">Por tramos y asientos</p>
+          <p>Compra de <b>bloques de horas</b> o cupos de escolta médica dentro de
+            una Ruta Sanitaria, para pacientes en tratamiento continuo o en
+            condiciones especiales. Su empresa queda asociada con <b>exposición
+            proporcional</b> al aporte.</p>
           <p class="nivel-accion"><a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Escribir por WhatsApp</a></p>
         </article>
         <article class="nivel">
-          <h3 class="nivel-nombre">Regalos con propósito</h3>
+          <h3 class="nivel-nombre">Kits Pedelton con propósito</h3>
           <p class="nivel-precio">$10 – $40</p>
-          <p>Adquisición de Héroes de Rescate <b>por unidad</b>, como obsequio corporativo o material de responsabilidad social.</p>
+          <!-- ⚠️ LOS DOS NOMBRES EN LA MISMA FRASE, a propósito. El resto del
+               sitio llama «Héroe de Rescate» a este objeto y el título de la
+               tarjeta lo llama «Kit Pedelton»: si no se dice que son lo mismo,
+               el lector cree que son dos productos distintos. -->
+          <p>Adquisición de <b>Kits de Contención y Bioseguridad</b> —el Héroe de
+            Rescate en empaque estéril para pacientes neutropénicos, o Kits
+            Sensoriales TEA— como obsequio corporativo o material de
+            responsabilidad social.</p>
           <p class="nivel-accion"><a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Escribir por WhatsApp</a></p>
         </article>
       </div>
@@ -1200,7 +1223,7 @@
         </div>
         <div class="faq-item">
           <h3><button class="faq-boton" type="button" aria-expanded="false" aria-controls="faq-3">¿Puedo apadrinar como empresa?<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></h3>
-          <div class="faq-cuerpo" id="faq-3"><div class="faq-clip"><p>Sí. En la sección <a href="#empresas">Para empresas</a> están los tres niveles, o puedes escribir directamente por WhatsApp.</p></div></div>
+          <div class="faq-cuerpo" id="faq-3"><div class="faq-clip"><p>Sí. En la sección <a href="#empresas">Para empresas y RSE</a> están los tres modelos de patrocinio, o puedes escribir directamente por WhatsApp.</p></div></div>
         </div>
         <div class="faq-item">
           <h3><button class="faq-boton" type="button" aria-expanded="false" aria-controls="faq-4">¿Cómo ayudo si no puedo comprar?<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></h3>
@@ -1295,9 +1318,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var respaldo = { toalla: 10, llavero: 20, oso: 40 };
   var mensajes = {
     general: '¡Hola! Vengo de la web de la campaña Un Check-in por la Vida y quiero adoptar un Héroe de Rescate. ¿Me puedes dar más información?',
-    padrino: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Padrino de Ruta, con un aporte de 600 osos para financiar un vuelo completo. ¿Me pueden enviar la información?',
-    copiloto: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, con compra de bloques fraccionados de la ruta. ¿Cómo se calcula el aporte?',
-    lotes: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero cotizar Héroes de Rescate como regalo institucional. ¿Cuál es el mínimo y los precios por cantidad?',
+    padrino: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa ser Padrino de una Ruta Sanitaria completa. ¿Me pueden enviar la información y las dos modalidades?',
+    copiloto: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y me interesa el plan Copiloto Solidario, por tramos y asientos médicos. ¿Cómo se calcula el aporte?',
+    lotes: 'Hola, vengo de la web de Un Check-in por la Vida. Represento a una empresa y quiero cotizar Kits Pedelton con propósito. ¿Cuál es el mínimo y los precios por cantidad?',
     /* El permiso va escrito en el mensaje que la propia persona envía: así
        queda de su puño y letra en la conversación, no en una letra chica que
        nadie leyó. */
