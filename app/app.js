@@ -23,6 +23,14 @@
      anotarlo. Sin esto, abrir el enlace de un amigo y caer en la app —en vez
      de en el formulario del sitio— perdía la invitación para siempre. */
   var K_INVITO = 'cxv.invito';
+  /* El último ranking que contestó el servidor. Apps Script en frío tarda
+     entre 15 y 20 segundos y el panel no tiene valores de respaldo en el HTML
+     como sí los tienen las cifras: sin esto, quién abre la app y mira no ve
+     nada y cierra antes de que llegue. Mismo patrón que la portada usa para
+     «44 de 609», con localStorage en vez de sessionStorage porque acá lo que
+     importa es la visita de mañana, no la navegación de ahora. */
+  var K_RANKING = 'cxv.ranking';
+  var RANKING_VIVE_MS = 24 * 60 * 60 * 1000;
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -714,6 +722,13 @@
       $('d-pase').textContent = '—';
     }
 
+    /* El ranking de la última vez, mientras el servidor despierta. Se corrige
+       solo cuando contesta; si no contesta, esto es lo último que fue cierto. */
+    var rGuardado = leer(K_RANKING, null);
+    if (rGuardado && rGuardado.t && (Date.now() - rGuardado.t) < RANKING_VIVE_MS) {
+      pintarRanking(rGuardado.r, true);
+    }
+
     if (!API || typeof fetch !== 'function') { pintarDesconocido(); return; }
 
     var yo = leer(K_YO, null);
@@ -895,11 +910,15 @@
    * con oro y plata estaría fuera de lugar, y el cliente lo pidió así. Se
    * nombra lo que la persona hizo —«trajo a 3»— y no el puesto que ocupa.
    */
-  function pintarRanking(r) {
+  function pintarRanking(r, deLaMemoria) {
     var caja = $('rank');
     if (!caja) return;
+    /* ⚠️ UNA LISTA VACÍA DEL SERVIDOR CIERRA EL PANEL, pero no borra lo
+       guardado: si el Sheet contesta vacío por un error de lectura, el próximo
+       arranque vuelve a mostrar lo último bueno en vez de nada. */
     if (!r || !r.lista || !r.lista.length) { caja.hidden = true; return; }
     caja.hidden = false;
+    if (!deLaMemoria) { escribir(K_RANKING, { t: Date.now(), r: r }); }
 
     var ol = $('rank-lista');
     ol.textContent = '';
