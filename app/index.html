@@ -797,6 +797,14 @@
               color:var(--ink-soft);margin-top:2px;}
   .rutas i{display:block;font:400 .84rem/1.4 var(--sans);font-style:normal;
            color:var(--ink-soft);margin-top:1px;}
+  /* ⚠️ LA FLECHA ES UN SVG Y NO EL CARÁCTER «→». Las fuentes de este proyecto
+     son subsets LATINOS —para que pesen poco, que es la razón de ser de esta
+     campaña— y U+2192 no está adentro: el navegador caía a una fuente del
+     sistema sólo para ese glifo, con otro grosor y otra altura. Medido: la
+     flecha ocupaba 16 px con `font-size:16px` (el ancho exacto del cuadratín,
+     la firma de un glifo de respaldo) mientras una «a» de la misma fuente mide
+     7,1. Un SVG se ve igual en todos lados y hereda el color del texto. */
+  .fl{width:1.05em;height:.75em;vertical-align:-.08em;opacity:.75;}
   .rutas li[data-tuya] b{color:var(--navy);}
   .rutas li[data-tuya] span{color:var(--orange-papel);}
   /* La ruta propia se marca diciéndolo, no con una franja: «LA TUYA» dice más
@@ -1195,12 +1203,12 @@
       <h2 id="t-red">La red completa</h2>
       <p>Esta es la Ruta 1. Faltan cinco por financiar.</p>
       <ol class="rutas">
-        <li data-tuya><b>Ruta 1 · Occidente</b><span>SVMC → SVCS</span><i>Maracaibo → Caracas</i></li>
-        <li><b>Ruta 2 · Andina</b><span>SVSO → SVCS</span><i>Santo Domingo del Táchira → Caracas</i></li>
-        <li><b>Ruta 3 · Llano Central</b><span>SVBI → SVCS</span><i>Barinas → Caracas</i></li>
-        <li><b>Ruta 4 · Llano Sur</b><span>SVPA → SVCS</span><i>Puerto Ayacucho → Caracas</i></li>
-        <li><b>Ruta 5 · Sur</b><span>SVPR → SVCS</span><i>Puerto Ordaz → Caracas</i></li>
-        <li><b>Ruta 6 · Oriente</b><span>SVGI → SVCS</span><i>Güiria → Caracas</i></li>
+        <li data-tuya><b>Ruta 1 · Occidente</b><span>SVMC <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Maracaibo <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
+        <li><b>Ruta 2 · Andina</b><span>SVSO <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Santo Domingo del Táchira <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
+        <li><b>Ruta 3 · Llano Central</b><span>SVBI <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Barinas <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
+        <li><b>Ruta 4 · Llano Sur</b><span>SVPA <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Puerto Ayacucho <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
+        <li><b>Ruta 5 · Sur</b><span>SVPR <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Puerto Ordaz <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
+        <li><b>Ruta 6 · Oriente</b><span>SVGI <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Güiria <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
       </ol>
     </section>
 
