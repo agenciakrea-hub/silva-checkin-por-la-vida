@@ -161,7 +161,12 @@
      cabecera entera cuatro píxeles. */
   .cab-app{background:none;border:1.5px solid var(--orange);color:var(--navy-deep);
            white-space:nowrap;}
-  .cab-app i{font-style:normal;font-weight:400;opacity:.72;}
+  /* ⚠️ .82 Y NO .72. A 0,72 el «(app)» daba 4,17:1 sobre el celeste de la
+     cabecera y el mínimo es 4,5 — lo marcó axe-core como violación seria.
+     Medido: 0,78 es donde cruza; 0,82 da 5,2 y deja margen para cuando la
+     cabecera pasa a `celeste-hondo` al hacer scroll. Sigue leyéndose como
+     secundario, que es para lo que estaba la opacidad. */
+  .cab-app i{font-style:normal;font-weight:400;opacity:.82;}
   @media (hover:hover){.cab-app:hover{background:var(--orange);color:var(--tinta-boton);}}
   .cab-wa{background:var(--navy);color:var(--paper);}
   /* ── Qué botón conserva su palabra al angostar ──────────────────────────
@@ -1250,7 +1255,13 @@
   </div>
 </footer>
 
-<div class="barra" id="barra" hidden>
+<!-- ⚠️ `<aside>` CON ETIQUETA, no un `<div role="complementary">`:
+     `html-validate` pide el elemento nativo cuando existe. Esta barra vive FUERA de `<main>`
+     —es fija y persiste entre secciones—, así que su contenido quedaba sin
+     pertenecer a ningún landmark: axe-core lo marcó, y para quien navega por
+     regiones con un lector de pantalla significa que estos tres datos no
+     existen en el índice de la página. -->
+<aside class="barra" id="barra" aria-label="Avance de la campaña" hidden>
   <div class="barra-datos">
     <p class="barra-cifras"><b data-cifra="pasajeros">44</b> <span>de</span> <b data-cifra="meta-osos">609</b></p>
     <div class="barra-riel" aria-hidden="true"><div class="barra-avance" id="barra-avance"></div></div>
@@ -1260,7 +1271,7 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
     <span>Adopta un héroe</span>
   </a>
-</div>
+</aside>
 
 <script src="config.js" defer></script>
 <script src="cola.js" defer></script>
