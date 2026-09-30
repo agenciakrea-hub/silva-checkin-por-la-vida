@@ -757,6 +757,30 @@
   .rank-cuantos b{font:700 1rem/1 var(--cifra);color:var(--navy);letter-spacing:-.04em;}
   /* Quien está mirando, marcado. Sin medalla ni color de premio: un fondo y el
      nombre en navy alcanzan para encontrarse en la lista. */
+  /* ⚠️ LOS TRES PRIMEROS SON UN PODIO, no las tres primeras filas de una tabla.
+     El número pasa a ser una pieza: círculo relleno para el primero, contorno
+     para el segundo y el tercero. Sin eso, «quiénes más suman» era una lista
+     de ocho renglones idénticos y no se entendía que hubiera una punta. */
+  .rank-lista li[data-podio]{padding:13px 0;}
+  .rank-lista li[data-podio]::before{width:28px;height:28px;border-radius:50%;
+    display:grid;place-items:center;font:700 .88rem/1 var(--sans);
+    border:1.5px solid var(--paper-edge);color:var(--ink-soft);background:#fff;}
+  .rank-lista li[data-podio="1"]::before{background:var(--orange);color:var(--tinta-boton);
+                                         border-color:var(--orange);}
+  .rank-lista li[data-podio="1"] .rank-nombre{font-weight:700;}
+  /* El desplegable del resto: dice cuántos son, que es lo que hace querer
+     abrirlo. El área de toque llega a 44 px. */
+  .rank-resto{margin-top:4px;border-top:1px solid var(--paper-edge);}
+  .rank-resto summary{list-style:none;cursor:pointer;min-height:44px;
+    display:flex;align-items:center;gap:.5rem;
+    font:600 .92rem/1.3 var(--sans);color:var(--orange-papel);}
+  .rank-resto summary::-webkit-details-marker{display:none;}
+  .rank-resto summary::after{content:"";width:.45rem;height:.45rem;
+    border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+    transform:rotate(45deg) translateY(-.1em);}
+  .rank-resto[open] summary::after{transform:rotate(-135deg) translateY(-.1em);}
+  .rank-lista--resto{counter-reset:puesto 3;}
+  .rank-lista--resto li:first-child{border-top:1px solid var(--paper-edge);}
   .rank-lista li[data-yo]{background:var(--celeste-papel);
     margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:10px;border-top-color:transparent;}
   .rank-lista li[data-yo] .rank-nombre::after{content:' · tú';color:var(--ink-soft);font-weight:400;}
@@ -1258,6 +1282,13 @@
       <p class="rank-bajada">Personas que trajeron a otras, y esas otras
         adoptaron su Héroe de Rescate.</p>
       <ol class="rank-lista" id="rank-lista"></ol>
+      <!-- ⚠️ EL RESTO DE LA LISTA, PLEGADO. Con las ocho seguidas no se veía que
+           hubiera un podio ni que hubiera más gente: era una tabla. `<details>`
+           nativo, sin JavaScript de apertura. -->
+      <details class="rank-resto" id="rank-resto" hidden>
+        <summary id="rank-resto-sum">Ver el resto de la lista</summary>
+        <ol class="rank-lista rank-lista--resto" id="rank-resto-lista" start="4"></ol>
+      </details>
       <p class="rank-mas" id="rank-mas" hidden></p>
       <p class="rank-vos" id="rank-vos" hidden></p>
     </section>

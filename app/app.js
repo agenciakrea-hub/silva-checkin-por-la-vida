@@ -972,8 +972,26 @@
 
     var ol = $('rank-lista');
     ol.textContent = '';
-    r.lista.forEach(function (p) {
+    /* ⚠️ PODIO DE TRES, EL RESTO PLEGADO. La lista entera de ocho, plana y
+       seguida, no dejá ver que había un podio ni que había más gente: era una
+       tabla. Con los tres primeros destacados y el resto detrás de un
+       desplegable, se entiende de un vistazo que estás viendo la punta y que
+       abajo sigue. Y se ve **cuánta** gente más hay, que es lo que hace que
+       alguien quiera entrar. */
+    var PODIO = 3;
+    var sobran = Math.max((r.total || r.lista.length) - PODIO, 0);
+    var resto = $('rank-resto'), mas = $('rank-resto-lista'), sum = $('rank-resto-sum');
+    if (resto) {
+      resto.hidden = sobran <= 0;
+      resto.open = false;
+      if (sum) sum.textContent = sobran === 1
+        ? 'Ver a la otra persona de la lista'
+        : 'Ver a las otras ' + sobran + ' personas de la lista';
+      if (mas) mas.textContent = '';
+    }
+    r.lista.forEach(function (p, i) {
       var li = document.createElement('li');
+      if (i < PODIO) li.setAttribute('data-podio', String(i + 1));
       if (p.yo) li.setAttribute('data-yo', '');
       var n = document.createElement('span');
       n.className = 'rank-nombre';
@@ -987,7 +1005,7 @@
       c.appendChild(b);
       c.appendChild(document.createTextNode(p.cuantos === 1 ? ' a bordo' : ' a bordo'));
       li.appendChild(n); li.appendChild(c);
-      ol.appendChild(li);
+      (i < PODIO || !mas ? ol : mas).appendChild(li);
     });
 
     var mas = $('rank-mas');
