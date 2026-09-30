@@ -94,11 +94,16 @@
      hero. La cabecera tenía uno relleno y el hero otro, del mismo color y a
      200 px de distancia. Dos acciones que se ven igual de urgentes son dos
      acciones que no se eligen. */
-  .cab-campana{background:none;color:#aebbd6;font-weight:600;padding-inline:.4rem;}
-  .cab-wa{background:none;border:1.5px solid rgba(255,153,0,.65);color:#ffc266;}
+  /* ⚠️ NARANJA SÓLIDO, COMO ESTABA. Lo pasé a contorno dorado para bajar el
+     ruido y quedó peor: dorado sobre navy se lee barato, y un CTA con borde y
+     sin relleno no se lee como acción. El ruido no era el color del botón — era
+     que hubiera cuatro. Ahora hay dos en el primer pliegue y el hero es claro,
+     así que el naranja de la cabecera no compite con nada. */
+  .cab-campana{background:none;color:#c6d1e8;font-weight:600;padding-inline:.5rem;}
+  .cab-wa{background:var(--orange);color:var(--tinta-boton);}
   @media (hover:hover){
     .cab-campana:hover{color:var(--paper);}
-    .cab-wa:hover{border-color:var(--orange);background:rgba(255,153,0,.1);color:#ffd399;}
+    .cab-wa:hover{background:#ffab2e;}
   }
   /* A 380 px los dos botones con texto no entran junto con la marca: el de la
      campaña se queda sin palabra antes que el de WhatsApp, que es la acción. */
@@ -127,8 +132,10 @@
   #espectro .bloque{padding-top:3.5rem;padding-bottom:3.5rem;}
   #contacto .bloque{padding-top:5rem;padding-bottom:5rem;}
   section[id]{scroll-margin-top:4.4rem;}
-  .papel{background:var(--paper);color:var(--navy);}
-  .celeste{background:var(--celeste-papel);color:var(--navy);}
+  /* Con el hero en papel, la primera sección tiene que contrastar o la página
+     arranca con dos bloques del mismo color pegados. */
+  .papel{background:var(--celeste-papel);color:var(--navy);}
+  .celeste{background:var(--paper);color:var(--navy);}
   /* ⚠️ 2,55rem DE TOPE, NO 3. Los cuatro h2 medían 48 px y el h1 58: diez
      píxeles de diferencia entre el título de la página y el de cada sección es
      no tener jerarquía. Ahora el h1 llega a 65,6 y los h2 a 40,8. */
@@ -164,122 +171,82 @@
      porque ahí la decisión es emocional y de una persona. Acá la decisión la
      firma un comité: lo que tiene que entrar en la primera pantalla es qué se
      financia y con qué respaldo, no una imagen. */
-  .hero{background:var(--navy-deep);color:#e8edf8;position:relative;overflow:hidden;}
-  /* Una diagonal muy tenue detrás del hero: el navy plano no le daba nada al
-     ojo y el título flotaba. No es una textura de relleno —son dos franjas que
-     siguen la misma inclinación de la flecha de las rutas— y a 4 % de opacidad
-     se percibe como profundidad, no como decoración. */
-  /* ⚠️ SÓLO EN ESCRITORIO Y MÁS TENUE. A 390 px la franja cruzaba la nota y la
-     ficha: el contraste caía de 7,2:1 a 5,95:1 —seguía pasando AA— pero axe
-     dejaba **27 nodos como «indeterminados»** porque no puede calcular el fondo
-     detrás de un pseudo-elemento. Una decoración que vuelve inauditable medio
-     hero no vale lo que aporta. */
-  @media (min-width:62rem){
-    .hero::before{content:"";position:absolute;inset:-20% -6% auto auto;width:44%;height:170%;
-                  background:linear-gradient(107deg,transparent 46%,rgba(41,185,233,.055) 46.4%,
-                             rgba(41,185,233,.055) 52%,transparent 52.4%,transparent 61%,
-                             rgba(255,153,0,.04) 61.4%,rgba(255,153,0,.04) 64%,transparent 64.4%);
-                  pointer-events:none;}
-  }
-  .hero .bloque{padding-top:2.8rem;padding-bottom:3.2rem;position:relative;}
-  .hero .rotulo{color:#ffc266;}
+  /* ⚠️ EL HERO ES CLARO. Era navy casi negro con naranja saturado, y esa
+     combinación tiene dueño: plataformas de trading, apuestas y ciberseguridad.
+     Salud y responsabilidad social se leen en claro — es lo que hacen todas las
+     instituciones del rubro, y el sitio de la campaña ya lo hace en sus
+     secciones de papel. Sobre crema, el naranja de marca deja de ser estridente
+     y pasa a ser cálido, que es lo que era desde el principio.
+     El navy se guarda para el pie, donde sí cierra. */
+  .hero{background:var(--paper);color:var(--navy);}
+  .hero .bloque{padding-top:3rem;padding-bottom:3.4rem;position:relative;}
+  .hero .rotulo{color:var(--orange-papel);}
 
-  /* ⚠️ DOS COLUMNAS DESDE 62rem. Con una sola, en 1440 px el título medía 506 px
-     y dejaba **677 px de navy vacío a su derecha**: casi la mitad del hero sin
-     nada. Un hero que es sólo una columna de texto centrada en el aire es el
-     tell más rápido de plantilla. */
-  /* ⚠️ EL HERO SE VEÍA MEJOR A 768 QUE A 1440, Y ÉSTE ERA EL MOTIVO. Con
-     `max-width:64rem` (1024 px) menos el gutter quedan 912 útiles; con el gap y
-     el reparto 1.12/.88, la columna del título se comía en **482 px** justo
-     cuando aparece más espacio disponible. De ahí salían las cinco líneas del
-     h1, los botones apilados y 494 px de navy liso bajo la ficha.
-     El hero usa su propio ancho: 78rem, y el reparto le da más al titular. */
   @media (min-width:62rem){
-    .hero .bloque{max-width:78rem;padding-top:3.8rem;padding-bottom:4.2rem;}
-    .hero-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(21rem,1fr);
+    .hero .bloque{max-width:78rem;padding-top:4.4rem;padding-bottom:5rem;}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(21rem,.95fr);
                gap:3.6rem;align-items:start;}
+    /* El mapa ocupa las tres filas de la derecha: si no, el grid lo deja
+       flotando en el medio y abre huecos de 200 px arriba y abajo. */
+    .rutas-mapa{grid-column:2;grid-row:1/4;}
   }
-  @media (min-width:100rem){
-    .hero .bloque{max-width:86rem;}
-    .hero-grid{gap:4.4rem;}
-  }
+  @media (min-width:100rem){.hero .bloque{max-width:86rem;}}
 
-  /* ⚠️ SIN `max-width:20ch`. En 390 px eso dejaba el título en 295 px — 55 px de
-     aire muerto a la derecha — y lo partía en cuatro líneas cortas y desparejas.
-     El límite lo pone la columna, no un contador de caracteres. */
-  /* ⚠️ MÁS CHICO QUE ANTES, A PROPÓSITO. Lo había subido a 4,3rem —68,8 px— y
-     en un teléfono ocupaba cuatro líneas y media pantalla. Un titular que grita
-     no se lee como importante, se lee como plantilla: el peso se lo tiene que
-     dar el contraste con lo que hay alrededor, no el tamaño absoluto.
-     2,9rem de tope en escritorio, 1,95 en teléfono. */
-  .hero h1{font-family:var(--titulo);font-weight:700;
-           font-size:clamp(1.95rem,4.4vw,2.9rem);line-height:1.04;letter-spacing:-.004em;
-           color:var(--paper);margin-bottom:1.15rem;max-width:22ch;}
-  /* La parte que nombra el producto, en el celeste de marca: el título deja de
-     ser un bloque uniforme y el ojo encuentra dónde agarrarse. */
-  /* ⚠️ SIN EL CELESTE. Pintar «Rutas Sanitarias» de otro color partía el
-     titular en dos y lo acercaba a un slide de presentación. Queda el `nowrap`,
-     que sí hace falta: el salto partía el nombre del producto. */
+  /* ⚠️ EL TITULAR NO VA EN LA CONDENSADA. Big Shoulders es señalética de
+     aeropuerto: funciona en el boarding pass y en la campaña, y en una
+     propuesta corporativa se lee apretada, agresiva y de hace quince años.
+     Acá manda la de texto, en 600, con interlineado que respira. La marca no
+     se pierde: sigue en los títulos de sección. */
+  .hero h1{font-family:var(--sans);font-weight:600;
+           font-size:clamp(1.9rem,3.6vw,2.85rem);line-height:1.2;letter-spacing:-.015em;
+           color:var(--navy);margin-bottom:1.3rem;}
+  /* El límite de medida sólo cuando hay dos columnas: en teléfono el titular
+     usa todo el ancho o corta en cinco líneas cortas y desparejas. */
+  @media (min-width:62rem){.hero h1{max-width:19ch;}}
   .hero h1 em{font-style:normal;white-space:nowrap;}
-  /* ⚠️ PESO NORMAL, NO 600. Cuatro líneas en seminegrita debajo de un titular
-     en condensada eran dos voces gritando: nada descansaba. El énfasis lo da
-     el tamaño y el color, no el trazo. */
-  .hero-bajada{font-size:clamp(1.06rem,2.4vw,1.22rem);line-height:1.62;
-               color:#c8d4ea;max-width:44ch;font-weight:400;}
-  .hero-nota{margin-top:1.8rem;padding-top:1.3rem;border-top:1px solid rgba(232,237,248,.14);
-             font-size:.95rem;line-height:1.6;color:#9eabc6;max-width:58ch;}
-  /* En dos columnas vuelve debajo del texto, que es su lugar; en una queda
-     última, después de la ficha. */
-  @media (min-width:62rem){.hero-nota{grid-column:1;margin-top:2.2rem;}}
-  .hero-nota b{color:#c6d1e8;font-weight:600;}
-  /* ⚠️ UN BOTÓN Y UN ENLACE, no dos botones. Entre la cabecera y el hero había
-     cuatro botones en el primer pliegue, dos de ellos naranja saturado. Eso no
-     es jerarquía, es ruido: quien mira no sabe cuál es LA acción. */
-  .hero-acciones{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem 1.6rem;margin-top:1.9rem;}
-  .hero-acciones .btn{flex:0 1 auto;padding-inline:1.7rem;}
-  .enlace-hero{color:#cdd8ee;font:600 .97rem/1.3 var(--sans);text-decoration:underline;
-               text-underline-offset:4px;text-decoration-thickness:1px;
-               text-decoration-color:rgba(205,216,238,.45);padding-block:.4rem;}
-  @media (hover:hover){.enlace-hero:hover{color:var(--paper);text-decoration-color:currentColor;}}
-  @media (max-width:32rem){
-    .hero-acciones{gap:1.1rem;}
-    .hero-acciones .btn{flex:1 1 100%;}
-  }
+  .hero-bajada{font-size:clamp(1.05rem,1.9vw,1.18rem);line-height:1.68;
+               color:var(--ink);max-width:44ch;font-weight:400;}
+  .hero-nota{margin-top:2rem;padding-top:1.4rem;border-top:1px solid var(--paper-edge);
+             font-size:.95rem;line-height:1.65;color:var(--ink-soft);max-width:56ch;}
+  .hero-nota b{color:var(--ink);font-weight:600;}
+  @media (min-width:62rem){.hero-nota{grid-column:1;margin-top:2.4rem;}}
 
-  /* ── La ficha de operación ─────────────────────────────────────────────── */
-  /* ⚠️ DEJÓ DE SER UN MÓDULO DE MÉTRICAS. La primera versión era una caja con
-     borde y radio, cuatro celdas en cuadrícula 2×2 y cifras grandes apiladas:
-     exactamente lo que produce una herramienta automática cuando le pedís
-     «mostrar métricas», y por eso se leía como plantilla aunque los datos
-     fueran reales.
-     Ahora es lo que dice ser: una **ficha**. Sin caja, sin cuadrícula, sin
-     números de 25 px. Filas de una línea separadas por un filete, con el rótulo
-     a la izquierda y el dato a la derecha — el formato de una especificación
-     técnica, que es lo que un comité lee sin desconfiar. */
-  .ficha{margin-top:2.6rem;padding-top:1.3rem;border-top:1px solid rgba(232,237,248,.22);}
-  @media (min-width:62rem){.ficha{margin-top:.6rem;}}
-  .ficha-tit{font:600 .74rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
-             color:#8394b4;margin-bottom:1.1rem;}
-  .ficha-datos{margin:0;}
-  /* Rótulo a la izquierda, dato a la derecha: la forma de una especificación,
-     no de un panel de control. */
+  .hero-acciones{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem;margin-top:2.1rem;}
+  .hero-acciones .btn{flex:0 1 auto;padding-inline:1.6rem;}
+  @media (max-width:34rem){.hero-acciones .btn{flex:1 1 100%;}}
+
+  /* ── Las seis rutas, dibujadas ────────────────────────────────────────────
+     ⚠️ ES LA ÚNICA PIEZA VISUAL QUE SE PUEDE HACER SIN MATERIAL DEL CLIENTE, y
+     la página no tenía ninguna: para vender logística aeromédica había sólo
+     texto sobre un fondo. No es un adorno — son las seis rutas reales
+     convergiendo en Caracas, que es exactamente lo que se financia. */
+  .rutas-mapa{background:#fff;border:1px solid var(--paper-edge);border-radius:18px;
+              padding:1.5rem 1.6rem 1.4rem;margin-top:2.4rem;}
+  @media (min-width:62rem){.rutas-mapa{margin-top:0;}}
+  .rutas-mapa h2{font:600 .76rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+                 color:var(--ink-soft);margin:0 0 1.2rem;}
+  .rutas-svg{width:100%;height:auto;display:block;}
+  .rutas-pie{margin:1.2rem 0 0;padding-top:1.1rem;border-top:1px solid var(--paper-edge);
+             font:400 .93rem/1.55 var(--sans);color:var(--ink);}
+  .rutas-pie b{font-weight:600;color:var(--navy);}
+
+  /* ── La ficha, ahora sobre claro ──────────────────────────────────────── */
+  .ficha{margin-top:2.4rem;padding-top:1.4rem;border-top:1px solid var(--paper-edge);}
+  @media (min-width:62rem){.ficha{grid-column:1;margin-top:2.6rem;}}
+  .ficha-tit{font:600 .76rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+             color:var(--ink-soft);margin-bottom:.9rem;}
+  .ficha-datos{margin:0;display:grid;gap:0;}
+  @media (min-width:34rem){.ficha-datos{grid-template-columns:1fr 1fr;column-gap:2.4rem;}}
   .ficha-datos > div{display:flex;align-items:baseline;justify-content:space-between;
-                     gap:1.2rem;padding:.72rem 0;
-                     border-bottom:1px solid rgba(232,237,248,.10);}
-  .ficha-datos > div:last-child{border-bottom:0;}
-  .ficha-datos dt{flex:none;font:400 .93rem/1.4 var(--sans);color:#9eabc6;}
-  .ficha-datos dd{margin:0;text-align:right;min-width:0;}
-  .ficha-datos dd b{font:600 1.02rem/1.35 var(--sans);color:var(--paper);letter-spacing:0;}
-  .ficha-datos dd b i{font-style:normal;color:#7d8dab;padding:0 .1em;}
-  /* El detalle va en la misma línea, detrás del dato: apilado eran ocho
-     renglones para cuatro hechos. */
-  .ficha-datos dd span{display:inline;margin-left:.45rem;font:400 .89rem/1.35 var(--sans);color:#8394b4;}
-  /* ⚠️ 0,95rem Y NO 0,84. Esta línea trae los nombres de seis ciudades corridos
-     en 13,4 px sobre navy: el ratio pasaba AA pero a simple vista no se leía.
-     El contraste no es lo único que hace legible un texto. */
-  .ficha-pie{margin-top:1.2rem;padding-top:1rem;border-top:1px solid rgba(232,237,248,.10);
-             font:400 .95rem/1.6 var(--sans);color:#aebbd6;}
-  .ficha-pie b{font-weight:600;color:var(--paper);}
+                     gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--paper-edge);}
+  .ficha-datos dt{flex:none;font:400 .93rem/1.4 var(--sans);color:var(--ink-soft);}
+  .ficha-datos dd{margin:0;text-align:right;min-width:0;
+                  font:600 .97rem/1.4 var(--sans);color:var(--navy);}
+  .ficha-datos dd b{font-weight:600;}
+  .ficha-datos dd b i{font-style:normal;color:var(--ink-soft);padding:0 .12em;}
+  /* El detalle va detrás del dato, no oculto: sin él la fila decía
+     «Trayectoria — 80» y ese 80 no significa nada solo. */
+  .ficha-datos dd span{font-weight:400;color:var(--ink-soft);margin-left:.4rem;}
 
   /* ── Las dos modalidades ──────────────────────────────────────────────────
      ⚠️ EL DIAGRAMA DE RAFAEL ERA UN ÁRBOL DE CAJAS ASCII. En un teléfono de
@@ -295,7 +262,7 @@
   .tronco::after{content:"";display:block;width:2px;height:18px;margin:0 auto;
                  background:var(--paper-edge);}
   .modalidades{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1rem;}
-  .modalidad{background:#fffdf8;border:1.5px solid var(--paper-edge);border-radius:14px;
+  .modalidad{background:#fff;border:1.5px solid var(--paper-edge);border-radius:14px;
              padding:1.4rem;display:flex;flex-direction:column;}
   /* La letra de la modalidad como pieza, no como rótulo: es lo que distingue
      una tarjeta de la otra y estaba en 12,5 px, del mismo peso que todo. */
@@ -528,11 +495,14 @@
              botón que promete un documento y entrega un 404 quema justo la
              confianza que la página vino a construir. Cuando el archivo llegue,
              esto pasa a ser un enlace con `download` y el mensaje sobra. -->
-        <!-- ⚠️ ENLACE, NO SEGUNDO BOTÓN PÍLDORA. El dossier es una alternativa,
-             no un camino paralelo, y como botón competía de igual a igual con
-             la acción principal. -->
-        <a class="enlace-hero" data-wa="dossier" href="https://wa.me/584241466595" target="_blank" rel="noopener">
-          Solicitar el dossier corporativo ESG
+        <!-- Contorno, no relleno: es la alternativa, no un camino paralelo.
+             Como enlace subrayado quedaba chiquito y suelto al lado de un botón
+             grande; como píldora naranja competía de igual a igual. -->
+        <a class="btn btn-2" data-wa="dossier" href="https://wa.me/584241466595" target="_blank" rel="noopener">
+          <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 3v5h5"/><path d="M14 3H6.5A1.5 1.5 0 005 4.5v15A1.5 1.5 0 006.5 21h11a1.5 1.5 0 001.5-1.5V8z"/>
+          </svg>
+          Dossier corporativo ESG
         </a>
       </div>
       </div>
@@ -552,10 +522,48 @@
           <div><dt>Cabina</dt><dd><b>Lifeport</b><span>UCI de altura</span></dd></div>
           <div><dt>Coordinación</dt><dd><b>24<i>/</i>7</b><span>despacho médico</span></dd></div>
         </dl>
-        <p class="ficha-pie"><b>Seis rutas regionales</b> hacia Caracas, desde
-          Maracaibo, Santo Domingo del Táchira, Barinas, Puerto Ayacucho,
-          Puerto Ordaz y Güiria.</p>
       </aside>
+
+      <!-- ⚠️ NO ES UN ADORNO: son las seis rutas reales convergiendo en Caracas,
+           que es exactamente lo que una empresa financia. La página no tenía
+           **ninguna** pieza visual — para vender logística aeromédica había
+           sólo texto sobre un fondo. Dibujado, no fotografiado, porque todavía
+           no hay foto de la aeronave: cuando llegue, va acá arriba. -->
+      <section class="rutas-mapa" aria-labelledby="t-rutas">
+        <h2 id="t-rutas">Red de rutas sanitarias</h2>
+        <svg class="rutas-svg" viewBox="0 0 384 232" role="img" aria-label="Seis rutas regionales convergen en Caracas: Maracaibo, Santo Domingo del Táchira, Barinas, Puerto Ayacucho, Puerto Ordaz y Güiria.">
+      <path d="M152 26 C210 26, 256 67, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
+      <circle cx="152" cy="26" r="3.4" fill="#1596c2"/>
+      <text x="142" y="25" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Maracaibo</text>
+      <text x="142" y="37" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVMC</text>
+      <path d="M152 60 C210 60, 256 84, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
+      <circle cx="152" cy="60" r="3.4" fill="#1596c2"/>
+      <text x="142" y="59" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Sto. Domingo del Táchira</text>
+      <text x="142" y="71" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVSO</text>
+      <path d="M152 94 C210 94, 256 101, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
+      <circle cx="152" cy="94" r="3.4" fill="#1596c2"/>
+      <text x="142" y="93" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Barinas</text>
+      <text x="142" y="105" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVBI</text>
+      <path d="M152 128 C210 128, 256 118, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
+      <circle cx="152" cy="128" r="3.4" fill="#1596c2"/>
+      <text x="142" y="127" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Puerto Ayacucho</text>
+      <text x="142" y="139" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVPA</text>
+      <path d="M152 162 C210 162, 256 135, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
+      <circle cx="152" cy="162" r="3.4" fill="#1596c2"/>
+      <text x="142" y="161" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Puerto Ordaz</text>
+      <text x="142" y="173" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVPR</text>
+      <path d="M152 196 C210 196, 256 152, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
+      <circle cx="152" cy="196" r="3.4" fill="#1596c2"/>
+      <text x="142" y="195" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Güiria</text>
+      <text x="142" y="207" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVGI</text>
+      <circle cx="306" cy="108" r="7" fill="#ff9900"/>
+      <circle cx="306" cy="108" r="13" fill="none" stroke="#ff9900" stroke-width="1.2" opacity=".45"/>
+      <text x="322" y="105" font-size="13" font-weight="700" fill="#0e2a5c">Caracas</text>
+      <text x="322" y="119" font-size="10" letter-spacing="1" fill="#5c6883">SVCS</text>
+        </svg>
+        <p class="rutas-pie"><b>Seis corredores activos.</b> Su empresa patrocina
+          uno completo, o un tramo dentro de él.</p>
+      </section>
 
       <!-- ⚠️ LA NOTA LARGA VA ÚLTIMA, después de los botones Y de la ficha.
            Arriba eran seis líneas de gris entre la promesa y la acción: en un
