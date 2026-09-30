@@ -193,14 +193,11 @@
   dl{margin:0;}
 
   /* ── Avance ── */
-  .avance{background:var(--celeste-papel);border-radius:16px;padding:20px;margin-top:18px;}
-  /* Los bloques que la persona vino a ver pesan más que los de servicio.
-     Antes los seis tenían el mismo título, el mismo relleno y el mismo hueco:
-     ninguna tarjeta se ganaba su tamaño y la pantalla se leía como una
-     plantilla repetida hacia abajo. */
-  .avance h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
-             letter-spacing:.02em;}
-  .avance p{margin:0 0 14px;font-size:.95rem;color:var(--ink);}
+  /* ⚠️ ACÁ HABÍA TRES REGLAS `.avance` DE UNA SECCIÓN QUE YA NO EXISTE. No las
+     usaba ningún elemento del HTML —quedó el CSS cuando se borró el bloque— y
+     eso no molestaba a nadie hasta que una barra nueva eligió el mismo nombre y
+     heredó su color: texto a 1,6:1 sobre navy. **Una regla que no aplica a nada
+     no es inofensiva: es una trampa esperando a que alguien reuse el nombre.** */
   /* La voz del sitio: «Ya somos 44 pasajeros de honor». */
   .cifra-grande{margin:0;font:400 1.05rem/1.4 var(--sans);color:var(--ink);}
   .cifra-grande b{font:700 clamp(2rem,9vw,2.7rem)/1 var(--cifra);color:var(--navy);
@@ -865,6 +862,44 @@
   .pie span{display:block;margin-bottom:4px;}
 
   /* ── Instalar ── */
+  /* ── El avance de la ruta, fijo abajo ─────────────────────────────────── */
+  .ruta-fija{position:fixed;left:0;right:0;bottom:0;z-index:40;
+          background:var(--navy);color:var(--paper);
+          padding:9px var(--lado) calc(9px + env(safe-area-inset-bottom));
+          display:flex;align-items:center;gap:14px;
+          border-top:1px solid rgba(246,241,231,.16);}
+  .rf-datos{flex:1;min-width:0;}
+  .rf-cifras{display:flex;align-items:baseline;gap:6px;margin:0;
+                 font:400 .8rem/1 var(--sans);color:#bcc7de;}
+  .rf-cifras b{font:700 .95rem/1 var(--cifra);color:var(--paper);letter-spacing:-.04em;}
+  .rf-riel{position:relative;height:3px;margin-top:6px;border-radius:2px;
+               background:rgba(246,241,231,.22);overflow:hidden;}
+  /* ⚠️ `scaleX` SOBRE UN BLOQUE SIN RADIO PROPIO. En el sitio esto mismo
+     aplastaba un `border-radius:999px` y dejaba las puntas ovaladas: acá el
+     radio lo pone el riel, no el relleno. */
+  .rf-lleno{position:absolute;inset:0;background:var(--orange);
+                transform:scaleX(var(--avance,0));transform-origin:left center;
+                transition:transform 700ms cubic-bezier(.2,.8,.2,1);}
+  /* ⚠️ .72rem Y NO .68. A 0,68 daba 10,88 px y el piso legible para texto
+     funcional son 11: con el tracking de .12em, en un teléfono al sol esa
+     línea deja de leerse. El del sitio es .7rem y está sobre una barra más
+     alta; acá hay menos aire y el tamaño tiene que compensarlo. */
+  .rf-ruta{margin:5px 0 0;font:600 .72rem/1.2 var(--sans);letter-spacing:.12em;
+               text-transform:uppercase;color:#aab6ce;}
+  .rf-cta{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:44px;
+              background:var(--orange);color:var(--tinta-boton);text-decoration:none;
+              font:600 .88rem/1 var(--sans);padding:12px 16px;border-radius:999px;
+              white-space:nowrap;}
+  @media (hover:hover){.rf-cta:hover{background:#ffab2e;}}
+  /* A 360 px el texto del botón y las cifras no entran juntos: queda el ícono,
+     con el nombre accesible que da el `aria-label` de abajo. */
+  @media (max-width:360px){
+    .rf-cta span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+    .rf-cta{padding:12px 14px;}
+  }
+  body[data-rutafija]{padding-bottom:calc(74px + env(safe-area-inset-bottom));}
+  @media (prefers-reduced-motion:reduce){.rf-lleno{transition:none;}}
+
   /* ── Guardar en el teléfono: barra fija abajo ──────────────────────────
      ⚠️ `env(safe-area-inset-bottom)` NO ES OPCIONAL. Sin eso, en un iPhone la
      barra queda debajo de la franja del gesto de inicio y el botón no se puede
@@ -1339,6 +1374,28 @@
       Hay una versión nueva. <button type="button" id="btn-recargar">Actualizar</button>
     </p>
   </main>
+
+  <!-- ⚠️ EL AVANCE, SIEMPRE A LA VISTA. La app ya mostraba «Ya somos 44» y la
+       tienda, pero **dentro** de secciones: había que bajar a buscarlas. Esta
+       barra es la misma que tiene el sitio y es lo que pidió el cliente para la
+       app: cuánto falta, qué ruta es, y cómo sumar otro, sin scroll.
+       ⚠️ VA FUERA DE `<main>` y con `aria-label`: es fija y persiste entre
+       secciones, así que su contenido no pertenece a ninguna —axe-core lo marca,
+       y para quien navega por regiones significa que estos datos no existen—.
+       ⚠️ Y CONVIVE CON LA DE INSTALAR APAGÁNDOSE: dos barras fijas abajo se
+       pisan. La de instalar es temporal —se cierra y no vuelve—, así que manda
+       ella mientras está. -->
+  <aside class="ruta-fija" id="ruta-fija" aria-label="Avance de la ruta" hidden>
+    <div class="rf-datos">
+      <p class="rf-cifras"><b id="av-osos">44</b> <span>de</span> <b id="av-meta">609</b></p>
+      <div class="rf-riel" aria-hidden="true"><div class="rf-lleno" id="rf-lleno"></div></div>
+      <p class="rf-ruta" id="rf-ruta">Ruta ONCO 001</p>
+    </div>
+    <a class="rf-cta" href="#tienda">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <span>Aportar Kit</span>
+    </a>
+  </aside>
 
   <footer class="pie">
     <span id="pie-fecha" hidden></span>

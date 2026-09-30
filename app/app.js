@@ -111,6 +111,11 @@
     if (v.origen)  $('origen').textContent  = v.origen;
     if (v.destino) $('destino').textContent = v.destino;
     if (v.nota)    $('vuelo-nota').textContent = v.nota;
+    /* El nombre corto de la ruta, en la barra de abajo. Sale de la celda `ruta`
+       de la hoja `vuelo`: cambiarla ahí lo cambia en el sitio Y en la app, sin
+       tocar código. Es la misma celda que el cliente usó para pedir que diga
+       «Ruta Sanitaria 001» en vez de «ONCO 001». */
+    if (v.ruta && $('rf-ruta')) $('rf-ruta').textContent = v.ruta;
     // Lo manda el servidor en cada respuesta y la app lo descartaba.
     if (v.proximo) { $('proximo').textContent = v.proximo; $('proximo-caja').hidden = false; }
     else $('proximo-caja').hidden = true;
@@ -173,6 +178,39 @@
     // arrancó. Los números dicen lo mismo sin mentir.
     $('barra-caja').setAttribute('aria-label',
       adoptados + ' de ' + meta + ' Héroes de Rescate adoptados');
+    pintarBarraAvance(adoptados, meta, ancho);
+  }
+
+  /**
+   * La barra fija de abajo: el avance de la ruta, siempre a la vista.
+   *
+   * ⚠️ LAS MISMAS CIFRAS QUE EL BLOQUE DE ARRIBA, no otras. Si esta barra
+   * calculara por su cuenta, el día que las dos fórmulas se separen la app
+   * mostraría dos avances distintos en la misma pantalla y ninguno sería
+   * creíble. Recibe lo ya calculado.
+   */
+  function pintarBarraAvance(adoptados, meta, ancho) {
+    var caja = $('ruta-fija');
+    if (!caja) return;
+    $('av-osos').textContent = String(adoptados);
+    $('av-meta').textContent = String(meta);
+    $('rf-lleno').style.setProperty('--avance', String(ancho / 100));
+    caja.setAttribute('aria-label',
+      adoptados + ' de ' + meta + ' Héroes adoptados en esta ruta');
+    mostrarBarraAvance();
+  }
+
+  /* ⚠️ DOS BARRAS FIJAS ABAJO SE PISAN. La de instalar es temporal —se cierra
+     y no vuelve—, así que mientras está manda ella; el avance vuelve solo en
+     cuanto la otra se va. Sin esta coordinación, en un teléfono nuevo el botón
+     «Guardar» quedaba debajo del botón de aportar y no se podía tocar. */
+  function mostrarBarraAvance() {
+    var caja = $('ruta-fija');
+    if (!caja) return;
+    var instalarVisible = !!($('instalar') && !$('instalar').hidden);
+    caja.hidden = instalarVisible;
+    if (instalarVisible) document.body.removeAttribute('data-rutafija');
+    else document.body.setAttribute('data-rutafija', '');
   }
 
   // ── Misiones ─────────────────────────────────────────────────────────────
@@ -1512,11 +1550,13 @@
     /* El `padding-bottom` del body es lo que impide que la barra tape el final
        de la página: sin esto, el último bloque queda debajo y no se alcanza. */
     document.body.setAttribute('data-barra', '');
+    mostrarBarraAvance();
   }
 
   function cerrarBarraInstalar(paraSiempre) {
     $('instalar').hidden = true;
     document.body.removeAttribute('data-barra');
+    mostrarBarraAvance();
     /* ⚠️ SE RECUERDA EL CIERRE. Volver a ofrecer lo mismo en cada visita a
        quien ya dijo que no es la definición de molestar, y encima tapa
        contenido cada vez. */
