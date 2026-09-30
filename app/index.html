@@ -98,9 +98,9 @@
   }
 
   /* ── Cabecera ── */
-  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  .top{display:flex;align-items:center;gap:10px;
        padding:calc(14px + env(safe-area-inset-top)) 0 18px;}
-  .top img{height:34px;width:auto;display:block;}
+  .top img{height:34px;width:auto;display:block;margin-right:auto;}
   /* Sobre el navy del fondo, el texto va claro: da 13:1. */
   /* ⚠️ `gap` Y NO EL ESPACIO DEL HTML. `display:flex` descarta los espacios en
      blanco entre nodos hijos, así que «Ver la campaña <span>(ir a la web)</span>»
@@ -110,6 +110,13 @@
           padding:0 16px;border:1.5px solid rgba(255,255,255,.45);border-radius:999px;}
   /* Dice a dónde lleva sin pelearle al texto principal. */
   .volver-donde{font-weight:400;color:#b9c8e4;}
+  /* Redondo y sólo con el ícono: al lado de «Ver la campaña», dos botones con
+     texto no entran en 360 px. El nombre accesible lo da el `aria-label`. */
+  .top-compartir{flex:none;width:44px;height:44px;border-radius:999px;
+                 display:inline-flex;align-items:center;justify-content:center;
+                 background:none;border:1.5px solid rgba(255,255,255,.45);
+                 color:#fff;cursor:pointer;padding:0;}
+  @media (hover:hover){.top-compartir:hover{background:rgba(255,255,255,.12);}}
   /* ⚠️ EL CORTE VA EN 330, NO EN 400. Con 400 la aclaración desaparecía en un
      teléfono de 390 px —o sea, en casi todos— y el cambio no servía para nada.
      Medido con ella puesta: el botón ocupa 195 px y deja 137 de hueco con el logo a
@@ -936,6 +943,21 @@
     <!-- Dice a dónde lleva: desde una app instalada, «ver la campaña» no deja
          claro que se sale de la app y se abre el sitio. -->
     <a class="volver" href="../">Ver la campaña <span class="volver-donde">(ir a la web)</span></a>
+    <!-- ⚠️ EL BOTÓN DE COMPARTIR VIVE ACÁ, NO DENTRO DE `#tripu`. Había uno solo
+         y estaba adentro de ese bloque, que arranca `hidden` y sólo aparece
+         cuando el servidor devuelve el código de invitación: quien se acababa
+         de registrar pasaba veinte segundos o más —minutos con mala señal— sin
+         **ningún** botón de compartir en toda la app, que es justo lo contrario
+         del pedido («el que tiene la web también»). En la cabecera está siempre,
+         igual que en el sitio. El de `#tripu` se queda: ahí comparte CON su
+         código, y éste comparte la campaña a secas. -->
+    <button class="top-compartir" type="button" id="btn-compartir-top"
+            aria-label="Compartir la campaña">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>
+      </svg>
+    </button>
   </header>
 
   <main id="app">

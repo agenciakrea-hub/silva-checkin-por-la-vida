@@ -681,6 +681,10 @@
     siguiente();
   }
 
+  /* Cuándo contestó bien el servidor por última vez. Lo usa el refresco al
+     volver del segundo plano, para no pedir el estado en cada parpadeo. */
+  var ultimoEstadoOk = 0;
+
   function arrancar() {
     /* ⚠️ EL `?de=` SE GUARDA ANTES QUE NADA, y antes de que nada pueda fallar.
        Quien abre el enlace de un amigo y cae directo en la app —porque ya la
@@ -717,8 +721,15 @@
       pintarPersona(yoLocal);
       /* ⚠️ Y LAS MISIONES TAMBIÉN. `pintarPersona` muestra el bloque, pero
          dibujarlo es otra función: sin esta línea, quien se acababa de
-         registrar veía el panel de misiones con el contador «1 de 4» del HTML
-         y la lista vacía debajo. Es lo primero que le apareció a Krea. */
+         registrar ve el panel «TUS MISIONES» con su cinta y su explicación, y
+         **nada debajo**. Es lo primero que le apareció a Krea.
+         ⚠️⚠️ **ESTA LÍNEA YA SE BORRÓ UNA VEZ**, en un cambio que dejó el
+         comentario huérfano explicando un arreglo que ya no existía. Un
+         comentario no sostiene nada: si vuelve a desaparecer, el síntoma es la
+         ventana entre que la persona aterriza desde el formulario y que el alta
+         encolada devuelve token —más de 20 segundos en frío, minutos con mala
+         señal, indefinido sin ella—. */
+      pintarMisiones(yoLocal);
       $('d-pase').textContent = '—';
     }
 
@@ -759,6 +770,7 @@
         limpiarSinConexion();
         intento = 0;
         if (!r.ok) { pintarDesconocido(); return; }
+        ultimoEstadoOk = Date.now();
         latido('listo', horaCorta());
         pintarRanking(r.ranking);
         pintarVuelo(r.vuelo);
@@ -1114,6 +1126,9 @@
 
   al('btn-invitar-tripu', 'click', invitar);
   al('btn-compartir-campana', 'click', compartirCampana);
+  /* El de la cabecera hace lo mismo y está SIEMPRE visible: el de arriba vive
+     dentro de `#tripu`, que no existe hasta que el servidor contesta. */
+  al('btn-compartir-top', 'click', compartirCampana);
 
   al('form-invito', 'submit', function (e) {
     e.preventDefault();
@@ -1595,11 +1610,36 @@
   // vuelve a preguntar por el estado: al abrir la app el servidor todavía no
   // conocía a esta persona, así que respondió sin su tripulación ni su pase.
   // Sin esto, quien se acaba de registrar no ve nada de eso hasta recargar.
-  window.addEventListener('cxv:alta', function (e) {
-    var perfil = leer(K_PERFIL, null);
-    if (perfil && !perfil.ticket && e.detail && e.detail.id) {
-      $('d-pase').textContent = e.detail.id;
-    }
+  /* El alta terminó de guardarse: se vuelve a preguntar, que trae el n.º de pase
+     de verdad si esta persona ya activó.
+     ⚠️ ACÁ HABÍA UN `if` QUE ESCRIBÍA EL ID INTERNO (`P507E6F3712`) EN «N.º DE
+     PASE», contra la advertencia de `pintarPersona` y contra el arreglo que la
+     puso. No se llegaba a ver —`arrancar()` lo pisaba con «—» en la línea
+     siguiente, de forma síncrona—, o sea que era código muerto esperando a que
+     alguien reordenara dos líneas. El n.º de pase lo pone el código del Héroe,
+     nunca la clave interna. */
+  window.addEventListener('cxv:alta', function () { arrancar(); });
+
+  /* ⚠️ AL VOLVER DEL SEGUNDO PLANO SE VUELVE A PREGUNTAR. `arrancar()` corría
+     sólo al cargar y después de una acción de la persona. En una PWA instalada,
+     Android reanuda el documento sin recargarlo: el equipo movía `estado` a
+     `en_curso`, la persona tocaba el ícono, y seguía viendo la etapa vieja **con
+     el latido asegurando «Al día · 09:22»** —la hora de la mañana anterior—. El
+     latido existe justamente para no mentir sobre la frescura, así que mentir
+     ahí es peor que no tenerlo.
+     Con tope de un minuto: sin él, cada vez que alguien cambia de app y vuelve
+     sale un pedido a Apps Script, que tiene cuota diaria y es la de todos. */
+  var TOPE_REFRESCO_MS = 60000;
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) return;
+    if (Date.now() - ultimoEstadoOk < TOPE_REFRESCO_MS) return;
+    arrancar();
+  });
+  /* Safari en iOS restaura desde la caché de retroceso sin disparar
+     `visibilitychange`: `pageshow` con `persisted` es el único aviso. */
+  window.addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;
+    if (Date.now() - ultimoEstadoOk < TOPE_REFRESCO_MS) return;
     arrancar();
   });
 

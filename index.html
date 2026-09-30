@@ -582,11 +582,20 @@
     padding:.85rem 1.1rem;border-top:1px solid var(--paper-edge);font-size:.98rem;}
   .tablero-fila .tablero-nombre{grid-column:1/-1;}
   .tablero-fila .tablero-punto+.tablero-punto{grid-column:3;}
+  /* ⚠️ UNA SOLA PIEZA, NO DOS. La flecha eran dos pseudo-elementos —un asta y
+     un cuadrado rotado 45°— y sus centros verticales no coincidían: el asta en
+     `top:.45rem` y el chevron con centro en `.36rem`, o sea 1,4 px más arriba.
+     El asta entraba por el brazo inferior en vez de morir en la punta, y a
+     tamaño real se veía doblada; encima el borde antialiaseado del chevron es
+     más claro que el bloque sólido del asta, así que ni el color casaba.
+     Con la flecha entera como una imagen no hay dos centros que alinear.
+     ⚠️ Esto es la lista que el sitio titula «6 rutas planteadas». La flecha de
+     la app es otra pieza —un `<svg>` inline en `app/index.html`— y ya estaba
+     bien: arreglarla allá no arregló nada acá. */
   .tablero-fila .tablero-punto+.tablero-punto::before{content:"";position:absolute;
-    left:-1.15rem;top:.45rem;width:.85rem;height:1px;background:var(--ink-soft);}
-  .tablero-fila .tablero-punto+.tablero-punto::after{content:"";position:absolute;
-    left:-.55rem;top:.15rem;width:.42rem;height:.42rem;border-top:1px solid var(--ink-soft);
-    border-right:1px solid var(--ink-soft);transform:rotate(45deg);}
+    left:-1.15rem;top:50%;transform:translateY(-50%);width:.95rem;height:.6rem;
+    background-repeat:no-repeat;background-position:left center;background-size:contain;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10' fill='none' stroke='%235c6883' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 5h12M9.8 1.8L13 5l-3.2 3.2'/%3E%3C/svg%3E");}
   .tablero-fila .tablero-punto{position:relative;}
   .tablero-cabeza{display:none;}
   @media (min-width:44rem){
@@ -594,8 +603,7 @@
     .tablero-fila{grid-template-columns:1.15fr 1fr 1fr;gap:.5rem .9rem;}
     .tablero-fila .tablero-nombre{grid-column:1;}
     .tablero-fila .tablero-punto+.tablero-punto{grid-column:3;}
-    .tablero-fila .tablero-punto+.tablero-punto::before,
-    .tablero-fila .tablero-punto+.tablero-punto::after{display:none;}
+    .tablero-fila .tablero-punto+.tablero-punto::before{display:none;}
     .tablero-cabeza{display:grid;}
   }
   .tablero-cabeza{border-top:0;background:var(--navy);
@@ -787,7 +795,12 @@
         <!-- Era «La misión», que lleva a un texto. Este lleva a la acción: el
              formulario de entrada, que es lo único que el hero no ofrecía. La
              sección de la misión sigue donde estaba, más abajo. -->
-        <a class="btn btn-2" href="#compartir">Activa tu Boarding Pass</a>
+        <!-- ⚠️ A `#form-pase`, NO A `#compartir`. Con `#compartir` el botón
+             aterrizaba en el QR y el formulario quedaba **758 px por debajo del
+             pliegue** —medido a 390×844—: el título que se ve al llegar es
+             «Compartir también es hacer check-in», que no es lo que el botón
+             promete. -->
+        <a class="btn btn-2" href="#form-pase">Activa tu Boarding Pass</a>
       </div>
       <p class="hero-prueba">Ya somos <b class="num" data-cifra="pasajeros-texto">44</b> pasajeros de honor</p>
     </div>
@@ -1295,7 +1308,12 @@
   <div class="barra-datos">
     <p class="barra-cifras"><b data-cifra="pasajeros">44</b> <span>de</span> <b data-cifra="meta-osos">609</b></p>
     <div class="barra-riel" aria-hidden="true"><div class="barra-avance" id="barra-avance"></div></div>
-    <p class="barra-ruta">Onco Ruta 001</p>
+    <!-- La celda `ruta` de la hoja `vuelo` dice, en su propia explicación, que
+         «sale en la barra de abajo del sitio». No salía: esto estaba quemado, y
+         el jefe podía cambiar la celda siguiendo lo que el sistema le escribió
+         al lado sin que pasara nada. Ahora el valor del HTML es el respaldo y
+         `pintarCifras` lo corrige con lo que diga el Sheet. -->
+    <p class="barra-ruta" data-cifra="ruta">Onco Ruta 001</p>
   </div>
   <a class="barra-wa" data-wa="general" href="https://wa.me/584241466595" target="_blank" rel="noopener">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
@@ -1455,7 +1473,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       var g = JSON.parse(sessionStorage.getItem(CLAVE) || 'null');
-      if (g && (Date.now() - g.t) < VIDA) { usar(g.a, g.m); return; }
+      if (g && (Date.now() - g.t) < VIDA) {
+        usar(g.a, g.m);
+        if (g.r) pon('ruta', String(g.r));
+        return;
+      }
     } catch (e) {}
 
     var pedir = function () {
@@ -1466,8 +1488,9 @@ document.addEventListener('DOMContentLoaded', function () {
       window.CXV.alServidor({ action: 'estado' }).then(function (r) {
         clearTimeout(reloj);
         if (!vale || !r || !r.ok || !r.vuelo) return;
-        try { sessionStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados, m: r.vuelo.meta })); } catch (e) {}
+        try { sessionStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados, m: r.vuelo.meta, r: r.vuelo.ruta })); } catch (e) {}
         usar(r.vuelo.adoptados, r.vuelo.meta);
+        if (r.vuelo.ruta) pon('ruta', String(r.vuelo.ruta));
       }).catch(function () { clearTimeout(reloj); });
     };
     if ('requestIdleCallback' in window) requestIdleCallback(pedir, { timeout: 5000 });

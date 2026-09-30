@@ -128,7 +128,7 @@
        ninguna parte. Encolado, al menos sale en la próxima visita. */
     var id = idUnico();
     var cola = leerCola();
-    cola.push({ id: id, intentos: 0, cuerpo: cuerpo });
+    cola.push({ id: id, intentos: 0, creado: Date.now(), cuerpo: cuerpo });
     // Se descarta por el principio sólo cuando de verdad hay demasiado: lo más
     // viejo es lo que más tiempo lleva esperando, y tirarlo es perderlo.
     var seGuardo = escribir(K_PENDIENTES, cola.slice(-MAX_COLA));
@@ -206,13 +206,19 @@
     alServidor(pendiente.cuerpo)
       .then(function (r) {
         var listo = r && r.ok;
-        /* ⚠️ YA NO SE DESCARTA NADA POR «INVÁLIDO». Eso costó un registro real:
+        /* ⚠️ CASI NADA SE DESCARTA POR «INVÁLIDO». Eso costó un registro real:
            el servidor rechazaba un teléfono argentino, el cliente leía
            «invalido» y borraba el envío de la cola, y esa persona no quedaba en
-           ninguna parte. Hoy el servidor guarda hasta lo que no entiende, así
-           que lo único que puede volver mal es un fallo de verdad — y eso se
-           reintenta, no se tira. */
-        var irrecuperable = false;
+           ninguna parte. Hoy el servidor guarda hasta lo que no entiende.
+
+           Las dos excepciones no tienen nada que perder: `sin_datos` es un
+           cuerpo que llegó VACÍO —no hay dato que guardar— y `accion_desconocida`
+           es un envío que este servidor nunca va a aceptar. Reintentarlos es
+           mandar una petición y escribir una línea de bitácora en cada visita,
+           para siempre: `arrancarCola` les devuelve los intentos cada vez que
+           alguien abre el sitio, así que sin esto no se limpian nunca. */
+        var motivo = (r && r.motivo) || '';
+        var irrecuperable = motivo === 'sin_datos' || motivo === 'accion_desconocida';
 
         if (listo && r.token) {
           escribir(K_YO, { id: r.id, token: r.token });
@@ -259,6 +265,19 @@
        siempre, sin que nadie —ni la persona, ni el equipo, ni la bitácora— se
        enterara de que existía. */
     var cola = leerCola(), tocado = false;
+
+    /* ⚠️ PERO NO PARA SIEMPRE. Un envío que el servidor rechaza de forma
+       determinista y que no cae en la lista de irrecuperables —un cuerpo
+       corrupto, algo de una versión vieja de la app— se quedaría en el teléfono
+       reintentando en cada visita durante años. Treinta días es más que
+       suficiente para cualquier caída de Apps Script, y es el único caso en que
+       este archivo tira algo: por eso el número es holgado y no dos días. */
+    var VENCE_MS = 30 * 24 * 60 * 60 * 1000, ahora = Date.now();
+    var vivos = cola.filter(function (x) {
+      return !(x && x.creado && (ahora - x.creado) > VENCE_MS);
+    });
+    if (vivos.length !== cola.length) { cola = vivos; tocado = true; }
+
     for (var i = 0; i < cola.length; i++) {
       if (cola[i] && (cola[i].intentos || 0) >= MAX_INTENTOS) {
         cola[i].intentos = 0; cola[i].proximo = 0; tocado = true;
