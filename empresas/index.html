@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rutas Sanitarias · Para empresas y RSE · Aeroambulancias Silva</title>
+<meta name="description" content="Financie corredores aéreos de respuesta médica adaptada. Patrocinio de Rutas Sanitarias con retorno reputacional, impacto ESG y deducibilidad fiscal. Aeroambulancias Silva, Venezuela.">
+<!-- El tema es navy y no celeste: esta página no es la campaña, es su puerta
+     corporativa, y la barra del navegador es lo primero que lo dice. -->
+<meta name="theme-color" content="#091d40">
+<meta name="color-scheme" content="light">
+<link rel="canonical" href="https://uncheckinporlavida.aeroambulanciasilva.com/empresas/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Aeroambulancias Silva">
+<meta property="og:title" content="Rutas Sanitarias · Para empresas y RSE">
+<meta property="og:description" content="Financie corredores aéreos de respuesta médica adaptada, con retorno reputacional, impacto ESG y deducibilidad fiscal.">
+<meta property="og:url" content="https://uncheckinporlavida.aeroambulanciasilva.com/empresas/">
+<meta property="og:locale" content="es_VE">
+<!-- ⚠️ IMAGEN PROPIA Y CON NOMBRE PROPIO. WhatsApp y Facebook cachean la vista
+     previa POR URL de imagen: si esta página heredara `og-v1.jpg`, al compartirla
+     en un grupo de gerencia aparecería el oso de peluche de la campaña. Y si
+     algún día hay que cambiarla, se cambia el NOMBRE del archivo — reemplazar el
+     contenido no limpia esa caché (ver AGENTS.md, trampas conocidas). -->
+<meta property="og:image" content="https://uncheckinporlavida.aeroambulanciasilva.com/img/og-empresas-v1.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Rutas Sanitarias de Aeroambulancias Silva: patrocinio corporativo de corredores aéreos de respuesta médica">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Rutas Sanitarias · Para empresas y RSE">
+<meta name="twitter:description" content="Financie corredores aéreos de respuesta médica adaptada, con retorno reputacional, impacto ESG y deducibilidad fiscal.">
+<meta name="twitter:image" content="https://uncheckinporlavida.aeroambulanciasilva.com/img/og-empresas-v1.jpg">
+<meta name="twitter:image:alt" content="Rutas Sanitarias de Aeroambulancias Silva: patrocinio corporativo de corredores aéreos de respuesta médica">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon-180.png">
+<link rel="preload" href="../fonts/SourceSans3-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/BigShoulders-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* ⚠️ ESTA PÁGINA NO CARGA LA FUENTE DE CIFRAS. El sitio y la app traen
+     Martian Mono para los números grandes de la campaña —«44 de 609»—, y acá
+     no hay ninguno: los montos son rangos de precio, que van en la de texto.
+     Es un woff2 menos en una página que se abre en una oficina con la red que
+     haya. */
+  @font-face{font-family:'Big Shoulders';src:url('../fonts/BigShoulders-700-latin.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;}
+  @font-face{font-family:'Source Sans';src:url('../fonts/SourceSans3-400-latin.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
+  @font-face{font-family:'Source Sans';src:url('../fonts/SourceSans3-600-latin.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
+
+  :root{
+    color-scheme:only light;
+    --celeste:#29b9e9; --celeste-hondo:#1596c2; --celeste-papel:#e2f3fc;
+    --navy:#0e2a5c; --navy-deep:#091d40; --navy-soft:#1e4ba8;
+    --paper:#f6f1e7; --paper-edge:#e7ddc8; --ink:#3d4a66; --ink-soft:#5c6883;
+    --orange:#ff9900; --orange-papel:#a05c00; --tinta-boton:#2a1103;
+    --titulo:'Big Shoulders','Arial Narrow',system-ui,sans-serif;
+    --sans:'Source Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --gutter:calc(clamp(1.25rem,5vw,3.5rem)
+             + max(env(safe-area-inset-left,0px),env(safe-area-inset-right,0px)));
+    --dur-1:180ms; --dur-2:420ms; --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{background:var(--navy-deep);-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+  body{margin:0;background:var(--navy-deep);font-family:var(--sans);color:var(--navy);
+       font-size:1.06rem;line-height:1.62;font-weight:400;overflow-x:clip;}
+  h1,h2,h3{line-height:1.05;margin:0;letter-spacing:.005em;text-wrap:balance;}
+  h2{font-family:var(--titulo);font-weight:700;}
+  p{margin:0;}
+  img{max-width:100%;height:auto;display:block;}
+  a{color:inherit;}
+  :focus-visible{outline:3px solid var(--navy);outline-offset:3px;
+                 box-shadow:0 0 0 3px var(--paper);border-radius:3px;}
+  /* Sobre el navy del hero y del pie, el anillo navy no se ve: ahí va en papel. */
+  .hero :focus-visible,.pie :focus-visible,.cab :focus-visible{
+    outline-color:var(--paper);box-shadow:0 0 0 3px var(--navy-deep);}
+  .salto{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+  .salto:focus{position:fixed;width:auto;height:auto;clip-path:none;left:1rem;top:1rem;z-index:99;
+    background:var(--paper);color:var(--navy);padding:.7rem 1rem;border-radius:6px;font-weight:600;}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  p b,li b{font-weight:700;color:inherit;}
+
+  /* ── Cabecera ─────────────────────────────────────────────────────────────
+     Más corta que la del sitio a propósito: sin el pase girando y sin el botón
+     de compartir. Quien llega acá viene de una reunión o de un correo, no de
+     una historia de Instagram, y no va a compartir la página desde el teléfono. */
+  .cab{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:.75rem;
+       padding:.6rem var(--gutter);background:var(--navy-deep);
+       box-shadow:0 1px 0 rgba(246,241,231,.12);}
+  .cab-marca{display:flex;align-items:center;gap:.5rem;text-decoration:none;margin-right:auto;}
+  .cab-marca img{height:1.75rem;width:auto;}
+  .cab-btn{display:inline-flex;align-items:center;gap:.4rem;font:600 .82rem/1 var(--sans);
+           text-decoration:none;padding:.6rem .9rem;border-radius:999px;min-height:44px;
+           white-space:nowrap;}
+  .cab-campana{background:none;border:1.5px solid rgba(246,241,231,.4);color:#e8edf8;}
+  .cab-wa{background:var(--orange);color:var(--tinta-boton);}
+  @media (hover:hover){
+    .cab-campana:hover{border-color:var(--paper);background:rgba(246,241,231,.1);}
+    .cab-wa:hover{background:#ffab2e;}
+  }
+  /* A 380 px los dos botones con texto no entran junto con la marca: el de la
+     campaña se queda sin palabra antes que el de WhatsApp, que es la acción. */
+  @media (max-width:26rem){.cab-campana span{display:none;}.cab-campana{padding:.6rem .7rem;}}
+
+  .bloque{max-width:64rem;margin:0 auto;padding:3.2rem var(--gutter);}
+  section[id]{scroll-margin-top:4.4rem;}
+  .papel{background:var(--paper);color:var(--navy);}
+  .celeste{background:var(--celeste-papel);color:var(--navy);}
+  .bloque h2{font-size:clamp(2rem,6.4vw,3rem);margin-bottom:.6rem;}
+  .bajada{color:var(--ink);max-width:52ch;margin-bottom:2rem;font-size:1.08rem;font-weight:600;}
+  .rotulo{font:600 .78rem/1.4 var(--sans);letter-spacing:.11em;text-transform:uppercase;
+          color:var(--orange-papel);margin-bottom:.5rem;}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:52px;
+       padding:.85rem 1.5rem;border-radius:999px;font:600 1rem/1.25 var(--sans);text-decoration:none;
+       border:0;cursor:pointer;text-align:center;
+       transition:transform var(--dur-1) var(--ease),background var(--dur-1) var(--ease);}
+  .btn-1{background:var(--orange);color:var(--tinta-boton);}
+  .btn-2{background:none;border:1.8px solid var(--navy);color:var(--navy);}
+  .btn-3{background:var(--navy);color:var(--paper);}
+  /* Sobre el navy del hero, un contorno navy no existe. */
+  .btn-claro{background:none;border:1.8px solid rgba(246,241,231,.55);color:var(--paper);}
+  @media (hover:hover){
+    .btn-1:hover{background:#ffab2e;}
+    .btn-2:hover{background:rgba(14,42,92,.08);}
+    .btn-3:hover{background:var(--navy-soft);}
+    .btn-claro:hover{background:rgba(246,241,231,.12);border-color:var(--paper);}
+  }
+  .btn:active{transform:scale(.97);}
+  .ico-btn{flex:none;}
+
+  /* ── Hero ─────────────────────────────────────────────────────────────────
+     Navy y sin fotografía. El hero de la campaña es un oso sobre celeste,
+     porque ahí la decisión es emocional y de una persona. Acá la decisión la
+     firma un comité: lo que tiene que entrar en la primera pantalla es qué se
+     financia y con qué respaldo, no una imagen. */
+  .hero{background:var(--navy-deep);color:#e8edf8;}
+  .hero .bloque{padding-top:2.6rem;padding-bottom:3rem;}
+  .hero .rotulo{color:#ffc266;}
+  .hero h1{font-family:var(--titulo);font-weight:700;font-size:clamp(2.1rem,7.4vw,3.6rem);
+           color:var(--paper);margin-bottom:1rem;max-width:20ch;}
+  .hero-bajada{font-size:clamp(1.04rem,2.6vw,1.22rem);color:#d5deef;max-width:54ch;font-weight:600;}
+  .hero-nota{margin-top:1.1rem;font-size:1rem;color:#aebbd6;max-width:60ch;}
+  .hero-acciones{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.8rem;}
+  .hero-acciones .btn{flex:1 1 15rem;}
+
+  /* ── Las dos modalidades ──────────────────────────────────────────────────
+     ⚠️ EL DIAGRAMA DE RAFAEL ERA UN ÁRBOL DE CAJAS ASCII. En un teléfono de
+     360 px eso no entra de ninguna forma: lo que el árbol dice es «una misión,
+     dos ramas», y eso se dice con un rótulo arriba y dos tarjetas hermanas
+     debajo, que además se apilan solas cuando no hay ancho. */
+  .tronco{text-align:center;margin-bottom:1.1rem;}
+  .tronco b{display:inline-block;font:700 .82rem/1 var(--sans);letter-spacing:.11em;
+            text-transform:uppercase;color:var(--paper);background:var(--navy);
+            padding:.65rem 1.1rem;border-radius:999px;}
+  /* La línea que baja del rótulo a las tarjetas: es lo único que queda del
+     árbol, y alcanza para que se lean como dos ramas de lo mismo. */
+  .tronco::after{content:"";display:block;width:2px;height:18px;margin:0 auto;
+                 background:var(--paper-edge);}
+  .modalidades{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1rem;}
+  .modalidad{background:#fffdf8;border:1.5px solid var(--paper-edge);border-radius:14px;
+             padding:1.4rem;display:flex;flex-direction:column;}
+  .modalidad-letra{font:700 .78rem/1 var(--sans);letter-spacing:.11em;text-transform:uppercase;
+                   color:var(--orange-papel);margin-bottom:.45rem;}
+  .modalidad h3{font-family:var(--sans);font-weight:700;font-size:1.16rem;color:var(--navy);
+                line-height:1.25;margin-bottom:.3rem;}
+  .modalidad-cuantos{font-size:.95rem;color:var(--ink-soft);margin-bottom:1rem;}
+  .modalidad ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.7rem;}
+  .modalidad li{position:relative;padding-left:1.4rem;font-size:1rem;color:var(--ink);}
+  .modalidad li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;
+                        border-radius:2px;background:var(--orange);}
+  .modalidad-ruta{font-weight:700;color:var(--navy);}
+  .flexible{margin-top:1.4rem;padding:1.2rem 1.3rem;background:var(--celeste-papel);
+            border-radius:12px;font-size:1rem;color:var(--navy);}
+  .flexible b{font-weight:700;}
+
+  /* ── Modelos de patrocinio ── */
+  .modelo{background:#fffdf8;border:1.5px solid var(--paper-edge);border-radius:14px;
+          padding:1.5rem;margin-bottom:1rem;}
+  .modelo:last-of-type{margin-bottom:0;}
+  .modelo-cab{margin-bottom:1rem;}
+  .modelo h3{font-family:var(--titulo);font-weight:700;font-size:clamp(1.5rem,4.6vw,1.9rem);
+             text-transform:uppercase;color:var(--navy);letter-spacing:.01em;}
+  .modelo-que{font:600 1rem/1.4 var(--sans);color:var(--orange-papel);margin-top:.15rem;}
+  .modelo > p{color:var(--ink);}
+  .modelo dl{margin:1.1rem 0 0;display:flex;flex-direction:column;gap:.9rem;}
+  .modelo dt{font-weight:700;color:var(--navy);font-size:1rem;}
+  .modelo dd{margin:.1rem 0 0;color:var(--ink);font-size:1rem;}
+  .modelo .btn{margin-top:1.3rem;width:100%;}
+
+  /* ── Espectro de atención ── */
+  .espectro{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;}
+  .caso{background:#fff;border:1.5px solid var(--paper-edge);border-radius:14px;padding:1.3rem;}
+  .caso-num{font:700 .78rem/1 var(--sans);letter-spacing:.11em;color:var(--orange-papel);
+            margin-bottom:.5rem;}
+  .caso h3{font-family:var(--sans);font-weight:700;font-size:1.08rem;color:var(--navy);
+           line-height:1.3;margin-bottom:.45rem;}
+  .caso p{color:var(--ink);font-size:1rem;}
+
+  /* ── Formulario ── */
+  .form-campos{display:grid;gap:1.1rem;max-width:34rem;}
+  .campo{display:flex;flex-direction:column;gap:.35rem;}
+  .campo label{font-weight:600;font-size:.98rem;color:var(--navy);}
+  .campo input,.campo select{font:400 1.02rem/1.4 var(--sans);color:var(--navy);
+    background:#fff;border:1.5px solid var(--paper-edge);border-radius:10px;
+    padding:.8rem .9rem;min-height:52px;width:100%;}
+  .campo select{appearance:none;
+    /* La flecha va como fondo y no como carácter: un ▾ dentro del texto lo lee
+       el lector de pantalla como parte de la opción elegida. */
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none' stroke='%230e2a5c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.6rem;}
+  .campo input:focus,.campo select:focus{border-color:var(--navy);}
+  .form-envio{margin-top:1.6rem;max-width:34rem;}
+  .form-envio .btn{width:100%;}
+  .form-nota{margin-top:.9rem;font-size:.94rem;color:var(--ink-soft);max-width:52ch;}
+  /* El aviso de campo faltante: `role="alert"` para que el lector de pantalla
+     lo anuncie sin que la persona tenga que ir a buscarlo. */
+  .form-aviso{margin-top:.9rem;padding:.8rem 1rem;border-radius:10px;
+              background:#ffe9d6;color:#7a3300;font-weight:600;font-size:.98rem;}
+
+  /* ── Pie ── */
+  .pie{background:var(--navy-deep);color:#d3dcee;font-size:.98rem;}
+  .pie .bloque{padding-top:2.5rem;padding-bottom:2.5rem;}
+  .pie-marca img{height:3.8rem;width:auto;margin-bottom:1.6rem;}
+  .pie-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.8rem;}
+  .pie h3{font-family:var(--sans);font-size:.78rem;font-weight:700;letter-spacing:.1em;
+          text-transform:uppercase;color:#9fb0d0;margin:0 0 .7rem;}
+  .pie a{color:#d6ddec;}
+  .pie ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.45rem;}
+  .pie-redes{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem;}
+  .pie-red{width:42px;height:42px;border-radius:999px;border:1px solid rgba(246,241,231,.25);
+           display:inline-flex;align-items:center;justify-content:center;color:#d6ddec;}
+  .pie-tel{white-space:nowrap;}
+  .pie-legal{max-width:70ch;margin-top:2rem;padding-top:1.4rem;
+             border-top:1px solid rgba(246,241,231,.14);font-size:.9rem;color:#aab6ce;}
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    .btn{transition:none;}
+  }
+</style>
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+
+<header class="cab">
+  <a class="cab-marca" href="../">
+    <img src="../img/logo-silva-blanco-180.webp" width="180" height="236" alt="Aeroambulancias Silva">
+  </a>
+  <!-- ⚠️ `aria-label` PORQUE EL TEXTO SE OCULTA. Debajo de 26rem el `<span>`
+       se va con `display:none`, y un enlace que queda sólo con un ícono no
+       tiene nombre accesible: el lector de pantalla anuncia «enlace» y nada
+       más. El rótulo dice lo mismo que la palabra que desaparece. -->
+  <a class="cab-btn cab-campana" href="../" aria-label="Ver la campaña">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M11 5l-7 7 7 7M4.5 12H20"/>
+    </svg>
+    <span>Ver la campaña</span>
+  </a>
+  <a class="cab-btn cab-wa" data-wa="hero" href="https://wa.me/584241466595" target="_blank" rel="noopener">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
+    <span>Hablar con alianzas</span>
+  </a>
+</header>
+
+<main id="contenido">
+
+  <section class="hero">
+    <div class="bloque">
+      <p class="rotulo">Responsabilidad social empresarial · ESG</p>
+      <h1>Transforme la inversión de su empresa en Rutas Sanitarias que salvan vidas.</h1>
+      <p class="hero-bajada">Financie corredores aéreos de respuesta médica adaptada:
+        desde evacuar a un paciente en estado crítico hasta trasladar a seis
+        pasajeros en condiciones especiales en una sola misión.</p>
+      <p class="hero-nota">Nacidos de la alianza con el Congreso Oncoaliados para
+        proteger al paciente onco-pediátrico, evolucionamos hacia un modelo de
+        accesibilidad total. Canalice sus fondos de Responsabilidad Social
+        Empresarial y ESG hacia una red logística flexible, auditable y deducible
+        de impuestos.</p>
+      <div class="hero-acciones">
+        <a class="btn btn-1" data-wa="hero" href="https://wa.me/584241466595" target="_blank" rel="noopener">
+          <svg class="ico-btn" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
+          Patrocinar una Ruta Sanitaria
+        </a>
+        <!-- ⚠️ EL DOSSIER NO SE DESCARGA, SE PIDE. El PDF todavía no existe: un
+             botón que promete un documento y entrega un 404 quema justo la
+             confianza que la página vino a construir. Cuando el archivo llegue,
+             esto pasa a ser un enlace con `download` y el mensaje sobra. -->
+        <a class="btn btn-claro" data-wa="dossier" href="https://wa.me/584241466595" target="_blank" rel="noopener">
+          <svg class="ico-btn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 3v5h5"/><path d="M14 3H6.5A1.5 1.5 0 005 4.5v15A1.5 1.5 0 006.5 21h11a1.5 1.5 0 001.5-1.5V8z"/>
+          </svg>
+          Solicitar el dossier ESG
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="papel" id="ruta-sanitaria" aria-labelledby="t-ruta">
+    <div class="bloque">
+      <h2 id="t-ruta">Qué es una Ruta Sanitaria</h2>
+      <p class="bajada">Un corredor logístico aéreo y terrestre diseñado para
+        optimizar el transporte médico según la severidad de cada caso. Una misma
+        misión aeronáutica se configura bajo dos modalidades.</p>
+
+      <div class="tronco"><b>Una misión, dos modalidades</b></div>
+
+      <div class="modalidades">
+        <article class="modalidad">
+          <p class="modalidad-letra">Modalidad A</p>
+          <h3>Vuelo crítico dedicado</h3>
+          <p class="modalidad-cuantos">Un paciente de alta complejidad</p>
+          <ul>
+            <li>Cobertura directa punto a punto
+              <span class="modalidad-ruta">(Maracaibo – Caracas)</span>.</li>
+            <li>Equipamiento UCI completo: ventilación mecánica, bomba de infusión
+              y equipo médico especializado en cabina.</li>
+          </ul>
+        </article>
+        <article class="modalidad">
+          <p class="modalidad-letra">Modalidad B</p>
+          <h3>Corredor multiparada</h3>
+          <p class="modalidad-cuantos">Hasta 6 pacientes consolidados</p>
+          <ul>
+            <!-- ⚠️ EL EJEMPLO ORIGINAL PASABA POR CORO, que no es ninguna de las
+                 seis rutas que la campaña publica. Barinas sí lo es (Ruta 3), y
+                 queda en el camino entre Maracaibo y Caracas. Pendiente de
+                 confirmar con el cliente. -->
+            <li>Vuelo multiescala interconectado
+              <span class="modalidad-ruta">(Maracaibo – Barinas – Caracas)</span>.</li>
+            <li>Eficiencia de costos: atiende hasta seis pacientes con escolta
+              médica o condiciones especiales en un solo trayecto.</li>
+          </ul>
+        </article>
+      </div>
+
+      <p class="flexible"><b>Flexibilidad operativa.</b> Un mismo vuelo patrocinado
+        por su empresa puede adaptarse para salvar a un paciente neonatal u
+        oncológico crítico en vuelo directo, o convertirse en una ruta itinerante
+        para trasladar a seis pasajeros en tratamiento, con movilidad reducida o
+        neurodivergencia.</p>
+    </div>
+  </section>
+
+  <section class="celeste" id="modelos" aria-labelledby="t-modelos">
+    <div class="bloque">
+      <p class="rotulo">Modelos de patrocinio</p>
+      <h2 id="t-modelos">Cómo participa su empresa</h2>
+      <p class="bajada">Tres formas de entrar, de la misión completa al obsequio
+        corporativo con propósito.</p>
+
+      <article class="modelo">
+        <div class="modelo-cab">
+          <h3>Padrino de Ruta Sanitaria</h3>
+          <p class="modelo-que">Misión completa · cobertura directa o consolidada</p>
+        </div>
+        <p>Financiamiento integral de un corredor aéreo completo, de punta a punta.</p>
+        <dl>
+          <div>
+            <dt>Elección de modalidad</dt>
+            <dd>Dedicada: el traslado directo de un paciente crítico en UCI aérea.
+              Consolidada: una ruta itinerante que conecta varias regiones y atiende
+              hasta seis pacientes en condiciones especiales.</dd>
+          </div>
+          <div>
+            <dt>Asociación nominal exclusiva</dt>
+            <dd>La ruta lleva la denominación oficial de su empresa en la orden de
+              vuelo y en los reportes de misión.</dd>
+          </div>
+          <div>
+            <dt>Retorno reputacional y fiscal</dt>
+            <dd>Certificado de inversión social, donación deducible de ISLR, dossier
+              audiovisual para su memoria de sostenibilidad e indicadores alineados
+              a los ODS 3 y 17 de la Agenda 2030.</dd>
+          </div>
+        </dl>
+        <a class="btn btn-3" data-wa="padrino" href="https://wa.me/584241466595" target="_blank" rel="noopener">
+          <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
+          Patrocinar una ruta completa
+        </a>
+      </article>
+
+      <article class="modelo">
+        <div class="modelo-cab">
+          <h3>Copiloto Solidario</h3>
+          <p class="modelo-que">Por tramos y asientos médicos</p>
+        </div>
+        <p>Compra de bloques de horas de vuelo, de tramos regionales específicos
+          dentro de una Ruta Sanitaria, o de cupos de escolta médica para pacientes
+          en tratamiento continuo.</p>
+        <dl>
+          <div>
+            <dt>Exposición proporcional</dt>
+            <dd>Su marca queda asociada al tramo patrocinado, con métricas claras
+              sobre cuántos pacientes se beneficiaron.</dd>
+          </div>
+          <div>
+            <dt>Sello de sostenibilidad</dt>
+            <dd>Distintivo digital «Co-patrocinador de Rutas Sanitarias» para su
+              sitio web y sus reportes corporativos.</dd>
+          </div>
+          <div>
+            <dt>Auditoría ESG</dt>
+            <!-- ⚠️ «HORAS DE VUELO», NO «MILLAS VOLADAS». El texto original decía
+                 millas; el resto del sitio, la app y el Sheet miden esta campaña
+                 en horas de vuelo, y dos unidades para la misma cosa hacen que
+                 los reportes no se puedan cruzar con lo que la campaña publica. -->
+            <dd>Reportes semestrales con desglose de horas de vuelo y trazabilidad
+              médica.</dd>
+          </div>
+        </dl>
+        <a class="btn btn-3" data-wa="copiloto" href="https://wa.me/584241466595" target="_blank" rel="noopener">
+          <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
+          Financiar tramos de ruta
+        </a>
+      </article>
+
+      <article class="modelo">
+        <div class="modelo-cab">
+          <h3>Kits Pedelton con propósito</h3>
+          <p class="modelo-que">Regalos corporativos de impacto · $10 a $40 por unidad</p>
+        </div>
+        <!-- Los dos nombres en la misma frase, igual que en la portada: el resto
+             del proyecto llama «Héroe de Rescate» a este objeto. -->
+        <p>Adquisición de Kits de Contención Emocional y Bioseguridad —el Héroe de
+          Rescate en empaque estéril, o Kits Sensoriales TEA— que acompañan a los
+          pacientes a lo largo de la Ruta Sanitaria.</p>
+        <dl>
+          <div>
+            <dt>Co-branding en el kit</dt>
+            <dd>Cada kit incluye una tarjeta personalizada con el mensaje
+              institucional de su empresa.</dd>
+          </div>
+          <div>
+            <dt>Material hipoalergénico</dt>
+            <dd>Apto para pacientes neutropénicos u oncológicos, concepto validado
+              en el Congreso Oncoaliados.</dd>
+          </div>
+          <div>
+            <dt>Uso versátil</dt>
+            <dd>Obsequio corporativo con propósito, material de responsabilidad
+              social o jornadas de voluntariado con sus colaboradores.</dd>
+          </div>
+        </dl>
+        <a class="btn btn-3" data-wa="lotes" href="https://wa.me/584241466595" target="_blank" rel="noopener">
+          <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
+          Solicitar kits corporativos
+        </a>
+      </article>
+    </div>
+  </section>
+
+  <section class="papel" id="espectro" aria-labelledby="t-espectro">
+    <div class="bloque">
+      <p class="rotulo">Espectro de atención</p>
+      <h2 id="t-espectro">A quién mueve una Ruta Sanitaria</h2>
+      <p class="bajada">La misma misión cubre tres perfiles distintos, y cada uno
+        cambia cómo se configura la cabina.</p>
+      <div class="espectro">
+        <article class="caso">
+          <p class="caso-num">01</p>
+          <h3>Pacientes críticos</h3>
+          <p>Soporte intensivo de UCI «cama a cama», en vuelo directo y sin escalas.</p>
+        </article>
+        <article class="caso">
+          <p class="caso-num">02</p>
+          <h3>Neurodivergencia (TEA)</h3>
+          <p>Kit Sensorial Pedelton, atenuación de ruido y un abordaje de baja
+            fricción.</p>
+        </article>
+        <article class="caso">
+          <p class="caso-num">03</p>
+          <h3>Escolta y movilidad</h3>
+          <p>Pacientes en camilla comercial (MEDIF / FREMEC) y soporte de oxígeno.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="celeste" id="contacto" aria-labelledby="t-contacto">
+    <div class="bloque">
+      <p class="rotulo">Comité ESG y gerencia de RSE</p>
+      <h2 id="t-contacto">Hablemos de su programa</h2>
+      <p class="bajada">Deje sus datos y un gerente de alianzas corporativas se
+        pondrá en contacto con usted.</p>
+
+      <!-- ⚠️ ESTE FORMULARIO TODAVÍA NO GUARDA NADA: arma un mensaje de WhatsApp
+           con lo que la persona escribió y lo abre. Es el mismo camino que usa
+           todo el resto del sitio, así que funciona desde el primer día y no
+           promete un envío que no existe. La fase 3 le agrega el guardado en una
+           hoja propia del Sheet, sin cambiar lo que la persona ve. -->
+      <form id="form-empresa" novalidate>
+        <div class="form-campos">
+          <p class="campo">
+            <label for="e-empresa">Empresa u organización</label>
+            <input id="e-empresa" name="empresa" type="text" autocomplete="organization" required>
+          </p>
+          <p class="campo">
+            <label for="e-contacto">Nombre y cargo del contacto</label>
+            <input id="e-contacto" name="contacto" type="text" autocomplete="name" required>
+          </p>
+          <p class="campo">
+            <label for="e-correo">Correo corporativo</label>
+            <input id="e-correo" name="correo" type="email" autocomplete="email" inputmode="email" required>
+          </p>
+          <p class="campo">
+            <label for="e-telefono">Teléfono o WhatsApp directo</label>
+            <input id="e-telefono" name="telefono" type="tel" autocomplete="tel" inputmode="tel" required>
+          </p>
+          <p class="campo">
+            <label for="e-modalidad">Modalidad de interés</label>
+            <select id="e-modalidad" name="modalidad">
+              <option value="Padrino de Ruta Sanitaria">Padrino de Ruta Sanitaria</option>
+              <option value="Copiloto Solidario (tramos y asientos)">Copiloto Solidario (tramos y asientos)</option>
+              <option value="Kits Pedelton ($10 a $40)">Kits Pedelton ($10 a $40)</option>
+              <option value="Todavía no lo tengo claro">Todavía no lo tengo claro</option>
+            </select>
+          </p>
+        </div>
+        <div class="form-envio">
+          <button class="btn btn-1" type="submit">
+            <svg class="ico-btn" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
+            Enviar solicitud de alianza
+          </button>
+          <p class="form-aviso" id="form-aviso" role="alert" hidden></p>
+          <p class="form-nota">Sus datos se usan únicamente para contactarle sobre
+            este programa. Al enviar, se abre WhatsApp con la solicitud ya escrita
+            para que usted la revise antes de mandarla.</p>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="pie">
+  <div class="bloque">
+    <div class="pie-marca">
+      <picture>
+        <source type="image/avif" srcset="../img/logo-silva-blanco-400.avif">
+        <img src="../img/logo-silva-blanco-400.webp" width="400" height="524" loading="lazy" alt="Aeroambulancias Silva">
+      </picture>
+    </div>
+    <div class="pie-grid">
+      <div>
+        <h3>Aeroambulancias Silva</h3>
+        <ul>
+          <li>Aeroambulancias Silva, C.A.</li>
+          <li>RIF J-31038924-1</li>
+          <li>Caracas, Venezuela</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Alianzas corporativas</h3>
+        <ul>
+          <li><a href="tel:+584241466595">Atención: <span class="pie-tel">(0424)&nbsp;146.65.95</span></a></li>
+          <li><a href="tel:+582123105225">Emergencias: <span class="pie-tel">(0212)&nbsp;310.52.25</span></a></li>
+          <li><a data-wa="hero" href="https://wa.me/584241466595" target="_blank" rel="noopener">WhatsApp de alianzas</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Más de Silva</h3>
+        <ul>
+          <li><a href="../">La campaña Un Check-in por la Vida</a></li>
+          <li><a href="https://www.aeroambulanciasilva.com" target="_blank" rel="noopener">Sitio corporativo</a></li>
+        </ul>
+        <div class="pie-redes">
+          <a class="pie-red" href="https://www.linkedin.com/company/aeroambulancias-silva" target="_blank" rel="noopener" aria-label="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 8h-3v12h3V8zM5 3.5A1.8 1.8 0 105 7a1.8 1.8 0 000-3.5zM20.5 20h-3v-6.3c0-1.5-.5-2.5-1.9-2.5-1 0-1.6.7-1.9 1.4-.1.2-.1.6-.1.9V20h-3V8h3v1.7c.4-.6 1.2-1.5 2.9-1.5 2.1 0 3.9 1.4 3.9 4.4V20z"/></svg></a>
+          <a class="pie-red" href="https://www.instagram.com/aeroambulanciasilva/" target="_blank" rel="noopener" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a class="pie-red" href="https://www.youtube.com/@aeroambulanciasilva" target="_blank" rel="noopener" aria-label="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12s0-3-.4-4.4a2.7 2.7 0 00-1.9-1.9C18.3 5.3 12 5.3 12 5.3s-6.3 0-7.7.4a2.7 2.7 0 00-1.9 1.9C2 9 2 12 2 12s0 3 .4 4.4c.2.9.9 1.6 1.9 1.9 1.4.4 7.7.4 7.7.4s6.3 0 7.7-.4a2.7 2.7 0 001.9-1.9C22 15 22 12 22 12zM10 15V9l5 3z"/></svg></a>
+        </div>
+      </div>
+    </div>
+    <p class="pie-legal">
+      Un Check-in por la Vida es una plataforma de impacto social operada por la
+      División de Misiones Humanitarias y Rutas Sanitarias de Aeroambulancias
+      Silva, C.A.
+      <br>© 2026 Aeroambulancias Silva · Venezuela
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var TEL = '584241466595';
+
+  /* Cada botón dice lo que va a mandar. Un mensaje genérico obliga a la persona
+     a escribir de qué producto hablaba, y en la mitad de los casos no lo hace. */
+  var MENSAJES = {
+    hero:     'Hola. Represento a una empresa y vengo de la página de Rutas Sanitarias de Un Check-in por la Vida. Quisiera hablar con alianzas corporativas sobre un patrocinio.',
+    dossier:  'Hola. Represento a una empresa y vengo de la página de Rutas Sanitarias. Quisiera recibir el dossier corporativo ESG de Un Check-in por la Vida.',
+    padrino:  'Hola. Represento a una empresa y me interesa ser Padrino de una Ruta Sanitaria completa. ¿Me pueden enviar la información y las dos modalidades?',
+    copiloto: 'Hola. Represento a una empresa y me interesa el plan Copiloto Solidario, por tramos y asientos médicos. ¿Cómo se calcula el aporte?',
+    lotes:    'Hola. Represento a una empresa y quiero cotizar Kits Pedelton con propósito. ¿Cuál es el mínimo y los precios por cantidad?'
+  };
+  var wa = function (m) { return 'https://wa.me/' + TEL + '?text=' + encodeURIComponent(m); };
+
+  /* Los `href` se completan en JS y no en el HTML: así el mensaje vive en un
+     solo lugar y un enlace sin JS sigue abriendo el WhatsApp correcto, sólo que
+     sin texto. Es el mismo patrón del sitio. */
+  var enlaces = document.querySelectorAll('[data-wa]');
+  for (var i = 0; i < enlaces.length; i++) {
+    var clave = enlaces[i].getAttribute('data-wa');
+    if (MENSAJES[clave]) enlaces[i].href = wa(MENSAJES[clave]);
+  }
+
+  var form = document.getElementById('form-empresa');
+  var aviso = document.getElementById('form-aviso');
+  if (!form) return;
+
+  var CAMPOS = [
+    { id: 'e-empresa',  rotulo: 'Empresa' },
+    { id: 'e-contacto', rotulo: 'Contacto' },
+    { id: 'e-correo',   rotulo: 'Correo' },
+    { id: 'e-telefono', rotulo: 'Teléfono' }
+  ];
+
+  function decir(texto) {
+    aviso.textContent = texto;
+    aviso.hidden = !texto;
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var datos = [], falta = null, i, el;
+
+    /* ⚠️ `novalidate` EN EL FORM Y LA VALIDACIÓN A MANO. El globo nativo del
+       navegador aparece y se va solo a los pocos segundos, no lo anuncia el
+       lector de pantalla, y en iOS sale fuera de la pantalla si el campo quedó
+       arriba del teclado. Un aviso propio con `role="alert"` se queda, se lee y
+       se puede volver a él. */
+    for (i = 0; i < CAMPOS.length; i++) {
+      el = document.getElementById(CAMPOS[i].id);
+      var v = (el.value || '').trim();
+      if (!v) { if (!falta) falta = el; continue; }
+      datos.push(CAMPOS[i].rotulo + ': ' + v);
+    }
+    if (falta) {
+      decir('Falta completar algún dato. Revise los campos vacíos.');
+      falta.focus();
+      return;
+    }
+    var correo = document.getElementById('e-correo').value.trim();
+    /* Una sola arroba con algo a cada lado y un punto después. No se valida más:
+       una expresión estricta rechaza correos corporativos válidos y deja afuera
+       justo a quien queremos que escriba. */
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      decir('Ese correo no parece completo. Revíselo, por favor.');
+      document.getElementById('e-correo').focus();
+      return;
+    }
+    decir('');
+    datos.push('Modalidad de interés: ' + document.getElementById('e-modalidad').value);
+    var texto = 'Hola. Escribo desde la página de Rutas Sanitarias de Un Check-in '
+              + 'por la Vida para solicitar una alianza corporativa.\n\n'
+              + datos.join('\n');
+    window.open(wa(texto), '_blank', 'noopener');
+  });
+})();
+</script>
+</body>
+</html>

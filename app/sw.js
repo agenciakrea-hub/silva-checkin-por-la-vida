@@ -19,7 +19,7 @@
  */
 'use strict';
 
-const VERSION = 'v23';
+const VERSION = 'v24';
 const CACHE   = 'checkin-app-' + VERSION;
 
 /* Lo que hace falta para que la pantalla se dibuje entera sin red. Las cifras

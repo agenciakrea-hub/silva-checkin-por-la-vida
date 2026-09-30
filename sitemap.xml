@@ -2,7 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://uncheckinporlavida.aeroambulanciasilva.com/</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-09-30</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- La app NO va en el sitemap: lleva `noindex` a propósito, porque es la
+       pantalla de una persona y no una página de campaña. -->
+  <url>
+    <loc>https://uncheckinporlavida.aeroambulanciasilva.com/empresas/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
