@@ -98,6 +98,28 @@
     };
     if (extra) { for (var k in extra) { if (extra[k]) cuerpo[k] = extra[k]; } }
 
+    encolar(cuerpo);
+  }
+
+  /* El formulario de `/empresas/`. Va por la misma cola que las personas y no
+     por un `fetch` suelto: si la red corta mientras un gerente lo envía, se
+     reintenta solo. Es el único envío del sitio que no se puede perder —una
+     persona vuelve a entrar a la campaña por su cuenta; una empresa que
+     escribió una vez y no recibió respuesta, no—. */
+  function guardarEmpresa(valores) {
+    encolar({
+      action: 'empresa', origen: 'web/empresas', dispositivo: dispositivoId(),
+      empresa: valores.empresa || '', contacto: valores.contacto || '',
+      correo: valores.correo || '', telefono: valores.telefono || '',
+      modalidad: valores.modalidad || ''
+    });
+  }
+
+  /* ⚠️ ESTO ERA EL CUERPO DE `guardarPersona` Y SE SACÓ TAL CUAL. No tiene nada
+     de personas: encola, y si el almacenamiento no aceptó la escritura manda
+     igual con lo que tiene en la mano. El `token` sólo lo devuelve `registro`,
+     así que el `if` de abajo simplemente no se cumple para los demás envíos. */
+  function encolar(cuerpo) {
     /* ⚠️ SE ENCOLA AUNQUE NO HAYA A DÓNDE MANDARLO TODAVÍA. Antes había un
        `return` acá arriba cuando faltaba la dirección del servidor o el
        navegador no tenía `fetch`, y el alta se evaporaba sin dejar rastro. Si
@@ -254,7 +276,8 @@
   window.CXV = {
     leer: leer, escribir: escribir, leerCola: leerCola,
     dispositivoId: dispositivoId, alServidor: alServidor,
-    guardarPersona: guardarPersona, enviarPendientes: enviarPendientes,
+    guardarPersona: guardarPersona, guardarEmpresa: guardarEmpresa,
+    enviarPendientes: enviarPendientes,
     arrancarCola: arrancarCola, hayRed: hayRed
   };
 })();

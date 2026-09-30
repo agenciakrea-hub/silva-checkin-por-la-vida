@@ -577,8 +577,15 @@
   </div>
 </footer>
 
+<!-- ⚠️ EL INLINE DE ABAJO ARRANCA EN `DOMContentLoaded`, no al parsearse. Un
+     `<script>` inline corre EN EL ACTO —`defer` no hace nada en uno inline— y
+     estos dos externos se ejecutan recién cuando termina el documento: sin
+     esperar, `window.CXV` todavía no existe y el formulario no guardaría nada,
+     en silencio. Es el mismo orden que usa el sitio. -->
+<script src="../config.js" defer></script>
+<script src="../cola.js" defer></script>
 <script>
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var TEL = '584241466595';
 
@@ -600,6 +607,12 @@
   for (var i = 0; i < enlaces.length; i++) {
     var clave = enlaces[i].getAttribute('data-wa');
     if (MENSAJES[clave]) enlaces[i].href = wa(MENSAJES[clave]);
+  }
+
+  /* Lo que quedó sin salir de una visita anterior —la red se cortó, el
+     navegador se cerró— se reintenta al abrir la página. */
+  if (window.CXV && window.CXV.arrancarCola) {
+    try { window.CXV.arrancarCola(); } catch (e) {}
   }
 
   var form = document.getElementById('form-empresa');
@@ -648,13 +661,34 @@
       return;
     }
     decir('');
-    datos.push('Modalidad de interés: ' + document.getElementById('e-modalidad').value);
+    var modalidad = document.getElementById('e-modalidad').value;
+
+    /* ⚠️ SE GUARDA ANTES DE ABRIR WHATSAPP, Y ES EL ORDEN QUE IMPORTA. Abrir
+       WhatsApp puede llevarse el foco —o la pestaña entera, en el navegador de
+       LinkedIn o de Gmail— y lo que quede por hacer después no se hace. La
+       cola guarda en el teléfono primero y después intenta mandar, así que esta
+       línea no espera a la red ni puede fallar por ella.
+       Si `cola.js` o `config.js` no llegaron, igual se abre WhatsApp: se pierde
+       el registro en la hoja, nunca el contacto. */
+    if (window.CXV && window.CXV.guardarEmpresa) {
+      try {
+        window.CXV.guardarEmpresa({
+          empresa:  document.getElementById('e-empresa').value.trim(),
+          contacto: document.getElementById('e-contacto').value.trim(),
+          correo:   correo,
+          telefono: document.getElementById('e-telefono').value.trim(),
+          modalidad: modalidad
+        });
+      } catch (e) {}
+    }
+
+    datos.push('Modalidad de interés: ' + modalidad);
     var texto = 'Hola. Escribo desde la página de Rutas Sanitarias de Un Check-in '
               + 'por la Vida para solicitar una alianza corporativa.\n\n'
               + datos.join('\n');
     window.open(wa(texto), '_blank', 'noopener');
   });
-})();
+});
 </script>
 </body>
 </html>
