@@ -231,18 +231,23 @@
   /* ⚠️ Salvo dentro de una tarjeta de papel, donde el blanco sobre crema da
      1,12:1 y el botón desaparece.
 
-     ⚠️ ESTA LISTA HAY QUE ACORDARSE DE AMPLIAR, y ya falló una vez: `.tripu`
-     se agregó sin tocarla y su botón «Copiar mi código» salió invisible sobre
-     el papel — el mismo 1,12:1 que este comentario venía advirtiendo. Cada
-     tarjeta de fondo `--paper` que use un `.btn-2` tiene que estar acá. La
-     forma de que deje de pasar es que las tarjetas de papel compartan una
-     clase y esto cuelgue de ella; está anotado como deuda en el plan. */
-  .instalar .btn-2, .papel .btn-2, .tienda .btn-2, .cierre .btn-2, .tripu .btn-2{
-    color:var(--navy);border-color:var(--navy);}
-  .instalar .btn-2:not([disabled]):hover, .papel .btn-2:not([disabled]):hover,
-  .tienda .btn-2:not([disabled]):hover,
-  .cierre .btn-2:not([disabled]):hover, .tripu .btn-2:not([disabled]):hover{
-    background:rgba(14,42,92,.08);}
+     ⚠️ ESTO COLGABA DE UNA LISTA DE SELECTORES Y FALLÓ. Decía
+     `.instalar .btn-2, .papel .btn-2, .tienda .btn-2…`, y había que acordarse
+     de ampliarla con cada tarjeta nueva: `.tripu` se agregó sin tocarla y su
+     botón «Copiar mi código» salió invisible sobre el crema, el mismo 1,12:1
+     que el propio comentario venía advirtiendo.
+     Ahora cuelga de `.enPapel`, que la tarjeta se pone a sí misma en el HTML.
+     Una tarjeta nueva sobre fondo claro sólo tiene que declarar que lo está;
+     no hay ninguna lista acá que se pueda olvidar.
+
+     ⚠️ `.enPapel` QUIERE DECIR «FONDO CLARO», no literalmente el color papel:
+     la llevan también las de `--celeste-papel`, porque sobre ellas el texto
+     navy se lee igual de bien. La que NO la lleva es `.misiones`, que es
+     naranja oscura —`rgb(160,92,0)`— y ahí el navy sería ilegible; sus botones
+     tienen su propio tratamiento. Antes de ponerle la clase a una tarjeta,
+     mirar el fondo, no el nombre. */
+  .enPapel .btn-2{color:var(--navy);border-color:var(--navy);}
+  .enPapel .btn-2:not([disabled]):hover{background:rgba(14,42,92,.08);}
   /* Navy pleno: la acción secundaria de un bloque de papel, donde el contorno
      se perdería contra el crema. */
   .btn-3{background:var(--navy);color:#fff;}
@@ -946,7 +951,7 @@
       </div>
     </section>
 
-    <section class="entrar" id="entrar" hidden>
+    <section class="entrar enPapel" id="entrar" hidden>
       <h2 id="entrar-titulo">Busca tu Boarding Pass</h2>
       <p id="entrar-texto">Escribe el teléfono con el que te registraste y lo recuperamos.</p>
       <form id="form-entrar" novalidate>
@@ -960,7 +965,7 @@
       <button class="btn btn-1" id="btn-reintentar" type="button" hidden>Reintentar</button>
     </section>
 
-    <section class="cierre" id="cierre" hidden aria-labelledby="cierre-titulo">
+    <section class="cierre enPapel" id="cierre" hidden aria-labelledby="cierre-titulo">
       <h2 id="cierre-titulo">La ruta se completó</h2>
       <p id="cierre-nota">Gracias. Tu Héroe de Rescate ayudó a que esta ruta despegara.</p>
       <button class="btn btn-1" id="btn-otra-ruta" type="button">Sumarme a la próxima ruta</button>
@@ -970,7 +975,7 @@
          Completar el formulario deja a la persona adentro; el código la deja a
          bordo. Este bloque es la diferencia entre las dos cosas, y por eso va
          arriba de todo lo demás. -->
-    <section class="activar-pase" id="activar-pase" hidden aria-labelledby="t-activar">
+    <section class="activar-pase enPapel" id="activar-pase" hidden aria-labelledby="t-activar">
       <h2 id="t-activar">Activa tu Boarding Pass</h2>
       <div class="pase3d" role="img"
            aria-label="Las dos caras del boarding pass impreso que viene con tu Héroe de Rescate: al frente, el ticket con su código de barras; al dorso, el Héroe y el sello de la campaña.">
@@ -1026,7 +1031,7 @@
          Es la primera pregunta de alguien que acaba de aportar, y la app no la
          contestaba en ninguna parte. El texto es el mismo que la campaña ya
          publica: no se inventa nada, se pone donde hace falta. -->
-    <section class="aporte" aria-labelledby="t-aporte">
+    <section class="aporte enPapel" aria-labelledby="t-aporte">
       <h2 id="t-aporte">Tu aporte</h2>
       <p class="aporte-grande">Los <b id="a-meta">609</b> Héroes de esta ruta pagan
         un vuelo completo de <b id="a-origen">Maracaibo</b> a <b id="a-destino">Caracas</b>,
@@ -1042,7 +1047,7 @@
     <!-- ── Tu oncovuelo: el proceso, no sólo el número ────────────────────
          La persona puso plata y quiere saber en qué anda. Un porcentaje no
          cuenta nada; las etapas sí: dónde está hoy su vuelo y qué falta. -->
-    <section class="vuelo" id="vuelo" aria-labelledby="t-vuelo">
+    <section class="vuelo enPapel" id="vuelo" aria-labelledby="t-vuelo">
       <h2 id="t-vuelo">Tu oncovuelo</h2>
       <p id="vuelo-nota">Estamos reuniendo los Héroes de Rescate para la primera ruta.</p>
 
@@ -1114,7 +1119,7 @@
          El de quien la trajo existe porque el `?de=` del enlace se pierde con
          una facilidad que sorprende — se comparte por WhatsApp, el otro lo
          abre, lo cierra, y vuelve tecleando la dirección. -->
-    <section class="tripu" id="tripu" hidden aria-labelledby="t-tripu">
+    <section class="tripu enPapel" id="tripu" hidden aria-labelledby="t-tripu">
       <h2 id="t-tripu">Tu código de tripulación</h2>
       <p class="tripu-bajada">Quien entre con este código viaja contigo. Puedes
         dictarlo por teléfono o compartir tu enlace.</p>
@@ -1155,7 +1160,7 @@
          rápida de que lo niegue para siempre: el navegador recuerda el «no» y
          no vuelve a preguntar. Se ofrece cuando la persona ya tiene algo que
          esperar, que es cuando la respuesta va a ser «sí». -->
-    <section class="avisos" id="avisos" hidden aria-labelledby="t-avisos">
+    <section class="avisos enPapel" id="avisos" hidden aria-labelledby="t-avisos">
       <h2 id="t-avisos">¿Te avisamos cuando despegue?</h2>
       <p class="avisos-bajada">Una notificación cuando tu ruta cambie de etapa —y
         otra cuando llegue—. Nada más: ni promociones, ni recordatorios, ni nada
@@ -1168,7 +1173,7 @@
          El título no es competitivo a propósito: esta campaña es sobre niños
          con cáncer y «los que van ganando» estaría fuera de lugar. Se nombra
          lo que hicieron, no el puesto. -->
-    <section class="rank" id="rank" hidden aria-labelledby="t-rank">
+    <section class="rank enPapel" id="rank" hidden aria-labelledby="t-rank">
       <h2 id="t-rank">Oncoaliados que más suman</h2>
       <p class="rank-bajada">Personas que trajeron a otras, y esas otras
         adoptaron su Héroe de Rescate.</p>
@@ -1180,7 +1185,7 @@
     <!-- ── Sumar más ───────────────────────────────────────────────────────
          Las salidas que pidió el cliente, siempre a la vista y no sólo al
          cerrar la ruta: otro Héroe para uno, o uno regalado a otra persona. -->
-    <section class="tienda" id="tienda" aria-labelledby="t-tienda">
+    <section class="tienda enPapel" id="tienda" aria-labelledby="t-tienda">
       <h2 id="t-tienda">Suma otro Héroe</h2>
       <p id="tienda-texto">Elige lo que quieras y te abrimos WhatsApp con el pedido ya escrito.</p>
       <div id="productos"></div>
@@ -1199,7 +1204,7 @@
     <!-- ── La red completa ─────────────────────────────────────────────────
          Da escala y da el motivo para volver: la ruta de esta persona es una
          de seis. Los códigos son los que la campaña ya publica. -->
-    <section class="red" aria-labelledby="t-red">
+    <section class="red enPapel" aria-labelledby="t-red">
       <h2 id="t-red">La red completa</h2>
       <p>Esta es la Ruta 1. Faltan cinco por financiar.</p>
       <ol class="rutas">
@@ -1214,7 +1219,7 @@
 
     <!-- ── Quién opera esto ────────────────────────────────────────────────
          La pregunta real de alguien que ya pagó es «¿esto es serio?». -->
-    <section class="quien" aria-labelledby="t-quien">
+    <section class="quien enPapel" aria-labelledby="t-quien">
       <h2 id="t-quien">Quién vuela esta ruta</h2>
       <ul class="credenciales">
         <li><b>Más de 80 años</b><span>de historia</span></li>
@@ -1226,7 +1231,7 @@
         <button type="button" id="btn-ayuda">Escríbenos y lo revisamos</button></p>
     </section>
 
-    <section class="empresas" id="empresas" aria-labelledby="t-empresas">
+    <section class="empresas enPapel" id="empresas" aria-labelledby="t-empresas">
       <h2 id="t-empresas">¿Vienes de una empresa?</h2>
       <p>Tres formas de que tu empresa sume a la campaña.</p>
       <button class="plan" type="button" data-plan="padrino">
@@ -1248,7 +1253,7 @@
          nadie: guardar la app en el teléfono es lo que hace que la persona
          vuelva, así que tiene que estar siempre a la vista. Se puede cerrar, y
          cerrada no vuelve a aparecer —insistir con esto es molestar—. -->
-    <section class="instalar" id="instalar" hidden aria-labelledby="instalar-titulo">
+    <section class="instalar enPapel" id="instalar" hidden aria-labelledby="instalar-titulo">
       <div class="instalar-texto">
         <h2 id="instalar-titulo">Guárdalo en tu teléfono</h2>
         <p id="instalar-texto">Ábrelo como una aplicación, sin buscar el enlace cada vez.</p>
