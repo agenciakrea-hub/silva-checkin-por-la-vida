@@ -972,26 +972,14 @@
 
     var ol = $('rank-lista');
     ol.textContent = '';
-    /* ⚠️ PODIO DE TRES, EL RESTO PLEGADO. La lista entera de ocho, plana y
-       seguida, no dejá ver que había un podio ni que había más gente: era una
-       tabla. Con los tres primeros destacados y el resto detrás de un
-       desplegable, se entiende de un vistazo que estás viendo la punta y que
-       abajo sigue. Y se ve **cuánta** gente más hay, que es lo que hace que
-       alguien quiera entrar. */
-    var PODIO = 3;
-    var sobran = Math.max((r.total || r.lista.length) - PODIO, 0);
-    var resto = $('rank-resto'), mas = $('rank-resto-lista'), sum = $('rank-resto-sum');
-    if (resto) {
-      resto.hidden = sobran <= 0;
-      resto.open = false;
-      if (sum) sum.textContent = sobran === 1
-        ? 'Ver a la otra persona de la lista'
-        : 'Ver a las otras ' + sobran + ' personas de la lista';
-      if (mas) mas.textContent = '';
-    }
-    r.lista.forEach(function (p, i) {
+    /* ⚠️ CUATRO, Y NADA MÁS. Ni botón de «ver todo» ni texto que se expande:
+       el título dice «Top 4» y el componente muestra cuatro, así que no falta
+       nada. La escala la sugiere la estructura — tres medallas, un cuarto
+       lugar sin medalla y, debajo del corte, el lugar vacío de quien mira. */
+    var TOPE_VISIBLE = 4;
+    r.lista.slice(0, TOPE_VISIBLE).forEach(function (p, i) {
       var li = document.createElement('li');
-      if (i < PODIO) li.setAttribute('data-podio', String(i + 1));
+      li.setAttribute('data-podio', String(i + 1));
       if (p.yo) li.setAttribute('data-yo', '');
       var n = document.createElement('span');
       n.className = 'rank-nombre';
@@ -1005,7 +993,7 @@
       c.appendChild(b);
       c.appendChild(document.createTextNode(p.cuantos === 1 ? ' a bordo' : ' a bordo'));
       li.appendChild(n); li.appendChild(c);
-      (i < PODIO || !mas ? ol : mas).appendChild(li);
+      ol.appendChild(li);
     });
 
     var mas = $('rank-mas');
@@ -1018,19 +1006,23 @@
 
     /* A quien no entró en la lista se le dice dónde está y cuánto le falta.
        Un ranking que sólo muestra a los de arriba no le sirve a nadie más. */
-    var vos = $('rank-vos');
-    var estaArriba = r.lista.some(function (p) { return p.yo; });
+    /* ⚠️ EL COPY COMPITE, NO CONSUELA. Decía «esta lista te espera», que es
+       amable y no mueve a nadie. Un ranking funciona cuando dice **cuánto
+       falta para entrar**: ahí la lista deja de ser una vitrina y pasa a ser
+       algo en lo que se puede escalar. */
+    var vos = $('rank-vos'), vosTxt = $('rank-vos-txt');
+    if (!vos || !vosTxt) return;
+    var estaArriba = r.lista.slice(0, TOPE_VISIBLE).some(function (p) { return p.yo; });
     if (estaArriba) { vos.hidden = true; return; }
-    if (r.miPuesto > 0) {
-      vos.hidden = false;
-      vos.textContent = 'Tú vas ' + r.miCuenta + (r.miCuenta === 1 ? ' a bordo' : ' a bordo')
-        + (r.faltanPara > 0
-            ? ', y con ' + r.faltanPara + (r.faltanPara === 1 ? ' más entras' : ' más entras') + ' a esta lista.'
-            : '.');
+    vos.hidden = false;
+    if (r.miCuenta > 0) {
+      var falta = Math.max((r.lista[TOPE_VISIBLE - 1] || {}).cuantos - r.miCuenta + 1, 1);
+      vosTxt.innerHTML = 'Vas <b>' + r.miCuenta + ' a bordo</b>. Con '
+        + (falta === 1 ? '<b>una persona m\u00e1s</b> entras' : '<b>' + falta + ' m\u00e1s</b> entras')
+        + ' al Top 4.';
     } else {
-      vos.hidden = false;
-      vos.textContent = 'Todavía no trajiste a nadie que haya activado su pase. '
-        + 'Comparte tu código y esta lista te espera.';
+      vosTxt.innerHTML = 'Todav\u00eda no has sumado a nadie. <b>Comparte tu c\u00f3digo</b>, '
+        + 'empieza a escalar posiciones y compite por un lugar en el Top 4.';
     }
   }
 
@@ -1142,6 +1134,34 @@
     if (!codigo) { $('tripu').hidden = true; return; }
     $('tripu').hidden = false;
     $('tripu-codigo').textContent = codigo;
+
+    /* ⚠️ CUÁNTA GENTE ENTRÓ CON SU CÓDIGO, acá mismo. El número existía en el
+       servidor —`invitados` e `invitadosABordo`, recalculados en cada alta— y
+       la app sólo lo usaba para las misiones y el ranking: en el bloque del
+       código, que es donde alguien va a mirar después de compartirlo, no había
+       nada. Un código sin contador no se comparte dos veces.
+       Se muestran los DOS números porque significan cosas distintas: cuántos
+       entraron, y cuántos de ésos además activaron — que son los que cuentan
+       para el ranking. */
+    var conteo = $('tripu-conteo');
+    if (conteo) {
+      var abordo = Number(yo && yo.tripulacion) || 0;
+      var entraron = Number(yo && yo.tripulacionRegistrados) || 0;
+      conteo.hidden = false;
+      if (entraron === 0) {
+        conteo.innerHTML = '<b>0</b> personas han entrado con tu c\u00f3digo todav\u00eda.';
+      } else {
+        var pendientes = Math.max(entraron - abordo, 0);
+        conteo.innerHTML = '<b>' + entraron + '</b> '
+          + (entraron === 1 ? 'persona entr\u00f3' : 'personas entraron') + ' con tu c\u00f3digo'
+          + (abordo > 0 ? ', y <b>' + abordo + '</b> ' + (abordo === 1 ? 'activ\u00f3' : 'activaron')
+                          + ' su pase.' : '.')
+          + (pendientes > 0
+              ? ' <span class="tripu-pend">' + pendientes + ' sin activar: cuando lo hagan, '
+                + 'suman a tu posici\u00f3n.</span>'
+              : '');
+      }
+    }
 
     /* ⚠️ SIN EL PASE ACTIVADO NO SE ENTRA AL RANKING, y hay que decirlo con
        todas las letras. El ranking se llama «oncoaliados» y un oncoaliado es
