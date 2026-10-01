@@ -316,6 +316,16 @@
   .vuelo h2{font:700 1.4rem/1.1 var(--titulo);text-transform:uppercase;margin:0 0 6px;
             letter-spacing:.02em;}
   .vuelo > p{margin:0 0 18px;font-size:.95rem;color:var(--ink);}
+  /* ⚠️ VA CON `>` Y DOS CLASES PORQUE `.vuelo > p` LE GANABA. Es hijo directo
+     de la tarjeta, así que hereda esa regla y con una sola clase (0,1,0) queda
+     por debajo de (0,1,1) y se pierden el fondo y el margen.
+     El blanco sobre el celeste de la tarjeta es el mismo recurso que ya usa
+     `.proximo` acá adentro: es el modo que tiene esta sección de destacar algo
+     sin agregar un color nuevo. */
+  .vuelo > .vuelo-llave{margin:0 0 18px;padding:14px 16px;background:#fff;
+                        border-radius:12px;font:400 .92rem/1.5 var(--sans);
+                        color:var(--ink);}
+  .vuelo > .vuelo-llave b{font-weight:700;color:var(--navy);}
 
   /* Línea de tiempo vertical. La etapa de hoy es la única con peso: las
      anteriores están hechas y las siguientes todavía no son noticia. */
@@ -463,6 +473,12 @@
   .mis-cuerpo b{display:block;font:600 1rem/1.3 var(--sans);color:#fff;}
   .mis[data-hecha] .mis-cuerpo b{color:#ffeeda;}
   .mis-cuerpo p{margin:2px 0 0;font:400 .9rem/1.45 var(--sans);color:#ffeeda;}
+  /* ⚠️ SÓLO EN LA TARJETA BLOQUEADA, Y NO ES UN GUSTO. Ahí el fondo pasa a
+     #8a6a4e y el #ffeeda de arriba cae a 4,34:1 sobre él: a 14,4 px la AA pide
+     4,5 y axe lo marca en los cuatro textos. El blanco puro da 4,93:1 sobre ese
+     mismo marrón. La regla va acotada al estado bloqueado porque sobre el fondo
+     del estado normal el crema ya pasa y es el tono de la tarjeta. */
+  .misiones[data-bloqueada] .mis-cuerpo p{color:#fff;}
   .mis-accion{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;
               min-height:44px;padding:0 18px;border-radius:999px;border:0;cursor:pointer;
               font:600 .95rem/1 var(--sans);background:#fff;color:var(--orange-papel);}
@@ -1169,9 +1185,25 @@
     <!-- ── Tu oncovuelo: el proceso, no sólo el número ────────────────────
          La persona puso plata y quiere saber en qué anda. Un porcentaje no
          cuenta nada; las etapas sí: dónde está hoy su vuelo y qué falta. -->
+    <!-- ⚠️ NACE SIN EL POSESIVO, Y ES A PROPÓSITO. Decía «Tu oncovuelo» fijo en
+         el HTML: era la única sección del grupo que no miraba si la persona
+         activó su pase, así que le decía «tuyo» a cualquiera que abriera la
+         app. El respaldo tiene que ser el caso más común —nadie activado, ni
+         siquiera registrado— y `pintarActivacion` le pone el «Tu» a quien se lo
+         ganó. Al revés, quien nunca completa el formulario no pasa por ninguna
+         función de pintado y se queda con lo que diga el HTML. -->
     <section class="vuelo enPapel" id="vuelo" aria-labelledby="t-vuelo">
-      <h2 id="t-vuelo">Tu oncovuelo</h2>
+      <h2 id="t-vuelo">El oncovuelo</h2>
       <p id="vuelo-nota">Estamos reuniendo los Héroes de Rescate para la primera ruta.</p>
+      <!-- Las etapas y el avance se quedan a la vista aunque falte activar: son
+           de la ruta, son ciertos para todos, y son lo que da ganas de activar.
+           Lo que cambia es de quién es el vuelo. -->
+      <!-- Corto a propósito: «el código que viene con tu Héroe de Rescate»
+           ya está dos veces más abajo, en la llave de las misiones y en la
+           primera misión. Tres explicaciones iguales en una pantalla se leen
+           como relleno. Esta sólo cierra la promesa del título. -->
+      <p class="vuelo-llave" id="vuelo-llave"><b>Activa tu Boarding Pass</b> y
+        esta ruta pasa a ser tuya.</p>
 
       <!-- ⚠️ ESTA LÍNEA EXISTE PORQUE LA HOJA «PARECÍA NO FUNCIONAR».
            Krea editaba la pestaña `vuelo` y no veía el cambio. No era un
@@ -1220,12 +1252,16 @@
     <!-- ── Misiones ────────────────────────────────────────────────────────
          La mecánica de juego que pidió el cliente, sin puntos ni insignias:
          cosas concretas que hacen avanzar la ruta, con su estado a la vista.
-         La primera nace cumplida a propósito — quien llega acá ya activó su
-         pase, y empezar con algo logrado es lo que hace que quiera seguir. -->
+         ⚠️ EL RESPALDO ES «0 DE 4», Y ACÁ DECÍA «1». El comentario que lo
+         justificaba —«la primera nace cumplida a propósito, quien llega acá ya
+         activó su pase»— daba por cierto algo que no lo es: a esta pantalla
+         llega también quien sólo completó el formulario. El respaldo tiene que
+         ser el estado que no afirma nada; el «1» lo pone `pintarMisiones`
+         cuando hay una activación de verdad. -->
     <section class="misiones" id="misiones" hidden aria-labelledby="t-misiones">
       <div class="misiones-cab">
         <h2 id="t-misiones">Tus misiones</h2>
-        <p class="misiones-cuenta"><b id="mis-hechas">1</b> de <span id="mis-total">4</span></p>
+        <p class="misiones-cuenta"><b id="mis-hechas">0</b> de <span id="mis-total">4</span></p>
       </div>
       <div class="mis-barra" id="mis-barra" aria-hidden="true"></div>
       <p class="misiones-llave" id="misiones-llave" hidden>Estas son las misiones
@@ -1247,13 +1283,17 @@
         dictarlo por teléfono o compartir tu enlace.</p>
       <p class="tripu-codigo"><b id="tripu-codigo">—</b></p>
       <p class="tripu-conteo" id="tripu-conteo" role="status" hidden></p>
-      <!-- Quien todavía no activó su pase ve por qué su botón está apagado, y
-           qué sí puede hacer. Un botón deshabilitado sin explicación se lee
-           como un error de la app. -->
+      <!-- ⚠️ ESTE PÁRRAFO DECÍA LO CONTRARIO HASTA EL 2026-10-01: que para
+           aparecer en el ranking «necesitas activar tu Boarding Pass». Era
+           cierto —el servidor filtraba por `activo`— y dejó de serlo cuando
+           Krea abrió el ranking a quien todavía no activó. Ahora no pone
+           ninguna condición: dice que las dos cosas, el código y el ranking,
+           funcionan desde ya. Si alguna vez se vuelve a poner el filtro en
+           `armarRanking`, este texto vuelve atrás con él. -->
       <p class="tripu-falta" id="tripu-falta" hidden><b>Tu código ya funciona</b>:
-        puedes repartirlo y quien entre con él queda contigo. Lo único que falta
-        es que aparezcas entre los <b>oncoaliados que más suman</b>, y para eso
-        necesitas activar tu Boarding Pass con el código de tu Héroe.</p>
+        puedes repartirlo desde ahora, quien entre con él queda contigo, y lo que
+        traigas <b>cuenta para tu lugar en el Top 4</b> aunque todavía no hayas
+        activado tu Boarding Pass.</p>
       <div class="tripu-botones">
         <button class="btn btn-2" type="button" id="btn-copiar-codigo">Copiar mi código</button>
         <button class="btn btn-1" type="button" id="btn-invitar-tripu">Invitar con mi código</button>
@@ -1292,10 +1332,13 @@
       <p class="aviso" id="avisos-aviso" role="status"></p>
     </section>
 
-    <!-- ── Quiénes más suman ───────────────────────────────────────────────
-         El título no es competitivo a propósito: esta campaña es sobre niños
-         con cáncer y «los que van ganando» estaría fuera de lugar. Se nombra
-         lo que hicieron, no el puesto. -->
+    <!-- ── Top 4 ────────────────────────────────────────────────────────────
+         ⚠️ Acá decía «el título no es competitivo a propósito» y siguió
+         diciéndolo después de que el título pasara a ser «Top 4». El motivo que
+         daba —campaña sobre niños con cáncer, «los que van ganando» fuera de
+         lugar— está anotado en el plan como pedido del cliente y no se borra.
+         Krea pidió el podio el 2026-09-30; ver el docblock de `pintarRanking`
+         en `app/app.js` para qué se revierte si Rafael lo objeta. -->
     <section class="rank enPapel" id="rank" hidden aria-labelledby="t-rank">
       <!-- ⚠️ EL TÍTULO DICE «TOP 4», y eso es lo que hace todo el trabajo: un
            componente que se llama «los que más suman» y muestra cuatro parece

@@ -288,18 +288,27 @@
        sí, porque el servidor manda el total de registrados, no la diferencia. */
     var pendientes = Math.max((Number(yo && yo.tripulacionRegistrados) || 0) - n, 0);
     var regalo = leer(K_REGALO, null) === 'si';
-    /* ⚠️ EL NOMBRE ALCANZA. Quien completó el formulario ya activó su pase,
-       aunque el servidor tarde veinte segundos en devolverle un id. Atando
-       esta misión al id, el contador le decía «0 de 4» justo en el momento en
-       que acababa de hacer la primera — que es exactamente lo contrario de lo
-       que la mecánica busca. */
-    var tienePase = !!(yo && (yo.ticket || yo.id || yo.nombre || yo.nombreCompleto));
+    /* ⚠️ LA MISIÓN USA EL MISMO CRITERIO QUE LA LLAVE, Y NO PUEDE SER OTRO.
+       Decía «el nombre alcanza» y aceptaba `yo.nombre`, que lo tiene cualquiera
+       que completó el formulario: la tarjeta salía bloqueada con la cinta
+       «Activa tu pase» y adentro la primera misión aparecía tildada diciendo
+       «Listo: ya eres pasajero de honor». La app se contradecía a sí misma a
+       tres centímetros de distancia. Registrarse no es activar — lo dice
+       `pintarActivacion` dos funciones más abajo— y el único dato que prueba
+       una activación es `activo`. La carrera que el criterio laxo quería
+       evitar (20 s de Apps Script en frío diciéndole «0 de 4» a quien acaba de
+       activar) la resuelve `yoLocal`, que ahora deriva `activo` de
+       `perfil.codigo`: eso se escribe sólo cuando el servidor confirmó. */
+    var tienePase = conLlave;
     var compro = !!(yo && yo.ticket);
 
     var lista = [
+      /* El texto era uno solo y en pasado —«Listo: ya eres pasajero de honor»—,
+         así que también felicitaba a quien no había activado nada. */
       { hecha: tienePase,
         titulo: 'Activa tu Boarding Pass',
-        texto: 'Listo: ya eres pasajero de honor de esta ruta.' },
+        texto: tienePase ? 'Listo: ya eres pasajero de honor de esta ruta.'
+                         : 'Escribe el código de tu Héroe en el recuadro de arriba.' },
 
       /* ⚠️ «2 O MÁS», NO «2». El título decía «Suma 2 personas» y eso pone un
          techo donde no lo hay: quien llevaba cinco veía la misma tilde que
@@ -532,6 +541,27 @@
     var aporte = document.querySelector('.aporte');
     if (aporte) aporte.hidden = !activo;
 
+    /* ⚠️ EL «TU» DEL VUELO SE GANA ACTIVANDO. La sección era la única del grupo
+       que no miraba `activo`: su título estaba escrito fijo en el HTML y le
+       decía «Tu oncovuelo» a cualquiera que abriera la app, incluido quien
+       apenas dejó sus datos en el formulario. No se oculta —las etapas y el
+       avance son de la ruta y son ciertos para todos, y esconderlos le saca a
+       quien se registró lo único que le da ganas de activar—: lo que se va es
+       el posesivo, y en su lugar aparece cómo conseguirlo. */
+    /* ⚠️ CON GUARDA, POR LA MISMA RAZÓN QUE `al()` EXISTE (ver su comentario).
+       `#vuelo-llave` es un elemento NUEVO: al publicar, la primera visita de
+       cada persona recibe el `index.html` viejo con el `app.js` nuevo —el
+       service worker sirve caché primero, y GitHub Pages encima manda
+       `max-age=600`—. Sin esta guarda, `$('vuelo-llave')` es `null`,
+       `.hidden` revienta, y la excepción sube por `pintarPersona` hasta
+       `arrancar()`, que la llama FUERA del `.then()`: se corta antes del
+       `fetch`, así que la app no habla nunca con el servidor y tampoco
+       reintenta, porque los reintentos los agenda `arrancar`. Le pasaría sólo
+       a quien ya completó el formulario, o sea a los que aportaron. */
+    var tVuelo = $('t-vuelo'), llaveVuelo = $('vuelo-llave');
+    if (tVuelo) tVuelo.textContent = activo ? 'Tu oncovuelo' : 'El oncovuelo';
+    if (llaveVuelo) llaveVuelo.hidden = activo;
+
     /* ⚠️ LAS MISIONES SE VEN SIEMPRE, BLOQUEADAS SI FALTA ACTIVAR. Antes no
        aparecían: quien no había activado no tenía forma de saber qué se estaba
        perdiendo, que es justamente lo que da ganas de activar. */
@@ -750,12 +780,18 @@
     // momento de más entusiasmo.
     var perfil = leer(K_PERFIL, null);
     if (perfil && perfil.nombre) {
+      /* ⚠️ `activo` SALE DE `perfil.codigo`, Y ESE DATO SÓLO EXISTE SI EL
+         SERVIDOR CONFIRMÓ UNA ACTIVACIÓN. Se escribe en un solo lugar —la
+         respuesta `ok` de `action:'activar'`—; el formulario del sitio guarda
+         `{nombre, ticket}` y nunca un código, así que no hay forma de que esto
+         dé verdadero para quien apenas se registró. Antes no se derivaba nada y
+         el teléfono asumía «no activa» siempre: quien ya tenía su pase abría la
+         app y veía la cinta «Activa tu pase» y el formulario de activación
+         durante los veinte segundos que Apps Script tarda en despertar. */
       var yoLocal = { nombre: primerNombre(perfil.nombre), nombreCompleto: perfil.nombre,
                       ticket: perfil.ticket || '', id: (leer(K_YO, {}) || {}).id || '',
+                      codigo: perfil.codigo || '', activo: !!perfil.codigo,
                       tripulacion: 0 };
-      /* Lo que el teléfono sabe no incluye si está activa: eso lo dice el
-         servidor. Hasta que conteste se asume que falta, que es el caso más
-         probable de alguien que acaba de llegar. */
       pintarPersona(yoLocal);
       /* ⚠️ Y LAS MISIONES TAMBIÉN. `pintarPersona` muestra el bloque, pero
          dibujarlo es otra función: sin esta línea, quien se acababa de
@@ -772,9 +808,20 @@
     }
 
     /* El ranking de la última vez, mientras el servidor despierta. Se corrige
-       solo cuando contesta; si no contesta, esto es lo último que fue cierto. */
+       solo cuando contesta; si no contesta, esto es lo último que fue cierto.
+
+       ⚠️ SÓLO SI ES DE QUIEN ESTÁ MIRANDO. El ranking guardado trae marcada la
+       fila de «tú» y el bloque «vas N a bordo», y vive 24 h. En un teléfono de
+       casa con dos personas registradas —el caso que `entrar()` atiende a
+       propósito— Beto recuperaba su pase y durante los veinte segundos que
+       tarda Apps Script en frío veía la fila de Ana marcada «· tú» y los
+       números de Ana como propios. Se guarda de quién es y se descarta si no
+       coincide: veinte segundos sin ranking es mejor que veinte segundos con el
+       de otra persona. */
     var rGuardado = leer(K_RANKING, null);
-    if (rGuardado && rGuardado.t && (Date.now() - rGuardado.t) < RANKING_VIVE_MS) {
+    var idAhora = (leer(K_YO, {}) || {}).id || '';
+    if (rGuardado && rGuardado.t && (Date.now() - rGuardado.t) < RANKING_VIVE_MS
+        && (rGuardado.de || '') === idAhora) {
       pintarRanking(rGuardado.r, true);
     }
 
@@ -956,9 +1003,16 @@
   /**
    * Quiénes más gente trajeron.
    *
-   * ⚠️ SIN MEDALLAS NI PUNTOS. Es una campaña sobre niños con cáncer: un podio
-   * con oro y plata estaría fuera de lugar, y el cliente lo pidió así. Se
-   * nombra lo que la persona hizo —«trajo a 3»— y no el puesto que ocupa.
+   * ⚠️ HOY SÍ HAY PODIO, Y ANTES ESTABA PROHIBIDO. Este comentario decía «SIN
+   * MEDALLAS NI PUNTOS… y el cliente lo pidió así», y sobrevivió intacto al
+   * commit que dibujó los tres aros. Queda la historia porque el motivo original
+   * no era un capricho: es una campaña sobre niños con cáncer y un oro-plata-
+   * bronce puede leerse fuera de lugar.
+   * Lo que cambió: Krea pidió el 2026-09-30, en seis puntos, «TOP 4
+   * ONCOALIADOS» con medallas minimalistas y la cuarta deliberadamente pobre.
+   * Se hizo así. **La tensión con lo anotado como pedido del cliente sigue
+   * abierta**: si Rafael lo ve y lo objeta, lo que se revierte es el CSS de
+   * `.rank-lista li[data-podio]` y este título, no la estructura.
    */
   function pintarRanking(r, deLaMemoria) {
     var caja = $('rank');
@@ -968,7 +1022,10 @@
        arranque vuelve a mostrar lo último bueno en vez de nada. */
     if (!r || !r.lista || !r.lista.length) { caja.hidden = true; return; }
     caja.hidden = false;
-    if (!deLaMemoria) { escribir(K_RANKING, { t: Date.now(), r: r }); }
+    // `de` es lo que permite descartarlo si lo abre otra persona (ver arriba).
+    if (!deLaMemoria) {
+      escribir(K_RANKING, { t: Date.now(), r: r, de: (leer(K_YO, {}) || {}).id || '' });
+    }
 
     var ol = $('rank-lista');
     ol.textContent = '';
@@ -991,18 +1048,30 @@
       var b = document.createElement('b');
       b.textContent = String(p.cuantos);
       c.appendChild(b);
-      c.appendChild(document.createTextNode(p.cuantos === 1 ? ' a bordo' : ' a bordo'));
+      // «1 a bordo» y «3 a bordo» se dicen igual: el ternario que había acá
+      // tenía las dos ramas idénticas.
+      c.appendChild(document.createTextNode(' a bordo'));
       li.appendChild(n); li.appendChild(c);
       ol.appendChild(li);
     });
 
+    /* ⚠️ SE CUENTA CONTRA `TOPE_VISIBLE`, NO CONTRA `r.restantes`. El servidor
+       calcula `restantes` como «los que quedaron fuera de los OCHO que mando»,
+       y esta lista muestra CUATRO: la línea se comía exactamente a los cuatro
+       del medio. Con catorce oncoaliados decía «y 6 más» habiendo diez fuera, y
+       con cinco —el estado de hoy— `restantes` da 0 y la línea desaparecía: la
+       quinta persona quedaba invisible para todos, incluida ella misma. `total`
+       se agregó en el commit anterior justo para esto y no lo usaba nadie.
+       El respaldo a `r.lista.length` es para un servidor viejo que no mande
+       `total`: se queda corto, pero nunca inventa gente que no existe. */
     var mas = $('rank-mas');
-    if (r.restantes > 0) {
+    var fuera = (typeof r.total === 'number' ? r.total : r.lista.length) - TOPE_VISIBLE;
+    if (mas && fuera > 0) {
       mas.hidden = false;
-      mas.textContent = r.restantes === 1
+      mas.textContent = fuera === 1
         ? 'Y un oncoaliado más que también trajo gente.'
-        : 'Y ' + r.restantes + ' oncoaliados más que también trajeron gente.';
-    } else mas.hidden = true;
+        : 'Y ' + fuera + ' oncoaliados más que también trajeron gente.';
+    } else if (mas) mas.hidden = true;
 
     /* A quien no entró en la lista se le dice dónde está y cuánto le falta.
        Un ranking que sólo muestra a los de arriba no le sirve a nadie más. */
@@ -1016,13 +1085,27 @@
     if (estaArriba) { vos.hidden = true; return; }
     vos.hidden = false;
     if (r.miCuenta > 0) {
-      var falta = Math.max((r.lista[TOPE_VISIBLE - 1] || {}).cuantos - r.miCuenta + 1, 1);
+      /* ⚠️ EL `|| {}` DE ANTES NO CUBRÍA NADA, LO DISFRAZABA: evitaba el
+         TypeError y dejaba pasar `undefined - n + 1`, o sea `NaN`, que
+         `Math.max(NaN, 1)` devuelve tal cual. El texto salía «Con NaN más
+         entras al Top 4». Hoy no se alcanza sólo porque el `TOPE` del servidor
+         (8) es mayor que `TOPE_VISIBLE`; bajarlo a 3 en `codigo.gs` —otro
+         archivo, que se despliega aparte— lo dispara sin que la app se entere. */
+      var cuarta = r.lista[TOPE_VISIBLE - 1];
+      var falta = cuarta ? Math.max(cuarta.cuantos - r.miCuenta + 1, 1) : 1;
       vosTxt.innerHTML = 'Vas <b>' + r.miCuenta + ' a bordo</b>. Con '
         + (falta === 1 ? '<b>una persona m\u00e1s</b> entras' : '<b>' + falta + ' m\u00e1s</b> entras')
         + ' al Top 4.';
     } else {
-      vosTxt.innerHTML = 'Todav\u00eda no has sumado a nadie. <b>Comparte tu c\u00f3digo</b>, '
-        + 'empieza a escalar posiciones y compite por un lugar en el Top 4.';
+      /* ⚠️ NO DICE «NO HAS SUMADO A NADIE», Y ES POR UNA CONTRADICCIÓN REAL.
+         `miCuenta` es 0 también para quien trajo gente pero no activó su propio
+         pase: el servidor no lo lista. A esa persona el contador de arriba le
+         decía «3 personas entraron con tu código, y 2 activaron su pase» y este
+         párrafo, tres centímetros más abajo, «todavía no has sumado a nadie».
+         Lo único cierto en las dos situaciones es que no está en el Top 4, y
+         eso es lo que dice ahora. */
+      vosTxt.innerHTML = 'Todav\u00eda no entras al Top 4. <b>Comparte tu c\u00f3digo</b> '
+        + 'y empieza a escalar posiciones.';
     }
   }
 
@@ -1147,9 +1230,21 @@
     if (conteo) {
       var abordo = Number(yo && yo.tripulacion) || 0;
       var entraron = Number(yo && yo.tripulacionRegistrados) || 0;
+      /* ⚠️ LO QUE EL EQUIPO CARGÓ A MANO SE DICE ACÁ, O LOS DOS NÚMEROS SE
+         CONTRADICEN. El ranking cuenta `invitadosABordo + ajuste` y esto cuenta
+         sólo lo que entró por el código: sin nombrar el ajuste, la pantalla
+         decía «2 personas entraron con tu código, y 2 activaron su pase» y, tres
+         centímetros abajo, «Vas 6 a bordo». Es la misma contradicción que esta
+         fase vino a sacar de la hoja, reaparecida dentro de la app. */
+      var ajuste = Math.max(Number(yo && yo.ajuste) || 0, 0);
       conteo.hidden = false;
+      var sumado = ajuste > 0
+        ? ' <span class="tripu-pend">Y <b>' + ajuste + '</b> '
+          + 'm\u00e1s que carg\u00f3 el equipo: '
+          + 'en el Top 4 cuentas <b>' + (abordo + ajuste) + '</b>.</span>'
+        : '';
       if (entraron === 0) {
-        conteo.innerHTML = '<b>0</b> personas han entrado con tu c\u00f3digo todav\u00eda.';
+        conteo.innerHTML = '<b>0</b> personas han entrado con tu c\u00f3digo todav\u00eda.' + sumado;
       } else {
         var pendientes = Math.max(entraron - abordo, 0);
         conteo.innerHTML = '<b>' + entraron + '</b> '
@@ -1157,18 +1252,23 @@
           + (abordo > 0 ? ', y <b>' + abordo + '</b> ' + (abordo === 1 ? 'activ\u00f3' : 'activaron')
                           + ' su pase.' : '.')
           + (pendientes > 0
-              ? ' <span class="tripu-pend">' + pendientes + ' sin activar: cuando lo hagan, '
-                + 'suman a tu posici\u00f3n.</span>'
-              : '');
+              /* Concordancia: era «1 sin activar: cuando lo hagan», singular y
+                 plural en la misma frase. Y no promete «tu posición», que quien
+                 no activó su propio pase todavía no tiene. */
+              ? ' <span class="tripu-pend">' + pendientes + ' sin activar: cuando '
+                + (pendientes === 1 ? 'lo haga, cuenta' : 'lo hagan, cuentan')
+                + ' para tu posici\u00f3n.</span>'
+              : '')
+          + sumado;
       }
     }
 
-    /* ⚠️ SIN EL PASE ACTIVADO NO SE ENTRA AL RANKING, y hay que decirlo con
-       todas las letras. El ranking se llama «oncoaliados» y un oncoaliado es
-       quien adoptó un Héroe: el servidor no lista a quien sólo repartió su
-       código. Dejar el botón apagado sin explicación se lee como un error de
-       la app, no como una condición. Y se aclara lo que SÍ puede hacer:
-       su código funciona igual, y compartir la campaña no depende de nada. */
+    /* ⚠️ YA NO HAY NINGUNA CONDICIÓN QUE EXPLICAR, Y EL PÁRRAFO SIGUE. Acá
+       decía «sin el pase activado no se entra al ranking», que era verdad
+       mientras `armarRanking` filtraba por `activo`; Krea sacó ese filtro el
+       2026-10-01. El recuadro se queda porque sigue haciendo falta —quien se
+       registró y no activó no tiene por qué saber que su código sirve— pero
+       ahora afirma, no condiciona. */
     var activo = !!(yo && yo.activo);
     $('tripu-falta').hidden = activo;
     /* ⚠️ EL BOTÓN DE INVITAR **NO** SE APAGA, y antes sí. Lo que el pedido dejó
@@ -1711,9 +1811,18 @@
      el latido asegurando «Al día · 09:22»** —la hora de la mañana anterior—. El
      latido existe justamente para no mentir sobre la frescura, así que mentir
      ahí es peor que no tenerlo.
-     Con tope de un minuto: sin él, cada vez que alguien cambia de app y vuelve
-     sale un pedido a Apps Script, que tiene cuota diaria y es la de todos. */
-  var TOPE_REFRESCO_MS = 60000;
+     Con tope: sin él, cada vez que alguien cambia de app y vuelve sale un
+     pedido a Apps Script, que tiene cuota diaria y es la de todos.
+     ⚠️ EL TOPE BAJÓ DE 60 s A 20 s EL 2026-10-01, y es un cambio de uso, no de
+     gusto. La hoja es el panel de control del equipo: alguien mueve la etapa
+     del vuelo o carga un ajuste, agarra el teléfono para ver si se reflejó, y
+     con un minuto de tope lo más probable era que viera el estado viejo y
+     concluyera que la hoja no funciona —que es exactamente lo que pasó—.
+     Veinte segundos cubren ese ida y vuelta y siguen cortando el goteo de
+     pedidos de quien entra y sale de la app sin parar. El servidor caliente
+     contesta en unos 3 s, así que el techo real de «lo toco y lo veo» son esos
+     20 s más la respuesta. */
+  var TOPE_REFRESCO_MS = 20000;
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) return;
     if (Date.now() - ultimoEstadoOk < TOPE_REFRESCO_MS) return;
