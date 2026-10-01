@@ -70,7 +70,13 @@
   :focus-visible{outline:3px solid var(--navy);outline-offset:3px;
                  box-shadow:0 0 0 3px var(--paper);border-radius:3px;}
   /* Sobre el navy del hero y del pie, el anillo navy no se ve: ahí va en papel. */
-  .hero :focus-visible,.pie :focus-visible,.cab :focus-visible{
+  /* ⚠️ EL HERO SALIÓ DE ESTA REGLA PORQUE YA NO ES NAVY. Ponía el anillo en
+     color papel porque el fondo era oscuro; cuando el hero pasó a `--paper`
+     quedó crema sobre crema, o sea invisible, y lo único que marcaba el foco
+     era la sombra navy pegada al botón — que en «Dossier corporativo ESG» se
+     confunde con el borde navy que ese botón ya tiene en reposo. El pie y la
+     cabecera sí siguen en navy. */
+  .pie :focus-visible,.cab :focus-visible{
     outline-color:var(--paper);box-shadow:0 0 0 3px var(--navy-deep);}
   .salto{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
   .salto:focus{position:fixed;width:auto;height:auto;clip-path:none;left:1rem;top:1rem;z-index:99;
@@ -82,8 +88,17 @@
      Más corta que la del sitio a propósito: sin el pase girando y sin el botón
      de compartir. Quien llega acá viene de una reunión o de un correo, no de
      una historia de Instagram, y no va a compartir la página desde el teléfono. */
+  /* ⚠️ LA CABECERA SE ALINEA CON `.bloque`, Y ANTES NO. Usaba el gutter pelado
+     mientras las secciones se centran dentro de 64rem: a 1440 el logo arrancaba
+     en 56 px y los títulos en 264, o sea 208 px de desfase, y a 1920 eran 448.
+     Tres ejes verticales distintos en la misma página — eso es, literalmente,
+     lo que Krea llamó «todo desalineado».
+     El `max()` replica el centrado de `.bloque` sin envolver nada en un div: la
+     barra sigue pintando de borde a borde —es sticky y el fondo tiene que
+     cruzar la pantalla— y sólo su CONTENIDO se alinea con el resto. */
   .cab{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:.75rem;
-       padding:.6rem var(--gutter);background:var(--navy-deep);
+       padding:.6rem max(var(--gutter),calc((100% - 64rem)/2 + var(--gutter)));
+       background:var(--navy-deep);
        box-shadow:0 1px 0 rgba(246,241,231,.12);}
   .cab-marca{display:flex;align-items:center;gap:.5rem;text-decoration:none;margin-right:auto;}
   .cab-marca img{height:1.75rem;width:auto;}
@@ -143,7 +158,16 @@
      En móvil el h1 daba 39,2 y el h2 32: ratio 1,22, o sea que el título de la
      página y el de cada sección se leían del mismo tamaño. Ahora 40 contra 26,4
      abajo y 68,8 contra 44,8 arriba. */
-  .bloque h2{font-size:clamp(1.65rem,3.9vw,2.8rem);margin-bottom:.6rem;letter-spacing:.005em;}
+  /* ⚠️ LA PENDIENTE DEL h2 TIENE QUE SER MENOR QUE LA DEL h1, Y ERA MAYOR.
+     `3.9vw` contra los `3.6vw` del h1: los dos `clamp()` se cruzaban y entre
+     790 y 1244 px —o sea 1024 y 1152, las dos resoluciones de una laptop de
+     oficina— CADA TÍTULO DE SECCIÓN LE GANABA AL TITULAR DE LA PÁGINA por 3 px.
+     De 1280 para arriba quedaban a 0,8 px uno de otro. El comentario de acá
+     arriba dice que el objetivo era razón 1,5 y no se alcanzaba en ningún
+     ancho: el máximo real era 1,15, y en celular.
+     Con `2.6vw` y techo 2rem la razón queda entre 1,27 y 1,42 — no llega a 1,5
+     en móvil porque ahí el h1 tiene su propio piso, pero el h2 ya no gana nunca. */
+  .bloque h2{font-size:clamp(1.5rem,2.6vw,2rem);margin-bottom:.6rem;letter-spacing:.005em;}
   .bajada{color:var(--ink);max-width:52ch;margin-bottom:2rem;font-size:1.08rem;font-weight:600;}
   .rotulo{font:600 .78rem/1.4 var(--sans);letter-spacing:.11em;text-transform:uppercase;
           color:var(--orange-papel);margin-bottom:.5rem;}
@@ -183,14 +207,20 @@
   .hero .rotulo{color:var(--orange-papel);}
 
   @media (min-width:62rem){
-    .hero .bloque{max-width:78rem;padding-top:4.4rem;padding-bottom:5rem;}
+    /* ⚠️ EL MISMO TOPE QUE `.bloque`, Y NO UNO PROPIO. Con 78rem el titular
+       empezaba 112 px a la izquierda de los títulos de sección, que es el
+       segundo de los tres ejes. Y no hacía falta el ancho extra: medido a 1440,
+       debajo del mapa sobraban 652 px de alto por 512 de ancho vacíos, el 56 %
+       del hero. El aire se gana con el padding de abajo, no con otro ancho. */
+    .hero .bloque{padding-top:4.4rem;padding-bottom:5rem;}
     .hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(21rem,.95fr);
                gap:3.6rem;align-items:start;}
     /* El mapa ocupa las tres filas de la derecha: si no, el grid lo deja
        flotando en el medio y abre huecos de 200 px arriba y abajo. */
     .rutas-mapa{grid-column:2;grid-row:1/4;}
   }
-  @media (min-width:100rem){.hero .bloque{max-width:86rem;}}
+  /* El tercer tope, que abría el desfase a 448 px en pantallas grandes. Ya no
+     existe: un solo ancho para toda la página. */
 
   /* ⚠️ EL TITULAR NO VA EN LA CONDENSADA. Big Shoulders es señalética de
      aeropuerto: funciona en el boarding pass y en la campaña, y en una
@@ -222,10 +252,22 @@
      convergiendo en Caracas, que es exactamente lo que se financia. */
   .rutas-mapa{background:#fff;border:1px solid var(--paper-edge);border-radius:18px;
               padding:1.5rem 1.6rem 1.4rem;margin-top:2.4rem;}
+  /* En celular el padding lateral le comía 51 px al diagrama, que es justo
+     donde su texto ya era el más chico de la página. */
+  @media (max-width:26rem){.rutas-mapa{padding-left:1rem;padding-right:1rem;}}
   @media (min-width:62rem){.rutas-mapa{margin-top:0;}}
   .rutas-mapa h2{font:600 .76rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
                  color:var(--ink-soft);margin:0 0 1.2rem;}
-  .rutas-svg{width:100%;height:auto;display:block;}
+  /* ⚠️ EL TEXTO DE UN SVG ESCALA CON EL `viewBox`, Y ACÁ SE IBA A LOS DOS LADOS.
+     Con `width:100%` y sin techo, los rótulos medían 7,3 px a 375 —el propio
+     archivo dice más arriba que el piso de texto funcional son 11— y 19,9 px a
+     768, donde los nombres de ciudad quedaban MÁS GRANDES que el texto corrido
+     de la página y «Caracas» empataba con los h3 de las modalidades. Un rótulo
+     de diagrama gritándole a la prosa. El rango era de 2,26×.
+     El techo acota la escala arriba; los `font-size` de adentro subieron para
+     levantar el piso. Lo que queda es un rango de 0,81 a 1,15 en vez de
+     0,73 a 1,66. */
+  .rutas-svg{width:100%;max-width:27.5rem;height:auto;display:block;margin:0 auto;}
   .rutas-pie{margin:1.2rem 0 0;padding-top:1.1rem;border-top:1px solid var(--paper-edge);
              font:400 .93rem/1.55 var(--sans);color:var(--ink);}
   .rutas-pie b{font-weight:600;color:var(--navy);}
@@ -281,7 +323,18 @@
   .modalidad li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;
                         border-radius:2px;background:var(--orange);}
   .modalidad-ruta{font-weight:700;color:var(--navy);}
-  .flexible{margin-top:1.4rem;padding:1.2rem 1.3rem;background:var(--celeste-papel);
+  /* ⚠️ FONDO PROPIO: ESTE BLOQUE PINTABA SU CAJA DEL MISMO COLOR QUE LA SECCIÓN.
+     Tenía `background:var(--celeste-papel)` dentro de `.papel`, que es
+     exactamente ese color —medido: rgb(226,243,252) contra rgb(226,243,252)—,
+     así que la caja no se veía pero su padding sí: el texto quedaba indentado
+     20,8 px respecto del h2, la bajada y las tarjetas, en los tres anchos. En
+     celular eso duplica el margen del único bloque largo de la sección y se lee
+     como un error de maquetado.
+     Y el `max-width`: sin él medía 114,7 caracteres por línea a 1440, el único
+     bloque de la página que pasa de 75.
+     (De paso, `.papel` pinta celeste y `.celeste` pinta papel: los nombres
+     están cruzados desde antes, y cambiarlos ahora tocaría las tres páginas.) */
+  .flexible{margin-top:1.4rem;padding:1.2rem 1.3rem;max-width:62ch;background:#fff;
             border-radius:12px;font-size:1rem;color:var(--navy);}
   .flexible b{font-weight:700;}
 
@@ -295,9 +348,17 @@
      tells más rápidos de interfaz generada, y `impeccable` marca cualquier
      sombra teñida como «dark glow» —también la navy—. Negro puro y al 8 %: lo
      que destaca la tarjeta es la franja de arriba, no un halo. */
-  .modelo--alto{border-color:var(--orange);box-shadow:0 8px 26px rgba(0,0,0,.08);}
-  .modelo--alto::before{content:"";position:absolute;left:-1.5px;right:-1.5px;top:-1.5px;
-                        height:4px;border-radius:14px 14px 0 0;background:var(--orange);}
+  /* ⚠️ SIN FRANJA DE 4 px, Y ES LA SEGUNDA VEZ QUE SE SACA ESTE PATRÓN. Acá
+     arriba, en `.caso`, hay un comentario contando que se quitó un
+     `border-left:3px` porque impeccable lo marca como el tell más reconocible
+     de interfaz generada — y el mismo patrón volvió como filete superior en la
+     tarjeta destacada, donde el detector lo encuentra igual (`side-tab`).
+     La tarjeta ya se destaca por lo que de verdad la distingue: el borde
+     naranja completo, la sombra, y la píldora «MAYOR IMPACTO» que dice con
+     palabras lo que el filete decía con un gesto. Un elemento que ya tiene
+     tres señales no necesita una cuarta que además es la que delata. */
+  .modelo--alto{border-color:var(--orange);border-width:2px;
+                box-shadow:0 8px 26px rgba(0,0,0,.08);}
   .modelo-n{display:flex;align-items:center;gap:.7rem;margin-bottom:.9rem;}
   .modelo-n span{font:700 .95rem/1 var(--cifra,var(--sans));letter-spacing:.08em;
                  color:var(--ink-soft);font-family:var(--sans);font-weight:700;}
@@ -309,22 +370,17 @@
      detalle a la derecha. Apilado, cada modelo medía casi 600 px y había que
      recorrer los tres enteros para comparar — que es justo lo que un comité
      hace con esta página. */
-  @media (min-width:56rem){
-    /* ⚠️ `align-content:start`. Sin eso las filas de la izquierda se reparten el
-       alto que impone la columna derecha —más larga— y aparecen dos huecos de
-       60 px: uno entre el subtítulo y el párrafo, otro entre el párrafo y el
-       botón. El espacio lo tienen que poner los márgenes, no el reparto. */
-    .modelo{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);
-            gap:0 2.6rem;padding:1.9rem 2rem;align-content:start;}
-    .modelo .btn{margin-top:1.6rem;}
-    .modelo-n{grid-column:1/-1;}
-    .modelo-cab,.modelo > p{grid-column:1;}
-    .detalle{grid-column:2;grid-row:1/6;margin-top:0;border-top:0;
-             padding-left:2.6rem;border-left:1px solid var(--paper-edge);}
-    .detalle summary{padding-top:0;}
-    .modelo dl{margin-top:1rem;}
-    .modelo .btn{grid-column:1;width:auto;justify-self:start;}
-  }
+  /* ⚠️ ESTE BLOQUE ESTABA ACÁ ARRIBA Y CUATRO DE SUS REGLAS NUNCA SE APLICABAN.
+     Las reglas base de `.detalle`, `.detalle summary` y `.modelo .btn` vienen
+     más abajo con la MISMA especificidad, así que ganaban por orden: un media
+     query no pesa más que una regla suelta. Se movió debajo de todas ellas.
+     Lo que se veía mientras tanto, y que Krea llamó «todo desalineado»:
+     un filete huérfano de 434 px cruzando la columna derecha sin alinearse con
+     nada (`border-top:0` pisado por `border-top:1px`), 19,2 px de desfase
+     vertical entre las dos columnas (`margin-top:0` pisado por `1.2rem`), y los
+     tres botones estirados a 370 px cuando el ancho natural del más corto es
+     241 (`width:auto` pisado por `width:100%`). No era criterio de diseño:
+     el navegador estaba usando una regla distinta de la que el archivo decía. */
   .modelo-cab{margin-bottom:1rem;}
   .modelo h3{font-family:var(--titulo);font-weight:700;font-size:clamp(1.5rem,4.6vw,1.9rem);
              text-transform:uppercase;color:var(--navy);letter-spacing:.01em;}
@@ -353,6 +409,51 @@
   .modelo dd{margin:.1rem 0 0;color:var(--ink);font-size:1rem;}
   .modelo .btn{margin-top:1.3rem;width:100%;}
 
+  @media (min-width:56rem){
+    /* ⚠️ `align-content:start`. Sin eso las filas de la izquierda se reparten el
+       alto que impone la columna derecha —más larga— y aparecen dos huecos de
+       60 px: uno entre el subtítulo y el párrafo, otro entre el párrafo y el
+       botón. El espacio lo tienen que poner los márgenes, no el reparto. */
+    /* ⚠️ DOS COLUMNAS SÓLO CUANDO EL DETALLE ESTÁ ABIERTO. Con dos columnas
+       siempre, la derecha tenía 44 px de contenido —una línea, «Ver qué
+       incluye»— dentro de una tarjeta de 367: el 88 % de esa columna era crema
+       vacía, en las tres tarjetas y en todos los anchos de 896 px para arriba.
+       La maqueta se había pensado mirando el estado abierto, que es el que casi
+       nadie ve: la página se publica plegada.
+       Plegada es una sola columna y el resumen queda debajo del botón, sin
+       hueco. Al abrirlo pasa a dos y el detalle ocupa la derecha, que es cuando
+       ese ancho hace falta de verdad. */
+    .modelo{display:grid;grid-template-columns:minmax(0,1fr);
+            gap:0;padding:1.9rem 2rem;align-content:start;}
+    /* ⚠️ MEDIDA DE LECTURA AL PASAR A UNA COLUMNA. Con dos, el ancho lo acotaba
+       la grilla; con una, el texto se estiró a 106 caracteres por línea a 1440,
+       y arriba de 75 el ojo pierde el renglón al volver. Los `dd` del detalle
+       abierto van aparte, porque ésos sí viven en la columna angosta. */
+    .modelo > p{max-width:68ch;}
+    .modelo:has(.detalle[open]) > p{max-width:none;}
+    .modelo .detalle dd,.modelo .detalle p{max-width:62ch;}
+    .modelo:has(.detalle[open]){grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);
+                                gap:0 2.6rem;}
+    .modelo .btn{margin-top:1.6rem;}
+    .modelo-n{grid-column:1/-1;}
+    .modelo-cab,.modelo > p{grid-column:1;}
+    /* ⚠️ `grid-row:1/6` SÓLO ABIERTO. Plegado, el panel derecho reservaba las
+       cinco filas de la columna izquierda y adentro tenía una línea de 44 px:
+       quedaban 230 px de crema vacía —el 47,6 % de la tarjeta— con un filete
+       de 1 px bajando los 275 px enteros, en las tres tarjetas y en todos los
+       anchos de 896 px para arriba. La maqueta se había diseñado mirando el
+       estado abierto, que es el que casi nadie ve. */
+    /* Plegado: una fila propia al pie, sin filete ni sangría — es un enlace de
+       utilidad, no una columna. Abierto: la derecha entera. */
+    .detalle{grid-column:1/-1;margin-top:1.2rem;border-top:1px solid var(--paper-edge);
+             padding-left:0;border-left:0;}
+    .modelo:has(.detalle[open]) .detalle{grid-column:2;grid-row:1/6;margin-top:0;
+             border-top:0;padding-left:2.6rem;border-left:1px solid var(--paper-edge);}
+    .detalle summary{padding-top:0;}
+    .modelo dl{margin-top:1rem;}
+    .modelo .btn{grid-column:1;width:auto;justify-self:start;}
+  }
+
   /* ── Espectro de atención ── */
   /* ⚠️ CON LAS FLECHAS DEL DIBUJO DEL CLIENTE. Su diagrama une los tres con
      `──►`: no son tres casos sueltos, es un espectro que va de más crítico a
@@ -378,7 +479,12 @@
      app y lo repetí igual. Acá lo que distingue a los tres casos es el número
      grande, que es lo único que tienen que leer de un vistazo. */
   .caso{padding:0;}
-  .caso-num{font:700 2.6rem/1 var(--titulo);letter-spacing:-.02em;color:var(--celeste-hondo);
+  /* ⚠️ `p.caso-num`, NO `.caso-num`. Con una sola clase (0-1-0) perdía contra
+     `.caso p` (0-1-1), que viene más abajo: el número salía a 16 px y en el gris
+     del texto corrido en vez de a 41,6 px en celeste — más chico que el `h3` que
+     tiene al lado. El comentario de acá arriba dice que es «lo único que tienen
+     que leer de un vistazo», y era lo menos visible del bloque. */
+  p.caso-num{font:700 2.6rem/1 var(--titulo);letter-spacing:-.02em;color:var(--celeste-hondo);
             margin-bottom:.35rem;}
   .caso h3{font-family:var(--sans);font-weight:700;font-size:1.22rem;color:var(--navy);
            line-height:1.3;margin-bottom:.45rem;}
@@ -554,32 +660,32 @@
         <svg class="rutas-svg" viewBox="0 0 384 232" role="img" aria-label="Seis rutas regionales convergen en Caracas: Maracaibo, Santo Domingo del Táchira, Barinas, Puerto Ayacucho, Puerto Ordaz y Güiria.">
       <path d="M152 26 C210 26, 256 67, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
       <circle cx="152" cy="26" r="3.4" fill="#1596c2"/>
-      <text x="142" y="25" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Maracaibo</text>
-      <text x="142" y="37" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVMC</text>
+      <text x="142" y="25" text-anchor="end" font-size="15" font-weight="600" fill="#0e2a5c">Maracaibo</text>
+      <text x="142" y="37" text-anchor="end" font-size="14" letter-spacing="1" fill="#5c6883">SVMC</text>
       <path d="M152 60 C210 60, 256 84, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
       <circle cx="152" cy="60" r="3.4" fill="#1596c2"/>
-      <text x="142" y="59" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Sto. Domingo del Táchira</text>
-      <text x="142" y="71" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVSO</text>
+      <text x="142" y="59" text-anchor="end" font-size="15" font-weight="600" fill="#0e2a5c">Sto. Domingo del Táchira</text>
+      <text x="142" y="71" text-anchor="end" font-size="14" letter-spacing="1" fill="#5c6883">SVSO</text>
       <path d="M152 94 C210 94, 256 101, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
       <circle cx="152" cy="94" r="3.4" fill="#1596c2"/>
-      <text x="142" y="93" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Barinas</text>
-      <text x="142" y="105" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVBI</text>
+      <text x="142" y="93" text-anchor="end" font-size="15" font-weight="600" fill="#0e2a5c">Barinas</text>
+      <text x="142" y="105" text-anchor="end" font-size="14" letter-spacing="1" fill="#5c6883">SVBI</text>
       <path d="M152 128 C210 128, 256 118, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
       <circle cx="152" cy="128" r="3.4" fill="#1596c2"/>
-      <text x="142" y="127" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Puerto Ayacucho</text>
-      <text x="142" y="139" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVPA</text>
+      <text x="142" y="127" text-anchor="end" font-size="15" font-weight="600" fill="#0e2a5c">Puerto Ayacucho</text>
+      <text x="142" y="139" text-anchor="end" font-size="14" letter-spacing="1" fill="#5c6883">SVPA</text>
       <path d="M152 162 C210 162, 256 135, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
       <circle cx="152" cy="162" r="3.4" fill="#1596c2"/>
-      <text x="142" y="161" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Puerto Ordaz</text>
-      <text x="142" y="173" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVPR</text>
+      <text x="142" y="161" text-anchor="end" font-size="15" font-weight="600" fill="#0e2a5c">Puerto Ordaz</text>
+      <text x="142" y="173" text-anchor="end" font-size="14" letter-spacing="1" fill="#5c6883">SVPR</text>
       <path d="M152 196 C210 196, 256 152, 306 108" stroke="#c9d3e6" stroke-width="1.6" fill="none"/>
       <circle cx="152" cy="196" r="3.4" fill="#1596c2"/>
-      <text x="142" y="195" text-anchor="end" font-size="12" font-weight="600" fill="#0e2a5c">Güiria</text>
-      <text x="142" y="207" text-anchor="end" font-size="10" letter-spacing="1" fill="#5c6883">SVGI</text>
+      <text x="142" y="195" text-anchor="end" font-size="15" font-weight="600" fill="#0e2a5c">Güiria</text>
+      <text x="142" y="207" text-anchor="end" font-size="14" letter-spacing="1" fill="#5c6883">SVGI</text>
       <circle cx="306" cy="108" r="7" fill="#ff9900"/>
       <circle cx="306" cy="108" r="13" fill="none" stroke="#ff9900" stroke-width="1.2" opacity=".45"/>
-      <text x="322" y="105" font-size="13" font-weight="700" fill="#0e2a5c">Caracas</text>
-      <text x="322" y="119" font-size="10" letter-spacing="1" fill="#5c6883">SVCS</text>
+      <text x="322" y="105" font-size="14" font-weight="700" fill="#0e2a5c">Caracas</text>
+      <text x="322" y="119" font-size="14" letter-spacing="1" fill="#5c6883">SVCS</text>
         </svg>
         <p class="rutas-pie"><b>Seis corredores activos.</b> Su empresa patrocina
           uno completo, o un tramo dentro de él.</p>
@@ -842,11 +948,17 @@
             <label for="e-telefono">Teléfono o WhatsApp directo</label>
             <input id="e-telefono" name="telefono" type="tel" autocomplete="tel" inputmode="tel" required>
           </p>
-          <p class="campo">
+          <p class="campo campo--ancho">
             <!-- ⚠️ SE MARCA EL ÚNICO OPCIONAL, no los cuatro obligatorios. Cuatro
                  asteriscos son ruido; una palabra en el que sobra dice lo mismo.
                  Sin esto, la persona se enteraba de qué faltaba recién al
                  presionar Enviar. -->
+            <!-- ⚠️ `campo--ancho`: EL SELECT NECESITA LAS DOS COLUMNAS. En media
+                 columna quedaba en 156,8 px útiles a 1440 —la flecha se come 56—
+                 y las CUATRO opciones salían cortadas: se leía «Padrino de Ruta
+                 Sanita». La más corta necesita 166,7 px. De paso tapa el agujero
+                 que dejaba abajo a la derecha, porque era el último campo y caía
+                 solo en la columna 1. -->
             <label for="e-modalidad">Modalidad de interés <span class="opcional">(opcional)</span></label>
             <select id="e-modalidad" name="modalidad">
               <option value="Padrino de Ruta Sanitaria">Padrino de Ruta Sanitaria</option>
