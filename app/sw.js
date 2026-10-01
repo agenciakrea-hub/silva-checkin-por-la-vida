@@ -19,7 +19,7 @@
  */
 'use strict';
 
-const VERSION = 'v36';
+const VERSION = 'v37';
 const CACHE   = 'checkin-app-' + VERSION;
 
 /* Lo que hace falta para que la pantalla se dibuje entera sin red. Las cifras
@@ -36,7 +36,14 @@ const PRECARGA = [
   '../fonts/MartianMono-700-cifras.woff2',
   '../fonts/SourceSans3-400-latin.woff2',
   '../fonts/SourceSans3-600-latin.woff2',
-  '../img/logo-silva-blanco-180.png',
+  /* ⚠️ LOS QUE LA APP PIDE DE VERDAD. Acá estaba el `.png` del logo, que la app
+     NO usa: el `<img>` apunta al `.webp` desde hace versiones, así que sin
+     conexión se bajaba un archivo que nadie iba a mostrar y el que sí hacía
+     falta no estaba. Van los dos formatos del isotipo porque el navegador elige
+     uno u otro según lo que soporte, y los dos juntos pesan 5 KB. */
+  '../img/iso-silva-blanco-96.avif',
+  '../img/iso-silva-blanco-96.webp',
+  '../img/logo-silva-blanco-400.webp',
   '../img/icon-192.png'
 ];
 

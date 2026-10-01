@@ -84,7 +84,10 @@
               transition:opacity .4s var(--ease);}
   .bienvenida[data-yendose]{opacity:0;pointer-events:none;}
   .bienvenida-caja{text-align:center;max-width:22rem;}
-  .bienvenida-logo{height:56px;width:auto;display:block;margin:0 auto 18px;}
+  /* 120 px: el isotipo ocupa el 76 % del alto del archivo y el nombre el 24 %,
+     así que a esta altura las dos líneas quedan en unos 14 px cada una, que es
+     donde recién se leen. A 56 px daban 7 y se veían como una mancha. */
+  .bienvenida-logo{height:120px;width:auto;display:block;margin:0 auto 22px;}
   .bienvenida-rotulo{margin:0 0 10px;font:600 .72rem/1 var(--sans);letter-spacing:.18em;
                      text-transform:uppercase;color:#8ea6cf;}
   .bienvenida-paso{margin:0 0 22px;font:700 clamp(1.15rem,5.4vw,1.45rem)/1.3 var(--titulo);
@@ -100,7 +103,12 @@
   /* ── Cabecera ── */
   .top{display:flex;align-items:center;gap:10px;
        padding:calc(14px + env(safe-area-inset-top)) 0 18px;}
-  .top img{height:34px;width:auto;display:block;margin-right:auto;}
+  /* ⚠️ EL `margin-right:auto` VA EN EL `<picture>`, NO EN EL `<img>`. Al envolver
+     la imagen para servir AVIF, el hijo directo del flex pasó a ser el
+     `<picture>`: el margen sobre el `<img>` deja de empujar nada y el logo
+     queda pegado al botón de «Ver la campaña» en vez de contra el borde. */
+  .top picture{margin-right:auto;display:block;}
+  .top img{height:34px;width:auto;display:block;}
   /* Sobre el navy del fondo, el texto va claro: da 13:1. */
   /* ⚠️ `gap` Y NO EL ESPACIO DEL HTML. `display:flex` descarta los espacios en
      blanco entre nodos hijos, así que «Ver la campaña <span>(ir a la web)</span>»
@@ -1020,7 +1028,15 @@
        está pasando, no una animación para hacer tiempo. -->
   <div class="bienvenida" id="bienvenida" hidden role="status" aria-live="polite">
     <div class="bienvenida-caja">
-      <img class="bienvenida-logo" src="../img/logo-silva-blanco-180.webp" width="180" height="236" alt="">
+      <!-- ⚠️ EL ARCHIVO DE 400, NO EL DE 180. Esta pantalla ocupa el teléfono
+           entero y el logo es lo único que hay para mirar mientras se guarda;
+           a 56 px de alto quedaba en 43 de ancho, o sea con las dos líneas de
+           «AeroAmbulancias Silva» en unos 7 px cada una: borrosas, y el logo
+           entero perdido en el medio de la pantalla. El de 180 px no alcanza
+           para mostrarlo al tamaño que esta pantalla pide sin que se vea
+           blando en una pantalla densa. -->
+      <img class="bienvenida-logo" src="../img/logo-silva-blanco-400.webp"
+           width="305" height="400" alt="">
       <p class="bienvenida-rotulo">Un Check-in por la Vida</p>
       <p class="bienvenida-paso" id="bienvenida-paso">Guardando tus datos…</p>
       <div class="bienvenida-riel" aria-hidden="true"><i id="bienvenida-avance"></i></div>
@@ -1028,11 +1044,24 @@
   </div>
 
   <header class="top">
-    <!-- 180×236 es la proporción real del archivo. Declararla 180×60 hacía que
-         el navegador reservara un alto equivocado y la cabecera saltara al
-         llegar la imagen. El .webp pesa 30 % menos que el .png. -->
-    <img src="../img/logo-silva-blanco-180.webp" width="180" height="236"
-         alt="Aeroambulancias Silva">
+    <!-- ⚠️ ACÁ VA EL ISOTIPO SOLO, NO EL LOGO ENTERO. El logo de la marca es
+         VERTICAL: el círculo con la S arriba y «AeroAmbulancias Silva» en dos
+         líneas abajo. En esta barra se renderizaba a 26×34 px, así que esas dos
+         líneas de texto quedaban en unos 4 px de alto cada una — no se leían,
+         se veían como una mancha gris debajo del círculo, que es lo que Krea
+         describió como «el logo se ve raro».
+         El isotipo recortado ocupa los mismos 34 px de alto con el círculo
+         entero, que es lo que una marca pone en una barra de este tamaño. El
+         nombre completo sigue estando en la bienvenida y en el pie del sitio,
+         donde hay lugar para leerlo.
+         Cuadrado 1:1, así que declarar 96×96 reserva el alto correcto y la
+         cabecera no salta al llegar la imagen. -->
+    <picture>
+      <source srcset="../img/iso-silva-blanco-96.avif 1x, ../img/iso-silva-blanco-192.avif 2x" type="image/avif">
+      <img src="../img/iso-silva-blanco-96.webp"
+           srcset="../img/iso-silva-blanco-96.webp 1x, ../img/iso-silva-blanco-192.webp 2x"
+           width="96" height="96" alt="Aeroambulancias Silva">
+    </picture>
     <!-- Dice a dónde lleva: desde una app instalada, «ver la campaña» no deja
          claro que se sale de la app y se abre el sitio. -->
     <a class="volver" href="../">Ver la campaña <span class="volver-donde">(ir a la web)</span></a>
