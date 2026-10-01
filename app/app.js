@@ -836,7 +836,15 @@
          encolada devuelve token —más de 20 segundos en frío, minutos con mala
          señal, indefinido sin ella—. */
       pintarMisiones(yoLocal);
-      $('d-pase').textContent = '—';
+      /* ⚠️ ACÁ HABÍA UN `$('d-pase').textContent = '—'` QUE PISABA A
+         `pintarPersona`, y era mío. Tenía sentido mientras `yoLocal` no supiera
+         si la persona estaba activa: el número de pase no se podía mostrar
+         hasta que contestara el servidor, y forzar el guion era lo correcto.
+         Desde que `yoLocal` deriva `activo` de `perfil.codigo`, esa línea le
+         borra el número a quien SÍ lo tiene: `pintarPersona` ponía `BP-0042` y
+         la línea siguiente lo tapaba con un guion, durante los veinte segundos
+         que Apps Script tarda en frío. `pintarPersona` ya pone el guion cuando
+         corresponde — no hace falta nadie más. */
     }
 
     /* El ranking de la última vez, mientras el servidor despierta. Se corrige
