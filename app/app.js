@@ -44,14 +44,38 @@
   // una pantalla sin nada suyo y concluía que su pase no existía.
   // Y sin corte por tiempo, una petición colgada dejaba esa pantalla así para
   // siempre: `fetch` no falla solo.
-  var TOPE_MS = 9000;          // para leer: si tarda más, se muestra el respaldo
+  /* ⚠️ VEINTICINCO SEGUNDOS, Y SUBIÓ DESDE NUEVE POR UNA MEDICIÓN. Con doce
+     pedidos simultáneos contra producción —doce teléfonos abriendo la app en el
+     mismo momento, que es un evento chico— la mediana fue 7,4 s y el pico 21 s.
+     Con el tope en 9 s, un tercio de la gente cortaba el pedido y veía los
+     valores fijos del HTML; peor todavía, `reintentarEstado` volvía a pedir a
+     los dos segundos y ESE reintento llegaba mientras el servidor seguía
+     ocupado, o sea que el tope corto empeoraba la saturación que lo causaba.
+     Esperar más no deja a nadie mirando una pantalla vacía: el contenido de
+     respaldo ya está dibujado desde el primer frame y el latido dice que se
+     está buscando. Lo único que cambia es cuánto aguantamos antes de rendirnos.
+     Sigue habiendo corte, porque un `fetch` colgado no falla solo. */
+  var TOPE_MS = 25000;         // para leer: si tarda más, se muestra el respaldo
   var TOPE_ESCRIBIR_MS = 40000;  // para escribir: Apps Script en frío pasa de 20 s
 
-  function conTope(promesa, ms) {
+  /* ⚠️ `conTope` RECIBE UNA FUNCIÓN, NO UNA PROMESA YA LANZADA, y el cambio no
+     es cosmético. Antes tomaba la promesa hecha y sólo dejaba de esperarla: el
+     `fetch` seguía vivo y su ejecución corriendo en Google. Como quien llama
+     reintenta, el reintento se SUMABA al anterior — hasta cinco pedidos por
+     teléfono para el mismo dato, multiplicando la carga justo cuando el
+     servidor ya no daba abasto.
+     Recibiendo la función, `conTope` se la pasa a `alServidor` como su tope
+     interno, y ése sí aborta con `AbortController`. Cada teléfono tiene como
+     mucho un pedido vivo.
+     Sigue aceptando una promesa ya hecha para no romper a quien lo llame así,
+     pero ese camino no cancela nada y no debería usarse. */
+  function conTope(promesaOFn, ms) {
+    var tope = ms || TOPE_MS;
+    if (typeof promesaOFn === 'function') return promesaOFn(tope);
     return new Promise(function (resolver, rechazar) {
-      var reloj = setTimeout(function () { rechazar(new Error('tardó demasiado')); }, ms || TOPE_MS);
-      promesa.then(function (v) { clearTimeout(reloj); resolver(v); },
-                   function (e) { clearTimeout(reloj); rechazar(e); });
+      var reloj = setTimeout(function () { rechazar(new Error('tardó demasiado')); }, tope);
+      promesaOFn.then(function (v) { clearTimeout(reloj); resolver(v); },
+                      function (e) { clearTimeout(reloj); rechazar(e); });
     });
   }
 
@@ -752,6 +776,14 @@
   /* Cuándo contestó bien el servidor por última vez. Lo usa el refresco al
      volver del segundo plano, para no pedir el estado en cada parpadeo. */
   var ultimoEstadoOk = 0;
+  /* ⚠️ UN SOLO PEDIDO DE ESTADO EN VUELO A LA VEZ. `arrancar()` se llama desde
+     muchos lados —la carga inicial, `reintentarEstado`, `visibilitychange`,
+     `pageshow`, y después de activar o vincular— y ninguno miraba si ya había
+     uno andando. Bajo carga, cuando el servidor tarda, eso apila pedidos del
+     mismo teléfono para el mismo dato: cada uno ocupa una ejecución en Google y
+     empeora la demora que los está causando. Con la bandera, el segundo
+     llamado se va sin hacer nada y el primero termina igual. */
+  var pidiendoEstado = false;
 
   function arrancar() {
     /* ⚠️ EL `?de=` SE GUARDA ANTES QUE NADA, y antes de que nada pueda fallar.
@@ -839,9 +871,15 @@
       $('form-entrar').hidden = true;
     }
 
+    /* Si ya hay uno andando, este llamado no agrega nada: el que está en vuelo
+       va a pintar lo mismo cuando conteste. */
+    if (pidiendoEstado) return;
+    pidiendoEstado = true;
+
     latido('yendo');
-    conTope(alServidor({ action: 'estado', token: (yo && yo.token) || '', ranking: true }))
+    conTope(function (ms) { return alServidor({ action: 'estado', token: (yo && yo.token) || '', ranking: true }, ms); })
       .then(function (r) {
+        pidiendoEstado = false;
         // El servidor no contestó JSON: es un problema de conexión o de
         // despliegue, no que esta persona no exista. Se vuelve a intentar antes
         // de contarle nada a nadie.
@@ -885,6 +923,12 @@
         }
       })
       .catch(function () {
+        /* ⚠️ TAMBIÉN ACÁ, Y ES EL CAMINO QUE IMPORTA. Si la bandera se liberara
+           sólo al responder bien, un pedido que vence por tiempo la dejaría
+           puesta para siempre: ese teléfono no volvería a pedir el estado en
+           toda la vida de la página, ni al volver del segundo plano. Un cerrojo
+           que no se abre en el camino del error es peor que no tenerlo. */
+        pidiendoEstado = false;
         if (reintentarEstado()) return;
         latido('mal');
         pintarSinConexion();
@@ -1331,7 +1375,7 @@
     /* El mismo tope largo que la activación, y por el mismo motivo: esto
        escribe en la hoja, y un tope corto reporta como fallo algo que pudo
        haber ocurrido. */
-    conTope(alServidor({ action: 'invitado', token: yo.token, codigo: c }), TOPE_ESCRIBIR_MS)
+    conTope(function (ms) { return alServidor({ action: 'invitado', token: yo.token, codigo: c }, ms); }, TOPE_ESCRIBIR_MS)
       .then(function (r) {
         if (r && r.ok) {
           try { localStorage.removeItem(K_INVITO); } catch (e2) {}
@@ -1356,7 +1400,7 @@
         aviso.textContent = 'Está tardando más de lo normal. Verificando…';
         /* Igual que en la activación: pudo haberse anotado igual. Se mira
            cómo quedó antes de decirle a nadie que falló. */
-        conTope(alServidor({ action: 'estado', token: yo.token }), TOPE_ESCRIBIR_MS)
+        conTope(function (ms) { return alServidor({ action: 'estado', token: yo.token }, ms); }, TOPE_ESCRIBIR_MS)
           .then(function (r2) {
             if (r2 && r2.ok && r2.yo && r2.yo.invitadoPor) {
               aviso.textContent = ''; campo.value = ''; arrancar(); return;
@@ -1546,7 +1590,7 @@
       return;
     }
     aviso.textContent = 'Vinculando…';
-    conTope(alServidor({ action: 'vincular', token: yo.token, ticket: t }), TOPE_ESCRIBIR_MS)
+    conTope(function (ms) { return alServidor({ action: 'vincular', token: yo.token, ticket: t }, ms); }, TOPE_ESCRIBIR_MS)
       .then(function (r) {
         if (r && r.ok) {
           aviso.textContent = '';
@@ -1558,24 +1602,46 @@
           arrancar();
           return;
         }
-        campo.setAttribute('aria-invalid', 'true');
-        aviso.textContent = (r && r.motivo === 'ticket_invalido')
+        var motV = (r && r.motivo) || '';
+        if (!NO_ES_EL_CODIGO[motV]) campo.setAttribute('aria-invalid', 'true');
+        aviso.textContent = motV === 'ticket_invalido'
           ? 'Ese número no parece un Boarding Pass. Revísalo.'
-          : 'No pudimos vincularlo. Intenta de nuevo en un momento.';
+          : (MOTIVOS[motV] || 'No pudimos vincularlo. Intenta de nuevo en un momento.');
       })
       .catch(function () { aviso.textContent = 'No pudimos conectarnos. Revisa tu conexión.'; });
   }
 
   // ── Activar el pase ──────────────────────────────────────────────────────
 
+  /* ⚠️ `ocupado` Y `respuesta_no_json` SON LOS DOS QUE FALTABAN, Y SON LOS QUE
+     APARECEN JUSTO EN UN EVENTO. El servidor devuelve `ocupado` cuando el
+     bloqueo de Apps Script vence —a partir de unas ocho o diez personas
+     activando en paralelo— y `respuesta_no_json` cuando Google contesta HTML
+     por pasarse de las ejecuciones simultáneas. Ninguno estaba en esta lista,
+     así que los dos caían en el texto genérico **«No pudimos activarlo»** con
+     el campo marcado en rojo. En un stand eso se lee como «mi código está
+     mal», y la salida natural de esa persona es agarrar el código de OTRO oso:
+     dos códigos quemados por un problema que no tenía nada que ver con el
+     código. Es el mismo final que ONCO-7TXA, entrando por otra puerta.
+     Los dos textos dicen lo mismo y es lo único que importa: tu código sirve,
+     esperá, y volvé con EL MISMO. */
   var MOTIVOS = {
     codigo_invalido:    'Ese código no tiene la forma correcta. Debe ser como ONCO-4K7M.',
     codigo_desconocido: 'No encontramos ese código. Revisa que esté bien escrito.',
     codigo_usado:       'Ese código ya se usó. Si crees que es un error, escríbenos.',
     ya_activo:          'Tu pase ya está activo.',
     token_invalido:     'Espera unos segundos a que termine tu registro y vuelve a intentarlo.',
-    sin_token:          'Espera unos segundos a que termine tu registro y vuelve a intentarlo.'
+    sin_token:          'Espera unos segundos a que termine tu registro y vuelve a intentarlo.',
+    ocupado:            'Hay varias personas activando su pase en este momento. '
+                        + 'Tu código sigue siendo válido: espera unos segundos y '
+                        + 'vuelve a intentar con el mismo.',
+    respuesta_no_json:  'El servidor está con mucha gente. Tu código sigue siendo '
+                        + 'válido: espera un momento y vuelve a intentar con el mismo.'
   };
+
+  /* Los motivos que NO son culpa de lo que la persona escribió. Marcar el campo
+     en rojo ahí es decirle que su código está mal cuando no lo está. */
+  var NO_ES_EL_CODIGO = { ocupado: 1, respuesta_no_json: 1, sin_token: 1, token_invalido: 1 };
 
   al('form-activar', 'submit', function (e) {
     e.preventDefault();
@@ -1599,7 +1665,7 @@
        SÍ había activado el código: la persona veía un error, su código quedaba
        gastado, y creía que lo había perdido. Le pasó a Krea con ONCO-7TXA.
        Escribir no es leer: si el pedido salió, hay que esperarlo. */
-    conTope(alServidor({ action: 'activar', token: yo.token, codigo: c }), TOPE_ESCRIBIR_MS)
+    conTope(function (ms) { return alServidor({ action: 'activar', token: yo.token, codigo: c }, ms); }, TOPE_ESCRIBIR_MS)
       .then(function (r) {
         if (r && r.ok) {
           aviso.textContent = '';
@@ -1609,8 +1675,12 @@
           arrancar();          // se vuelve a pedir todo: ahora hay pase
           return;
         }
-        campo.setAttribute('aria-invalid', 'true');
-        aviso.textContent = (r && MOTIVOS[r.motivo])
+        /* ⚠️ SÓLO SE MARCA EN ROJO SI EL PROBLEMA ES EL CÓDIGO. Con `ocupado`
+           —el servidor saturado— el código está perfecto, y teñir el campo le
+           dice a la persona lo contrario justo cuando hay cola en el stand. */
+        var mot = (r && r.motivo) || '';
+        if (!NO_ES_EL_CODIGO[mot]) campo.setAttribute('aria-invalid', 'true');
+        aviso.textContent = MOTIVOS[mot]
           || 'No pudimos activarlo. Intenta de nuevo en un momento.';
       })
       .catch(function () {
@@ -1619,7 +1689,7 @@
            intentar con otro código y a gastar dos. Se mira cómo quedó todo
            antes de contarle nada. */
         aviso.textContent = 'Está tardando más de lo normal. Verificando…';
-        conTope(alServidor({ action: 'estado', token: yo.token }), TOPE_ESCRIBIR_MS)
+        conTope(function (ms) { return alServidor({ action: 'estado', token: yo.token }, ms); }, TOPE_ESCRIBIR_MS)
           .then(function (r2) {
             if (r2 && r2.ok && r2.yo && r2.yo.activo) {
               aviso.textContent = '';

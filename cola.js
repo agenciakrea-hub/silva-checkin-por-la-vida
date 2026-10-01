@@ -68,19 +68,38 @@
   // Apps Script contesta HTML, y contesta HTML más seguido de lo que parece:
   // un despliegue que quedó en «solo yo» devuelve la página de inicio de
   // sesión, y la cuota agotada devuelve otra.
-  function alServidor(cuerpo) {
-    var pedido = fetch(api(), { method: 'POST', keepalive: true, body: JSON.stringify(cuerpo) })
+  function alServidor(cuerpo, tope) {
+    /* ⚠️ CON `AbortController`: RENDIRSE TIENE QUE CANCELAR EL PEDIDO, NO SÓLO
+       DEJAR DE ESPERARLO. Esto devolvía una promesa que se rechazaba por reloj
+       y dejaba el `fetch` **vivo**, con su ejecución corriendo en Google hasta
+       el final. Quien llama entonces reintenta, y el reintento se suma al
+       anterior en vez de reemplazarlo: cuatro reintentos por teléfono, veinte
+       teléfonos, y la carga se multiplica justo cuando el servidor ya no da
+       abasto — un lazo que se alimenta solo. Apps Script, pasado su techo de
+       ejecuciones simultáneas, empieza a contestar HTML, que acá se lee como
+       `respuesta_no_json`, que dispara otro reintento.
+       Abortando, cada teléfono tiene como mucho UN pedido vivo. */
+    var corte = (typeof AbortController === 'function') ? new AbortController() : null;
+    var opciones = { method: 'POST', keepalive: true, body: JSON.stringify(cuerpo) };
+    if (corte) opciones.signal = corte.signal;
+
+    var pedido = fetch(api(), opciones)
       .then(function (r) { return r.text(); })
       .then(function (t) {
         try { return JSON.parse(t); }
         catch (e) { return { ok: false, motivo: 'respuesta_no_json' }; }
       });
-    /* Tope de tiempo: un `fetch` que no resuelve nunca —Apps Script colgado,
-       una conexión abierta que no trae datos— dejaba la bandera `enviando` en
-       verdadero para siempre y la cola no volvía a moverse en toda la vida de
-       la página. Noventa segundos es lo que tarda el peor arranque en frío. */
+    /* Un `fetch` que no resuelve nunca —Apps Script colgado, una conexión
+       abierta que no trae datos— dejaba la bandera `enviando` en verdadero para
+       siempre y la cola no volvía a moverse en toda la vida de la página.
+       Noventa segundos es lo que tarda el peor arranque en frío; quien llama
+       puede pedir un tope más corto, y entonces el corte de acá es el único que
+       hay y el único que cancela de verdad. */
     return new Promise(function (ok, mal) {
-      var reloj = setTimeout(function () { mal(new Error('sin respuesta')); }, 90000);
+      var reloj = setTimeout(function () {
+        if (corte) { try { corte.abort(); } catch (e) {} }
+        mal(new Error('sin respuesta'));
+      }, tope || 90000);
       pedido.then(function (v) { clearTimeout(reloj); ok(v); },
                   function (e) { clearTimeout(reloj); mal(e); });
     });
