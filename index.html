@@ -1083,7 +1083,7 @@
   <section class="papel" id="empresas" aria-labelledby="t-empresas">
     <div class="bloque">
       <h2 id="t-empresas">Para empresas y RSE</h2>
-      <p class="bajada">Financiamiento de Rutas Sanitarias con <b>retorno reputacional</b>, impacto ESG y deducibilidad fiscal.</p>
+      <p class="bajada">Financiamiento de Rutas Sanitarias con <b>retorno reputacional</b> e impacto ESG.</p>
       <div class="niveles">
         <article class="nivel">
           <h3 class="nivel-nombre">Padrino de Ruta Sanitaria</h3>
@@ -1427,6 +1427,12 @@ document.addEventListener('DOMContentLoaded', function () {
   // La campaña se cuenta en OSOS: adoptados, meta y diferencia. El único número
   // que se edita a mano es la meta; los otros dos salen de sumar las unidades
   // vendidas y de restar. Así las tres cifras no pueden contradecirse.
+  /* ⚠️ ESTO SUMA UNIDADES, Y ES A PROPÓSITO. Es el número del evento ya
+     ocurrido —el histórico— y Krea pidió que no se toque: se quedó en 44 y ahí
+     se queda. Lo que viene DESPUÉS sí se cuenta en osos, lo suma el servidor
+     con la equivalencia de cada código (10 = medio, 20 = uno, 40 = dos), y se
+     agrega encima de este número en `usar()`. Convertir también el histórico lo
+     bajaba de 44 a 34,5 y reescribía hacia atrás una cifra que ya se publicó. */
   var adoptados = null, pct = 7.2;
   if (Array.isArray(d.productos)) adoptados = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
   var metaDeDatos = (num(d.metaOsos) && d.metaOsos > 0) ? d.metaOsos : null;
@@ -1482,13 +1488,22 @@ document.addEventListener('DOMContentLoaded', function () {
      Un solo lugar que pinta pasajeros, meta, los que faltan, el porcentaje y
      el avance de la pista. Lo llaman dos: `datos.js` al cargar, y la hoja
      `vuelo` del Sheet si el servidor contesta. */
+  /* ⚠️ COMA DECIMAL, QUE ES LA DE ACÁ. Desde que un producto de 10 vale medio
+     oso, estas cifras pueden tener medios: `String(47.5)` da «47.5», con punto,
+     que en Venezuela se lee como separador de miles — «cuarenta y siete mil
+     cinco». Y el `.0` de un entero no se muestra: «44» y no «44,0». */
+  function enEspanol(n) {
+    var r = Math.round(n * 10) / 10;
+    return (r % 1 === 0 ? String(r) : String(r).replace('.', ','));
+  }
+
   function pintarCifras(a, m) {
-    if (typeof a === 'number' && a >= 0) { pon('pasajeros', String(a)); pon('pasajeros-texto', String(a)); }
+    if (typeof a === 'number' && a >= 0) { pon('pasajeros', enEspanol(a)); pon('pasajeros-texto', enEspanol(a)); }
     if (typeof m === 'number' && m > 0) {
-      pon('meta-osos', String(m));
+      pon('meta-osos', enEspanol(m));
       if (typeof a === 'number' && a >= 0) {
         pct = Math.round(a / m * 1000) / 10;
-        pon('faltan', String(Math.max(m - a, 0)));
+        pon('faltan', enEspanol(Math.max(m - a, 0)));
       }
     }
   pon('porcentaje-texto', String(pct).replace('.', ',') + ' % de la meta');
@@ -1515,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!window.CXV || !window.CXV.alServidor || !window.CXV_API) return;
     var CLAVE = 'cxv-cifras', VIDA = 600000;
 
-    var usar = function (a, m) {
+    var usar = function (a, m, ososActivados) {
       var na = Number(a), nm = Number(m);
       var hayA = String(a == null ? '' : a).trim() !== '' && isFinite(na) && na >= 0;
       var hayM = String(m == null ? '' : m).trim() !== '' && isFinite(nm) && nm > 0;
@@ -1523,14 +1538,24 @@ document.addEventListener('DOMContentLoaded', function () {
          `adoptados` nace en blanco a propósito —en blanco significa «manda
          `datos.js`»— y `Number('')` da 0, no NaN. Sin este chequeo, una hoja
          recién creada pinta la campaña en cero y borra el avance de verdad. */
-      if (hayA && hayM) pintarCifras(na, nm);
-      else if (hayM)    pintarCifras(adoptados, nm);
+      if (hayA && hayM) { pintarCifras(na, nm); return; }
+      /* ⚠️ EL AVANCE SON DOS MITADES. El servidor cuenta los osos de los códigos
+         que la gente ACTIVÓ —es de lo único que se entera— y `datos.js` lleva a
+         mano lo que se vendió y nadie va a activar. Mostrar sólo una da siempre
+         de menos. Lo que no se puede hacer es cargar en `datos.js` algo que
+         después se activa: ahí el mismo oso cuenta dos veces, y está advertido
+         en ese archivo. */
+      var auto = Number(ososActivados);
+      if (!isFinite(auto) || auto < 0) auto = 0;
+      var total = (adoptados || 0) + auto;
+      if (hayM) pintarCifras(total, nm);
+      else if (metaDeDatos) pintarCifras(total, metaDeDatos);
     };
 
     try {
       var g = JSON.parse(sessionStorage.getItem(CLAVE) || 'null');
       if (g && (Date.now() - g.t) < VIDA) {
-        usar(g.a, g.m);
+        usar(g.a, g.m, g.o);
         if (g.r) pon('ruta', String(g.r));
         return;
       }
@@ -1544,8 +1569,9 @@ document.addEventListener('DOMContentLoaded', function () {
       window.CXV.alServidor({ action: 'estado' }).then(function (r) {
         clearTimeout(reloj);
         if (!vale || !r || !r.ok || !r.vuelo) return;
-        try { sessionStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados, m: r.vuelo.meta, r: r.vuelo.ruta })); } catch (e) {}
-        usar(r.vuelo.adoptados, r.vuelo.meta);
+        try { sessionStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados,
+              m: r.vuelo.meta, r: r.vuelo.ruta, o: r.ososActivados })); } catch (e) {}
+        usar(r.vuelo.adoptados, r.vuelo.meta, r.ososActivados);
         if (r.vuelo.ruta) pon('ruta', String(r.vuelo.ruta));
       }).catch(function () { clearTimeout(reloj); });
     };

@@ -129,7 +129,7 @@
     });
   }
 
-  function pintarVuelo(v) {
+  function pintarVuelo(v, ososActivados) {
     if (!v) return;
     if (v.titulo)  $('vuelo-titulo').textContent = v.titulo;
     if (v.origen)  $('origen').textContent  = v.origen;
@@ -157,7 +157,16 @@
        es una precaución de más: sin eso, una celda en blanco pinta la campaña
        en cero y borra el avance real de la portada. */
     var a = numeroDeHoja(v.adoptados), m = numeroDeHoja(v.meta);
-    if (a !== null && m !== null && m > 0) pintarAvance(a, m);
+    if (a !== null && m !== null && m > 0) {
+      /* La celda `adoptados` de la hoja, si está escrita, es la palabra final:
+         se usa para corregir el avance a mano sin tocar el repo. */
+      pintarAvance(a, m);
+    } else {
+      /* El camino normal: los osos que el servidor contó de los códigos
+         activados, más el ajuste de `datos.js`. */
+      var meta = m !== null && m > 0 ? m : (cifrasDeLaCampana() || {}).meta;
+      if (typeof meta === 'number' && meta > 0) pintarAvance(avanceTotal(ososActivados), meta);
+    }
   }
 
   /** Una celda de la hoja `vuelo` como número, o null si no lo es. */
@@ -179,6 +188,9 @@
     var d = window.CAMPANA;
     if (!d) return null;
     var meta = (typeof d.metaOsos === 'number' && d.metaOsos > 0) ? d.metaOsos : null;
+    /* ⚠️ SUMA UNIDADES, Y ES A PROPÓSITO: es el histórico del evento y no se
+       toca. Lo que se cuenta en osos es lo que viene después, que lo suma el
+       servidor con la equivalencia de cada código y se agrega encima. */
     var adoptados = null;
     if (Object.prototype.toString.call(d.productos) === '[object Array]') {
       adoptados = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
@@ -186,10 +198,37 @@
     return (meta !== null && adoptados !== null) ? { adoptados: adoptados, meta: meta } : null;
   }
 
+  /**
+   * El avance de la campaña, que son DOS MITADES sumadas.
+   *
+   * ⚠️ NI EL SERVIDOR NI `datos.js` SABEN EL TOTAL SOLOS. El servidor cuenta los
+   * osos de los códigos que la gente ACTIVÓ en la app — es lo único de lo que se
+   * entera—; `datos.js` lleva a mano lo que se vendió y nadie va a activar
+   * nunca. Mostrar sólo uno de los dos da siempre de menos.
+   * El riesgo de sumarlos está escrito en `datos.js`: si el equipo carga ahí
+   * algo que esa persona después activa, el mismo oso cuenta dos veces y nada
+   * lo avisa. Por eso ese archivo dice, con todas las letras, que ahí va sólo lo
+   * que no se va a activar.
+   */
+  function avanceTotal(delServidor) {
+    var c = cifrasDeLaCampana();
+    var aMano = c ? c.adoptados : 0;
+    var auto = Number(delServidor);
+    if (!isFinite(auto) || auto < 0) auto = 0;
+    return aMano + auto;
+  }
+
   function pintarAvance(adoptados, meta) {
     if (typeof adoptados !== 'number' || typeof meta !== 'number' || meta <= 0) return;
-    $('c-osos').textContent   = String(adoptados);
-    $('c-faltan').textContent = String(Math.max(meta - adoptados, 0));
+    /* Coma decimal: desde que un producto de 10 vale medio oso, estas cifras
+       pueden tener medios, y `String(47.5)` da «47.5» — con punto, que acá se
+       lee como separador de miles. El `.0` de un entero no se muestra. */
+    var enEspanol = function (n) {
+      var r = Math.round(n * 10) / 10;
+      return (r % 1 === 0 ? String(r) : String(r).replace('.', ','));
+    };
+    $('c-osos').textContent   = enEspanol(adoptados);
+    $('c-faltan').textContent = enEspanol(Math.max(meta - adoptados, 0));
     var pct = Math.min(Math.round(adoptados / meta * 100), 100);
     // Con pocos adoptados sobre una meta grande el porcentaje redondea a cero y
     // la barra se ve vacía, como si estuviera rota. Un mínimo visible dice la
@@ -904,7 +943,7 @@
         ultimoEstadoOk = Date.now();
         latido('listo', horaCorta());
         pintarRanking(r.ranking);
-        pintarVuelo(r.vuelo);
+        pintarVuelo(r.vuelo, r.ososActivados);
         pintarAporte(r.vuelo);
         pintarCierre(r.vuelo);
         if (r.yo) {
