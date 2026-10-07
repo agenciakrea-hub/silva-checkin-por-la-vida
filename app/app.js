@@ -140,6 +140,7 @@
        tocar código. Es la misma celda que el cliente usó para pedir que diga
        «Ruta Sanitaria 001» en vez de «ONCO 001». */
     if (v.ruta && $('rf-ruta')) $('rf-ruta').textContent = v.ruta;
+    textosDeLaRuta(v);
     // Lo manda el servidor en cada respuesta y la app lo descartaba.
     if (v.proximo) { $('proximo').textContent = v.proximo; $('proximo-caja').hidden = false; }
     else $('proximo-caja').hidden = true;
@@ -194,6 +195,33 @@
         if (resto && resto.parentNode) resto.parentNode.hidden = true;
       }
     }
+  }
+
+  /**
+   * Los textos que daban por sentado que todo el mundo está en la Ruta 1.
+   *
+   * ⚠️ DOS FRASES QUE SON FALSAS PARA LA RUTA DE UNA EMPRESA. «Esta es la Ruta
+   * 1. Faltan cinco por financiar» y el «La tuya» pegado a la Ruta 1 son de la
+   * campaña: quien financió un corredor con su empresa no está en ninguna de
+   * las seis. Y «Cada adopción suma horas de vuelo» describe cómo se financia
+   * la campaña, no cómo se financió esa ruta.
+   *
+   * Se tocan sólo cuando el servidor dice que NO es la campaña: sin la bandera
+   * —un servidor viejo, una respuesta guardada— queda lo que dice el HTML, que
+   * es correcto mientras haya una sola ruta.
+   */
+  function textosDeLaRuta(v) {
+    if (!v || v.esCampania !== false) return;
+    var intro = $('red-intro');
+    if (intro) {
+      intro.textContent = 'Tu ruta la financia ' + (v.patrocina || 'una empresa')
+                        + '. Estas seis son las de la campaña: faltan seis por financiar.';
+    }
+    /* El «La tuya» sale del atributo, así que alcanza con sacarlo. */
+    var uno = $('red-ruta-1');
+    if (uno) uno.removeAttribute('data-tuya');
+    var sub = $('etapa-1-sub');
+    if (sub) sub.textContent = 'La empresa que la financia ya puso su parte';
   }
 
   /** Una celda de la hoja `vuelo` como número, o null si no lo es. */

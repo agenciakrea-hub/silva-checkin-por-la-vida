@@ -1248,7 +1248,10 @@
              durante todo el arranque. -->
         <li class="etapa" data-etapa="preparando" data-ahora aria-current="step">
           <span class="etapa-punto" aria-hidden="true"></span>
-          <span class="etapa-txt"><b>Reuniendo Héroes</b><span>Cada adopción suma horas de vuelo</span></span>
+          <!-- El subtítulo de esta etapa es cierto para la campaña —cada oso
+               adoptado suma horas— y falso para la ruta de una empresa, que no
+               se financia adoptando osos. `app.js` lo cambia. -->
+          <span class="etapa-txt"><b>Reuniendo Héroes</b><span id="etapa-1-sub">Cada adopción suma horas de vuelo</span></span>
         </li>
         <li class="etapa" data-etapa="asignando">
           <span class="etapa-punto" aria-hidden="true"></span>
@@ -1267,8 +1270,16 @@
       <!-- El servidor manda `proximo` en cada respuesta y la app lo descartaba
            sin leerlo: una ranura de contenido ya cableada que el equipo puede
            escribir desde la hoja y que nadie veía. -->
-      <p class="proximo" id="proximo-caja" hidden>
-        <span>Próximo paso</span><b id="proximo"></b>
+      <!-- Nace visible y con su texto de respaldo, como `vuelo-nota` cuatro
+           líneas más arriba: era la única de las siete celdas del vuelo que no
+           traía respaldo, así que quien abría la app sin que el servidor
+           contestara no veía ningún «Próximo paso». El respaldo dice lo mismo
+           que `VUELO_INICIAL` y el servidor lo pisa.
+           (Probé si además bajaba el CLS de la pantalla: no. El salto que
+           queda, 0,29, es de los 718 ms en que la app revela el formulario o el
+           pase según si ya te conoce, y es anterior a todo esto.) -->
+      <p class="proximo" id="proximo-caja">
+        <span>Próximo paso</span><b id="proximo">Cuando se complete la meta, despega.</b>
       </p>
 
       <p class="cifra-grande">Ya somos <b id="c-osos">44</b> pasajeros de honor</p>
@@ -1413,9 +1424,14 @@
          de seis. Los códigos son los que la campaña ya publica. -->
     <section class="red enPapel" aria-labelledby="t-red">
       <h2 id="t-red">La red completa</h2>
-      <p>Esta es la Ruta 1. Faltan cinco por financiar.</p>
+      <!-- ⚠️ ESTE TEXTO SUPONE QUE TODO EL MUNDO ESTÁ EN LA RUTA 1, y desde que
+           una empresa puede financiar su propio corredor eso es falso para esa
+           gente: su ruta no es una de las seis de la campaña. `app.js` lo
+           reescribe cuando el servidor dice que no es la campaña, y le saca el
+           «La tuya» a la Ruta 1, que no lo es. -->
+      <p id="red-intro">Esta es la Ruta 1. Faltan cinco por financiar.</p>
       <ol class="rutas">
-        <li data-tuya><b>Ruta 1 · Occidente</b><span>SVMC <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Maracaibo <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
+        <li id="red-ruta-1" data-tuya><b>Ruta 1 · Occidente</b><span>SVMC <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Maracaibo <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
         <li><b>Ruta 2 · Andina</b><span>SVSO <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Santo Domingo del Táchira <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
         <li><b>Ruta 3 · Llano Central</b><span>SVBI <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Barinas <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
         <li><b>Ruta 4 · Llano Sur</b><span>SVPA <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> SVCS</span><i>Puerto Ayacucho <svg class="fl" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h11M8.5 1.5L12 5l-3.5 3.5"/></svg> Caracas</i></li>
