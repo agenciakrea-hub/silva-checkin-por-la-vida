@@ -281,7 +281,15 @@
   .cifra span{font:600 .8rem/1.4 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-top:.6rem;}
 
   .pista{margin-top:2.5rem;}
-  .pista-cabeza{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;}
+  /* ⚠️ `align-items:flex-start` Y NO `baseline`. El nombre de la ruta sale de
+     una celda que escribe el cliente: con uno largo —«Ruta Corporación Andina
+     de Fomento»— el rótulo cae a dos líneas y, alineado por línea de base,
+     «CARACAS» quedaba a la altura de la PRIMERA, o sea flotando arriba del
+     bloque. Por arriba los dos empiezan donde empiezan, diga lo que diga la
+     celda. */
+  .pista-cabeza{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;}
+  /* Y el destino no se parte: es una sola palabra y partirla no ayuda a nadie. */
+  .pista-cabeza .rotulo-destino{white-space:nowrap;}
   .pista-cabeza b{font-family:var(--cifra);font-weight:700;font-size:1.05rem;color:var(--navy);letter-spacing:-.04em;}
   .pista-riel{position:relative;height:44px;margin-top:1rem;}
   .pista-linea{position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;
@@ -949,9 +957,15 @@
         <h2 id="t-pase">Tu Boarding Pass Solidario</h2>
         <p>Cada Héroe de Rescate llega con su <b>boarding pass</b>. En él quedas registrado como <b>pasajero de honor</b> del vuelo <span data-cifra="ruta">ONCO 001</span> — el vuelo que tu aporte ayuda a financiar.</p>
       </div>
+      <!-- ⚠️ UNA SOLA FRASE, NO DOS COPIAS. Acá había una plantilla y un
+           `aria-label` con el mismo texto y la ruta escrita a mano: si alguien
+           edita una y no la otra, divergen en silencio, y el respaldo sólo se
+           ve cuando el servidor no contesta, así que no lo nota nadie. Es
+           exactamente el patrón que la fase 5 vino a sacar de la portada.
+           Ahora el respaldo se arma del mismo molde al cargar la página. -->
       <div class="pase3d" role="img"
            data-rotulo-ruta="Las dos caras del boarding pass solidario del vuelo {ruta}: al frente, el pase con el nombre del pasajero de honor; al dorso, el mensaje de la campaña."
-           aria-label="Las dos caras del boarding pass solidario del vuelo ONCO 001: al frente, el pase con el nombre del pasajero de honor; al dorso, el mensaje de la campaña.">
+           aria-label="Boarding pass solidario">
         <div class="pase3d-flota">
           <div class="pase3d-pieza">
             <div class="pase3d-cara pase3d-frente">
@@ -1446,8 +1460,23 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {}
   };
 
+  /* El respaldo del rótulo sale del mismo molde que el definitivo: así no hay
+     dos frases que puedan divergir. Se pinta con el nombre que trae el HTML y
+     el servidor lo vuelve a pintar cuando contesta. */
+  var ponEnRotulosInicial = function () {
+    try {
+      var r = document.querySelector('[data-cifra="ruta"]');
+      if (r && r.textContent.trim()) ponEnRotulos(r.textContent.trim());
+    } catch (e) {}
+  };
+
   var pon = function (clave, texto) {
-    document.querySelectorAll('[data-cifra="' + clave + '"]').forEach(function (el) { el.textContent = texto; });
+    document.querySelectorAll('[data-cifra="' + clave + '"]').forEach(function (el) {
+      /* Si la cifra está subiendo desde cero, se le avisa para que se detenga:
+         lo que acaba de llegar del Sheet vale más que la animación. */
+      if (el.hasAttribute('data-animando')) el.setAttribute('data-fin', '');
+      el.textContent = texto;
+    });
   };
   // Se pregunta por el TIPO y no por el valor: con `if (d.metaOsos)` un cero
   // —el arranque de una campaña, que es un dato tan real como cualquier otro—
@@ -1544,11 +1573,12 @@ document.addEventListener('DOMContentLoaded', function () {
         pon('faltan', enEspanol(Math.max(m - a, 0)));
       }
     }
-  pon('porcentaje-texto', String(pct).replace('.', ',') + ' % de la meta');
-  pon('progreso-sr', 'Progreso hacia el primer vuelo solidario: ' + String(pct).replace('.', ',') + ' por ciento de la meta.');
+    pon('porcentaje-texto', String(pct).replace('.', ',') + ' % de la meta');
+    pon('progreso-sr', 'Progreso hacia el primer vuelo solidario: ' + String(pct).replace('.', ',') + ' por ciento de la meta.');
     ponAvance(pct);
   }
   pintarCifras(adoptados, metaDeDatos);
+  ponEnRotulosInicial();          // el respaldo del rótulo, del mismo molde
 
   /* ── Y si el Sheet dice otra cosa, el Sheet manda ──────────────────────
      Para que el jefe corrija el avance cambiando una celda, sin tocar el repo
@@ -1659,14 +1689,28 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!isFinite(n) || n <= 0) return;
         var pre = fin.slice(0, fin.search(/[0-9]/));
         var t0 = 0, dur = 1100;
+        /* ⚠️ SI EL SHEET CONTESTA MIENTRAS ESTO CORRE, GANA EL SHEET. La
+           animación capturaba el texto al empezar y en el último cuadro lo
+           volvía a escribir: una respuesta del servidor que cayera dentro de
+           esos 1,1 s quedaba pisada por el número viejo, y la pantalla se
+           quedaba con la meta nueva y los pasajeros de antes. La ventana es
+           angosta —el pedido sale a los tres segundos— pero existe, y el
+           síntoma son dos cifras que no cierran entre sí. */
+        el.setAttribute('data-animando', '');
         var paso = function (t) {
           if (!t0) t0 = t;
+          if (el.getAttribute('data-fin') !== null) {
+            /* `pon` escribió acá mientras subíamos: se respeta y se para. */
+            el.removeAttribute('data-animando');
+            el.removeAttribute('data-fin');
+            return;
+          }
           var p = Math.min((t - t0) / dur, 1);
           // easeOutCubic: arranca rápido y frena sobre el final
           var v = Math.round(n * (1 - Math.pow(1 - p, 3)));
           el.textContent = pre + v.toLocaleString('es-VE').replace(/\./g, ' ');
           if (p < 1) requestAnimationFrame(paso);
-          else el.textContent = fin;   // cierra con el texto exacto, sin reformatear
+          else { el.textContent = fin; el.removeAttribute('data-animando'); }
         };
         requestAnimationFrame(paso);
       };

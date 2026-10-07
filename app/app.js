@@ -142,8 +142,15 @@
     if (v.ruta && $('rf-ruta')) $('rf-ruta').textContent = v.ruta;
     textosDeLaRuta(v);
     // Lo manda el servidor en cada respuesta y la app lo descartaba.
+    /* ⚠️ NO SE ESCONDE CON LA CELDA VACÍA, como `vuelo-nota` ocho líneas más
+       arriba. Escondiéndola, el respaldo del HTML duraba los veinte segundos
+       del arranque en frío de Apps Script y después desaparecía, con su salto
+       de layout — y la celda vacía es el estado de toda fila nueva. El respaldo
+       dice algo cierto para cualquier ruta; el servidor lo pisa cuando tiene
+       algo mejor. (`pintarCierre` sí la esconde, y ahí corresponde: con la ruta
+       completada, el «próximo paso» se contradice con el cartel de que
+       terminó.) */
     if (v.proximo) { $('proximo').textContent = v.proximo; $('proximo-caja').hidden = false; }
-    else $('proximo-caja').hidden = true;
     $('d-estado').textContent = ESTADOS[v.estado] || v.estado || 'Preparando';
     pintarEtapas(v.estado || 'preparando');
 
@@ -260,21 +267,24 @@
       return;
     }
 
-    var quien = v.patrocina ? ' la financia ' + v.patrocina : ' la financia una empresa';
+    /* ⚠️ SIN «una empresa» DE RELLENO. «Tu ruta la financia una empresa» no le
+       informa nada a quien lee: ya sabe que no la financió él. Con la celda
+       `patrocina` vacía no se nombra a nadie y la frase dice lo que sí se sabe. */
     if (intro) {
       intro.textContent = cual
-        ? 'Esta es la Ruta ' + cual + ', y' + quien + '. Faltan cinco por financiar.'
-        : 'Tu ruta' + quien + ', fuera de las seis de la campaña. Éstas son las seis.';
+        ? (v.patrocina
+            ? 'Esta es la Ruta ' + cual + ', y la financia ' + v.patrocina + '. Faltan cinco por financiar.'
+            : 'Esta es la Ruta ' + cual + '. Faltan cinco por financiar.')
+        : (v.patrocina
+            ? 'Tu ruta la financia ' + v.patrocina + ', fuera de las seis de la campaña. Éstas son las seis.'
+            : 'Tu ruta está fuera de las seis de la campaña. Éstas son las seis.');
     }
     /* ⚠️ NO «ya puso su parte». Decir que la ruta ya está pagada contradecía de
        frente al «Faltan 117 para completar la ruta» que está tres centímetros
        más abajo, y desde que una empresa puede patrocinar la MISMA ruta que la
        gente está llenando, es además falso: las adopciones siguen sumando. Lo
-       que sí es cierto en los dos casos es quién la acompaña. */
-    if (sub) {
-      sub.textContent = v.patrocina ? 'Con el apoyo de ' + v.patrocina
-                                    : 'Con el apoyo de una empresa';
-    }
+       que sí es cierto es quién la acompaña — y sólo si la hoja lo dice. */
+    if (sub && v.patrocina) sub.textContent = 'Con el apoyo de ' + v.patrocina;
   }
 
   /** Una celda de la hoja `vuelo` como número, o null si no lo es. */
@@ -429,9 +439,11 @@
       if (de && de.tagName === 'SPAN') de.textContent = hayMeta ? 'de' : '';
     }
     $('rf-lleno').style.setProperty('--avance', String(ancho / 100));
-    caja.setAttribute('aria-label', hayMeta
-      ? enEspanol(adoptados) + ' de ' + enEspanol(meta) + ' Héroes adoptados en esta ruta'
-      : enEspanol(adoptados) + ' Héroes adoptados en esta ruta');
+    /* ⚠️ ACÁ SE PISABA EL `aria-label` DEL `<aside>` CON SU PROPIO CONTENIDO.
+       El marcado ya trae «Avance de la ruta», que es lo que un rótulo de
+       landmark tiene que decir: cómo se llama la región. Escribiéndole «45,5 de
+       609 Héroes adoptados», un lector de pantalla anunciaba la región con esa
+       frase y después leía el contenido, que dice exactamente lo mismo. */
     mostrarBarraAvance();
   }
 
