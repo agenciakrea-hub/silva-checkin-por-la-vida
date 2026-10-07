@@ -726,15 +726,18 @@
          le inventa la de la campaña. */
       m = (vuelo && vuelo.esCampania === false) ? null : (c ? c.meta : null);
     }
-    var caja = $('a-meta');
-    if (caja && typeof m === 'number' && m > 0) {
-      caja.textContent = enEspanol(m);
-      if (caja.parentNode) caja.parentNode.hidden = false;
-    } else if (caja && caja.parentNode) {
-      /* Sin meta no hay frase que decir: «Los — Héroes de esta ruta» no es
-         información, es un hueco. */
-      caja.parentNode.hidden = true;
-    }
+    /* ⚠️ SE ESCONDE LA FRASE DE LA META, NO EL PÁRRAFO. Escondiendo el `<p>`
+       entero se iban con él el origen y el destino, y la sección «Tu aporte»
+       quedaba con el título y nada debajo — justo cuando el dato que la sección
+       promete, a dónde fue la plata, sí se conoce. */
+    var frase = $('a-meta-frase'), hayMeta = typeof m === 'number' && m > 0;
+    if (hayMeta) $('a-meta').textContent = enEspanol(m);
+    if (frase) frase.hidden = !hayMeta;
+    /* Sin la frase, el párrafo tiene que empezar bien: «de Maracaibo a Caracas»
+       no es una oración. */
+    var pref = $('a-prefijo');
+    if (pref) pref.textContent = hayMeta ? ' de ' : 'Esta ruta vuela de ';
+
     if (vuelo && vuelo.origen)  $('a-origen').textContent  = vuelo.origen;
     if (vuelo && vuelo.destino) $('a-destino').textContent = vuelo.destino;
   }

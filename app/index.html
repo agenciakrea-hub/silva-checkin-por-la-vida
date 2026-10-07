@@ -1200,8 +1200,14 @@
          publica: no se inventa nada, se pone donde hace falta. -->
     <section class="aporte enPapel" aria-labelledby="t-aporte">
       <h2 id="t-aporte">Tu aporte</h2>
-      <p class="aporte-grande">Los <b id="a-meta">609</b> Héroes de esta ruta pagan
-        un vuelo completo de <b id="a-origen">Maracaibo</b> a <b id="a-destino">Caracas</b>,
+      <!-- ⚠️ LA META VA EN SU PROPIO `<span>`, SEPARADA DEL ORIGEN Y EL DESTINO.
+           Cuando la hoja no dice la meta —toda fila nueva— había que esconder
+           la frase, y escondiéndola entera se iban también `a-origen` y
+           `a-destino`: la sección «Tu aporte» quedaba con el título y nada
+           debajo, justo cuando el dato más relevante —a dónde fue la plata— sí
+           se conoce. Ahora se esconde sólo la parte que necesita el número. -->
+      <p class="aporte-grande"><span id="a-meta-frase">Los <b id="a-meta">609</b> Héroes de esta ruta pagan
+        un vuelo completo</span><span id="a-prefijo"> de </span><b id="a-origen">Maracaibo</b> a <b id="a-destino">Caracas</b>,
         con tripulación médica a bordo.</p>
       <dl class="aporte-como">
         <div><dt>Selección</dt><dd>Los pacientes llegan a través de fundaciones oncológicas
@@ -1223,7 +1229,13 @@
          función de pintado y se queda con lo que diga el HTML. -->
     <section class="vuelo enPapel" id="vuelo" aria-labelledby="t-vuelo">
       <h2 id="t-vuelo">El oncovuelo</h2>
-      <p id="vuelo-nota">Estamos reuniendo los Héroes de Rescate para la primera ruta.</p>
+      <!-- ⚠️ EL RESPALDO NO PUEDE NOMBRAR UNA RUTA. Decía «para la primera
+           ruta», y se ve en cuanto la celda `nota` está vacía, que es el estado
+           de toda fila nueva: la ruta de una empresa arrancaba diciéndole a su
+           gente que está reuniendo Héroes para la primera. El texto de verdad
+           lo escribe el equipo en esa celda; esto es lo que se lee mientras
+           tanto, y vale para cualquier ruta. -->
+      <p id="vuelo-nota">Estamos reuniendo los Héroes de Rescate de esta ruta.</p>
       <!-- Las etapas y el avance se quedan a la vista aunque falte activar: son
            de la ruta, son ciertos para todos, y son lo que da ganas de activar.
            Lo que cambia es de quién es el vuelo. -->

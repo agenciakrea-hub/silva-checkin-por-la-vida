@@ -1436,7 +1436,12 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       document.querySelectorAll('[data-rotulo-ruta]').forEach(function (el) {
         var plantilla = el.getAttribute('data-rotulo-ruta');
-        el.setAttribute('aria-label', plantilla.replace('{ruta}', ruta));
+        /* ⚠️ CON UNA FUNCIÓN, NO CON LA CADENA. `String.replace` interpreta
+           `$&`, `` $` `` y `$'` dentro del reemplazo como patrones, y la celda
+           `ruta` es texto libre que edita el cliente: un nombre con `$&` dejaba
+           el rótulo diciendo «del vuelo {ruta}», y uno con `` $` `` le pegaba
+           adentro media plantilla. Una función devuelve el texto tal cual. */
+        el.setAttribute('aria-label', plantilla.replace('{ruta}', function () { return ruta; }));
       });
     } catch (e) {}
   };
@@ -1563,7 +1568,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!window.CXV || !window.CXV.alServidor || !window.CXV_API) return;
     var CLAVE = 'cxv-cifras', VIDA = 600000;
 
-    var usar = function (a, m, ososActivados) {
+    var usar = function (a, m, ososActivados, esCampania) {
       var na = Number(a), nm = Number(m);
       var hayA = String(a == null ? '' : a).trim() !== '' && isFinite(na) && na >= 0;
       var hayM = String(m == null ? '' : m).trim() !== '' && isFinite(nm) && nm > 0;
@@ -1580,7 +1585,9 @@ document.addEventListener('DOMContentLoaded', function () {
          en ese archivo. */
       var auto = Number(ososActivados);
       if (!isFinite(auto) || auto < 0) auto = 0;
-      var total = (adoptados || 0) + auto;
+      /* El histórico del evento es de la campaña. Si lo que llegó no es ella,
+         se muestra sólo lo que el servidor contó. */
+      var total = (esCampania === false ? 0 : (adoptados || 0)) + auto;
       if (hayM) pintarCifras(total, nm);
       else if (metaDeDatos) pintarCifras(total, metaDeDatos);
     };
@@ -1588,8 +1595,8 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       var g = JSON.parse(sessionStorage.getItem(CLAVE) || 'null');
       if (g && (Date.now() - g.t) < VIDA) {
-        usar(g.a, g.m, g.o);
-        if (g.r) { pon('ruta', String(g.r)); ponEnRotulos(String(g.r)); }
+        usar(g.a, g.m, g.o, g.c);
+        if (g.c !== false && g.r) { pon('ruta', String(g.r)); ponEnRotulos(String(g.r)); }
         return;
       }
     } catch (e) {}
@@ -1603,9 +1610,19 @@ document.addEventListener('DOMContentLoaded', function () {
         clearTimeout(reloj);
         if (!vale || !r || !r.ok || !r.vuelo) return;
         try { sessionStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados,
-              m: r.vuelo.meta, r: r.vuelo.ruta, o: r.ososActivados })); } catch (e) {}
-        usar(r.vuelo.adoptados, r.vuelo.meta, r.ososActivados);
-        if (r.vuelo.ruta) { pon('ruta', String(r.vuelo.ruta)); ponEnRotulos(String(r.vuelo.ruta)); }
+              m: r.vuelo.meta, r: r.vuelo.ruta, o: r.ososActivados,
+              c: r.vuelo.esCampania })); } catch (e) {}
+        usar(r.vuelo.adoptados, r.vuelo.meta, r.ososActivados, r.vuelo.esCampania);
+        /* ⚠️ SÓLO SI ES LA RUTA DE LA CAMPAÑA. La portada pide `estado` sin
+           token, así que hoy el servidor siempre le contesta la predeterminada
+           y esto nunca se salta. Pero toda esta página habla de UNA ruta —las
+           44 unidades del evento, los cinco lugares con su nombre, la meta de
+           609— y basta con que alguien mueva la ruta predeterminada a la de una
+           empresa para que la portada empiece a mostrar su nombre y a sumarle
+           el histórico de otra. La app ya mira esta bandera; la portada no. */
+        if (r.vuelo.esCampania !== false && r.vuelo.ruta) {
+          pon('ruta', String(r.vuelo.ruta)); ponEnRotulos(String(r.vuelo.ruta));
+        }
       }).catch(function () { clearTimeout(reloj); });
     };
     if ('requestIdleCallback' in window) requestIdleCallback(pedir, { timeout: 5000 });
