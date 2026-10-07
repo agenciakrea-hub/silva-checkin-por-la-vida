@@ -183,17 +183,7 @@
          sola ruta. */
       var suyos = v.esCampania === false ? Number(ososActivados) || 0
                                          : avanceTotal(ososActivados);
-      if (typeof meta === 'number' && meta > 0) {
-        pintarAvance(suyos, meta);
-      } else if (v.esCampania === false) {
-        /* ⚠️ UNA RUTA DE EMPRESA A LA QUE LE FALTA LA CELDA `meta`. Dejando el
-           respaldo del HTML, esa persona vería «Faltan 565 para completar la
-           ruta» con los 609 de la campaña, que no son los suyos. Se muestra lo
-           que lleva y se esconde el resto: lo arregla quien escribe la hoja. */
-        $('c-osos').textContent = enEspanol(suyos);
-        var resto = $('c-faltan');
-        if (resto && resto.parentNode) resto.parentNode.hidden = true;
-      }
+      pintarAvance(suyos, meta, v.esCampania === false);
     }
   }
 
@@ -288,9 +278,43 @@
     return (r % 1 === 0 ? String(r) : String(r).replace('.', ','));
   }
 
-  function pintarAvance(adoptados, meta) {
-    if (typeof adoptados !== 'number' || typeof meta !== 'number' || meta <= 0) return;
-    $('c-osos').textContent   = enEspanol(adoptados);
+  /**
+   * Las seis superficies del avance, siempre juntas.
+   *
+   * ⚠️ ERAN SEIS Y SE CORREGÍAN DOS. `arrancar()` pinta primero la campaña
+   * —44 de 609— y después llega la respuesta del servidor. Para una ruta de
+   * empresa SIN la celda `meta` —que es como nace toda fila nueva, porque
+   * `VUELO_INICIAL` siembra sólo la de la campaña— se corregía `c-osos` y se
+   * escondía `c-faltan`, y quedaban con los números de la campaña el
+   * `aria-label` de la barra, su `scaleX`, y **la barra fija de abajo, que está
+   * siempre a la vista**, diciendo «44 de 609 · RUTA BANCARIBE». Ahora todo
+   * pasa por acá, con o sin meta.
+   *
+   * ⚠️ Y LO QUE SE ESCONDE VUELVE. Esconder `c-faltan` no tenía camino inverso:
+   * el equipo escribía la celda `meta`, el resto de la pantalla se corregía, y
+   * esa línea se quedaba invisible hasta que la persona recargara.
+   */
+  function pintarAvance(adoptados, meta, sinMetaPropia) {
+    if (typeof adoptados !== 'number') return;
+    var hayMeta = typeof meta === 'number' && meta > 0;
+    var resto = $('c-faltan') && $('c-faltan').parentNode;
+
+    $('c-osos').textContent = enEspanol(adoptados);
+    if (resto) resto.hidden = !hayMeta;
+
+    if (!hayMeta) {
+      /* Sin meta no hay proporción que mostrar: la barra se vacía y los
+         rótulos dicen lo único que se sabe, cuántos van. No se deja ni un
+         número de la campaña en pantalla. */
+      if ($('barra')) $('barra').style.transform = 'scaleX(0)';
+      if ($('barra-caja')) {
+        $('barra-caja').setAttribute('aria-label',
+          enEspanol(adoptados) + ' Héroes de Rescate adoptados en esta ruta');
+      }
+      pintarBarraAvance(adoptados, null, 0);
+      return;
+    }
+
     $('c-faltan').textContent = enEspanol(Math.max(meta - adoptados, 0));
     var pct = Math.min(Math.round(adoptados / meta * 100), 100);
     // Con pocos adoptados sobre una meta grande el porcentaje redondea a cero y
@@ -302,8 +326,12 @@
     // Las cifras, no el porcentaje: con 3 de 609 el porcentaje redondea a cero
     // y quien escucha la página oiría «cero por ciento», que suena a que no
     // arrancó. Los números dicen lo mismo sin mentir.
+    /* ⚠️ POR `enEspanol` TAMBIÉN ACÁ. Concatenando el número crudo, el rótulo
+       decía «45.5 de 609» con punto y un lector de pantalla venezolano lee
+       «cuarenta y cinco mil quinientos». Es el mismo arreglo que ya se hizo en
+       el texto visible y en la barra fija; éste quedó porque no se ve. */
     $('barra-caja').setAttribute('aria-label',
-      adoptados + ' de ' + meta + ' Héroes de Rescate adoptados');
+      enEspanol(adoptados) + ' de ' + enEspanol(meta) + ' Héroes de Rescate adoptados');
     pintarBarraAvance(adoptados, meta, ancho);
   }
 
@@ -323,11 +351,24 @@
        decía «44,5». En Venezuela el punto es separador de miles: la barra fija
        leía «cuarenta y cuatro mil quinientos». Su propia cabecera dice «las
        mismas cifras que el bloque de arriba, no otras». */
+    var hayMeta = typeof meta === 'number' && meta > 0;
     $('av-osos').textContent = enEspanol(adoptados);
-    $('av-meta').textContent = enEspanol(meta);
+    /* Sin meta, el «de 609» se va: dejarlo era mostrar la meta de otra ruta en
+       la única barra que está siempre a la vista. */
+    /* ⚠️ VACIANDO EL TEXTO, NO CON `hidden`. El «de» de la barra fija es un
+       `<span>`, y el CSS del proyecto le da `display` propio, que gana sobre el
+       `display:none` del atributo: quedaba «3 de Ruta Bancaribe», con un «de»
+       colgando de la nada. Vaciar el texto no depende de ninguna regla, y son
+       tres copias del CSS sin build. */
+    if ($('av-meta')) {
+      $('av-meta').textContent = hayMeta ? enEspanol(meta) : '';
+      var de = $('av-meta').previousElementSibling;
+      if (de && de.tagName === 'SPAN') de.textContent = hayMeta ? 'de' : '';
+    }
     $('rf-lleno').style.setProperty('--avance', String(ancho / 100));
-    caja.setAttribute('aria-label',
-      adoptados + ' de ' + meta + ' Héroes adoptados en esta ruta');
+    caja.setAttribute('aria-label', hayMeta
+      ? enEspanol(adoptados) + ' de ' + enEspanol(meta) + ' Héroes adoptados en esta ruta'
+      : enEspanol(adoptados) + ' Héroes adoptados en esta ruta');
     mostrarBarraAvance();
   }
 
