@@ -19,7 +19,7 @@
  */
 'use strict';
 
-const VERSION = 'v40';
+const VERSION = 'v41';
 const CACHE   = 'checkin-app-' + VERSION;
 
 /* Lo que hace falta para que la pantalla se dibuje entera sin red. Las cifras
@@ -199,7 +199,7 @@ self.addEventListener('push', event => {
       titulo: 'Un Check-in por la Vida',
       texto: 'Hay novedades de la ruta que ayudaste a financiar.'
     };
-    let aviso = POR_DEFECTO, estado = '';
+    let aviso = POR_DEFECTO, estado = '', vuelo = '';
     try {
       const yo = await leerBD('yo');
       if (yo && yo.api) {
@@ -215,7 +215,14 @@ self.addEventListener('push', event => {
         }).then(r => r.text()).then(t => { try { return JSON.parse(t); } catch (e) { return null; } })
           .catch(() => null);
         const r = await Promise.race([pedido, corte]);
-        if (r && r.ok && r.aviso && r.aviso.titulo) { aviso = r.aviso; estado = r.estado || ''; }
+        if (r && r.ok && r.aviso && r.aviso.titulo) {
+          aviso = r.aviso; estado = r.estado || '';
+          /* De qué ruta habla este aviso. Desde que una empresa puede financiar
+             su propio vuelo, el servidor lo dice y acá hace falta para dos
+             cosas: no pisar el aviso de otra ruta y no callar el de la segunda
+             por haber visto la primera. */
+          vuelo = r.vuelo || '';
+        }
       }
     } catch (e) {}
 
@@ -224,19 +231,28 @@ self.addEventListener('push', event => {
        veces sin querer. Con `tag` el navegador reemplaza el anterior en vez de
        apilar dos iguales, y la marca en IndexedDB evita volver a sonar por una
        etapa que esta persona ya vio. */
+    /* ⚠️ LA MARCA DE «ya lo vi» ES POR RUTA. Guardando sólo la etapa, el
+       teléfono de alguien que está en dos rutas —la campaña y la de su
+       empresa— se callaba el segundo «tu ruta está en el aire» porque ya había
+       visto el de la otra. */
     const visto = await leerBD('visto');
-    if (estado && visto && visto.estado === estado) {
+    const clave = (vuelo || '') + '|' + estado;
+    if (estado && visto && visto.estado === clave) {
       /* Ya se avisó de esta etapa. Igual HAY QUE MOSTRAR ALGO: un `push`
          atendido sin notificación hace que el navegador muestre la suya. Se
          muestra el mismo, con el mismo `tag`, así que reemplaza y no suma. */
     }
-    if (estado) await guardarBD({ id: 'visto', estado: estado });
+    if (estado) await guardarBD({ id: 'visto', estado: clave });
 
     return self.registration.showNotification(aviso.titulo, {
       body: aviso.texto,
       icon: '../img/icon-192.png',
       badge: '../img/icon-192.png',
-      tag: 'cxv-vuelo' + (estado ? '-' + estado : ''),
+      /* ⚠️ EL `tag` LLEVA LA RUTA. Con `cxv-vuelo-en_curso` a secas, el aviso
+         de la ruta de una empresa REEMPLAZABA en el teléfono al de la campaña
+         —el navegador trata el mismo `tag` como el mismo aviso— y la persona
+         veía uno solo donde había dos noticias distintas. */
+      tag: 'cxv-vuelo' + (vuelo ? '-' + vuelo : '') + (estado ? '-' + estado : ''),
       renotify: false,
       data: { url: './' }
     });
