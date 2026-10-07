@@ -200,18 +200,81 @@
    * —un servidor viejo, una respuesta guardada— queda lo que dice el HTML, que
    * es correcto mientras haya una sola ruta.
    */
-  function textosDeLaRuta(v) {
-    if (!v || v.esCampania !== false) return;
-    var intro = $('red-intro');
-    if (intro) {
-      intro.textContent = 'Tu ruta la financia ' + (v.patrocina || 'una empresa')
-                        + '. Estas seis son las de la campaña: faltan seis por financiar.';
+  /* Los seis corredores que publica la campaña, en el mismo orden que el HTML.
+     Es lo único que relaciona la hoja `vuelo` —donde el equipo escribe el
+     origen y el destino a mano— con la lista de «La red completa». */
+  var RUTAS_PUBLICAS = [
+    ['maracaibo', 'caracas'], ['santo domingo del tachira', 'caracas'],
+    ['barinas', 'caracas'],   ['puerto ayacucho', 'caracas'],
+    ['puerto ordaz', 'caracas'], ['guiria', 'caracas']
+  ];
+
+  /** Sin tildes, sin espacios de sobra y en minúsculas: lo escribe una persona. */
+  function pelado(s) {
+    var x = String(s == null ? '' : s).trim().toLowerCase();
+    return x.normalize ? x.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : x;
+  }
+
+  /** Cuál de las seis es ésta, por origen y destino. 0 si ninguna. */
+  function cualDeLasSeis(v) {
+    var o = pelado(v && v.origen), d = pelado(v && v.destino);
+    if (!o || !d) return 0;
+    for (var i = 0; i < RUTAS_PUBLICAS.length; i++) {
+      if (RUTAS_PUBLICAS[i][0] === o && RUTAS_PUBLICAS[i][1] === d) return i + 1;
     }
-    /* El «La tuya» sale del atributo, así que alcanza con sacarlo. */
-    var uno = $('red-ruta-1');
-    if (uno) uno.removeAttribute('data-tuya');
-    var sub = $('etapa-1-sub');
-    if (sub) sub.textContent = 'La empresa que la financia ya puso su parte';
+    return 0;
+  }
+
+  /**
+   * Los textos de «La red completa» y de la primera etapa, según qué ruta sea.
+   *
+   * ⚠️ LA RUTA DE UNA EMPRESA PUEDE SER UNA DE LAS SEIS, O NO. Lo decidió Krea
+   * el 2026-10-07: una empresa puede patrocinar el mismo corredor que está
+   * llenando la gente, o uno aparte. Así que no se puede escribir ni «es la
+   * Ruta 1» ni «no es ninguna de las seis»: hay que mirar. Lo único que las
+   * relaciona es el origen y el destino, que el equipo escribe en la hoja.
+   *
+   * ⚠️ Y NO SE DICE «faltan seis». Decía eso mientras a todos los demás les
+   * decía «faltan cinco» en el mismo momento: son las mismas seis rutas, una de
+   * las dos miente. La ruta de una empresa no cambia cuántas faltan.
+   */
+  function textosDeLaRuta(v) {
+    var intro = $('red-intro'), sub = $('etapa-1-sub');
+    var cual = cualDeLasSeis(v);
+
+    /* El «La tuya» se pone donde corresponde y se saca de donde no. */
+    for (var i = 1; i <= RUTAS_PUBLICAS.length; i++) {
+      var li = $('red-ruta-' + i);
+      if (!li) continue;
+      if (i === cual) li.setAttribute('data-tuya', '');
+      else li.removeAttribute('data-tuya');
+    }
+
+    if (!v || v.esCampania !== false) {
+      /* La campaña: lo que dice el HTML, que es correcto. Se repone por si
+         antes se había pintado otra ruta —un teléfono compartido—. */
+      if (intro) intro.textContent = cual
+        ? 'Esta es la Ruta ' + cual + '. Faltan cinco por financiar.'
+        : 'Estas son las seis rutas de la campaña.';
+      if (sub) sub.textContent = 'Cada adopción suma horas de vuelo';
+      return;
+    }
+
+    var quien = v.patrocina ? ' la financia ' + v.patrocina : ' la financia una empresa';
+    if (intro) {
+      intro.textContent = cual
+        ? 'Esta es la Ruta ' + cual + ', y' + quien + '. Faltan cinco por financiar.'
+        : 'Tu ruta' + quien + ', fuera de las seis de la campaña. Éstas son las seis.';
+    }
+    /* ⚠️ NO «ya puso su parte». Decir que la ruta ya está pagada contradecía de
+       frente al «Faltan 117 para completar la ruta» que está tres centímetros
+       más abajo, y desde que una empresa puede patrocinar la MISMA ruta que la
+       gente está llenando, es además falso: las adopciones siguen sumando. Lo
+       que sí es cierto en los dos casos es quién la acompaña. */
+    if (sub) {
+      sub.textContent = v.patrocina ? 'Con el apoyo de ' + v.patrocina
+                                    : 'Con el apoyo de una empresa';
+    }
   }
 
   /** Una celda de la hoja `vuelo` como número, o null si no lo es. */
