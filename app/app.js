@@ -164,8 +164,35 @@
     } else {
       /* El camino normal: los osos que el servidor contó de los códigos
          activados, más el ajuste de `datos.js`. */
-      var meta = m !== null && m > 0 ? m : (cifrasDeLaCampana() || {}).meta;
-      if (typeof meta === 'number' && meta > 0) pintarAvance(avanceTotal(ososActivados), meta);
+      /* ⚠️ LA META DE `datos.js` ES DE LA CAMPAÑA. Sin esta condición, una ruta
+         de empresa con la celda `meta` vacía se medía contra los 609 de la
+         campaña: «3 de 609 · faltan 606», con la barra en 0,5 %. Y con la meta
+         vacía, un `adoptados` escrito a mano en esa misma fila se ignoraba en
+         silencio, porque el camino de arriba exige las dos celdas. Si no es la
+         campaña y la hoja no dice la meta, no hay meta que mostrar. */
+      var meta = m !== null && m > 0 ? m
+               : (v.esCampania === false ? null : (cifrasDeLaCampana() || {}).meta);
+      /* ⚠️ EL HISTÓRICO DE `datos.js` ES DE LA CAMPAÑA, NO DE CUALQUIER RUTA.
+         Desde que una empresa puede financiar su propio vuelo (2026-10-06), el
+         pase de esa ruta muestra SUS osos: sumarle las 44 unidades del evento
+         de la campaña sería inventarle un avance que nadie financió. El
+         servidor manda `esCampania` porque la app no lo puede deducir sola.
+         Sin la bandera —una respuesta vieja, o el servidor sin desplegar— se
+         suma, que es como se comportó siempre y es correcto mientras haya una
+         sola ruta. */
+      var suyos = v.esCampania === false ? Number(ososActivados) || 0
+                                         : avanceTotal(ososActivados);
+      if (typeof meta === 'number' && meta > 0) {
+        pintarAvance(suyos, meta);
+      } else if (v.esCampania === false) {
+        /* ⚠️ UNA RUTA DE EMPRESA A LA QUE LE FALTA LA CELDA `meta`. Dejando el
+           respaldo del HTML, esa persona vería «Faltan 565 para completar la
+           ruta» con los 609 de la campaña, que no son los suyos. Se muestra lo
+           que lleva y se esconde el resto: lo arregla quien escribe la hoja. */
+        $('c-osos').textContent = enEspanol(suyos);
+        var resto = $('c-faltan');
+        if (resto && resto.parentNode) resto.parentNode.hidden = true;
+      }
     }
   }
 
@@ -218,15 +245,23 @@
     return aMano + auto;
   }
 
+  /**
+   * Un número como se escribe en Venezuela: coma decimal.
+   *
+   * ⚠️ ARRIBA DE LAS DOS FUNCIONES QUE PINTAN CIFRAS, y antes vivía adentro de
+   * una sola. `pintarBarraAvance` escribía `String(44.5)` → «44.5» mientras
+   * `pintarAvance` escribía «44,5», las dos en la misma pantalla. Acá el punto
+   * es separador de miles: la barra fija decía «cuarenta y cuatro mil
+   * quinientos». El `.0` de un entero no se muestra.
+   */
+  function enEspanol(n) {
+    var r = Math.round(Number(n) * 10) / 10;
+    if (!isFinite(r)) return String(n);
+    return (r % 1 === 0 ? String(r) : String(r).replace('.', ','));
+  }
+
   function pintarAvance(adoptados, meta) {
     if (typeof adoptados !== 'number' || typeof meta !== 'number' || meta <= 0) return;
-    /* Coma decimal: desde que un producto de 10 vale medio oso, estas cifras
-       pueden tener medios, y `String(47.5)` da «47.5» — con punto, que acá se
-       lee como separador de miles. El `.0` de un entero no se muestra. */
-    var enEspanol = function (n) {
-      var r = Math.round(n * 10) / 10;
-      return (r % 1 === 0 ? String(r) : String(r).replace('.', ','));
-    };
     $('c-osos').textContent   = enEspanol(adoptados);
     $('c-faltan').textContent = enEspanol(Math.max(meta - adoptados, 0));
     var pct = Math.min(Math.round(adoptados / meta * 100), 100);
@@ -255,8 +290,13 @@
   function pintarBarraAvance(adoptados, meta, ancho) {
     var caja = $('ruta-fija');
     if (!caja) return;
-    $('av-osos').textContent = String(adoptados);
-    $('av-meta').textContent = String(meta);
+    /* ⚠️ CON COMA, IGUAL QUE EL BLOQUE DE ARRIBA. Esta función escribía
+       `String(44.5)` → «44.5», con punto, mientras tres centímetros más arriba
+       decía «44,5». En Venezuela el punto es separador de miles: la barra fija
+       leía «cuarenta y cuatro mil quinientos». Su propia cabecera dice «las
+       mismas cifras que el bloque de arriba, no otras». */
+    $('av-osos').textContent = enEspanol(adoptados);
+    $('av-meta').textContent = enEspanol(meta);
     $('rf-lleno').style.setProperty('--avance', String(ancho / 100));
     caja.setAttribute('aria-label',
       adoptados + ' de ' + meta + ' Héroes adoptados en esta ruta');
@@ -541,8 +581,28 @@
   // ── Tu aporte y la fecha de las cifras ───────────────────────────────────
 
   function pintarAporte(vuelo) {
-    var c = cifrasDeLaCampana();
-    if (c) $('a-meta').textContent = String(c.meta);
+    /* ⚠️ LA META DE LA RUTA, NO LA DE `datos.js`. Esta función ya tomaba el
+       origen y el destino del vuelo y la meta de otro lado: en la misma
+       pantalla decía «Ya somos 3 … Faltan 97 para completar la ruta» arriba y
+       «Los 609 Héroes de ESTA RUTA pagan un vuelo completo» abajo. No hacía
+       falta una empresa para verlo: alcanzaba con cambiar la celda `meta` de la
+       campaña sin volver a publicar `datos.js`. */
+    var m = vuelo ? numeroDeHoja(vuelo.meta) : null;
+    if (m === null || m <= 0) {
+      var c = cifrasDeLaCampana();
+      /* Sólo la campaña cae en `datos.js`: a una ruta de empresa sin meta no se
+         le inventa la de la campaña. */
+      m = (vuelo && vuelo.esCampania === false) ? null : (c ? c.meta : null);
+    }
+    var caja = $('a-meta');
+    if (caja && typeof m === 'number' && m > 0) {
+      caja.textContent = enEspanol(m);
+      if (caja.parentNode) caja.parentNode.hidden = false;
+    } else if (caja && caja.parentNode) {
+      /* Sin meta no hay frase que decir: «Los — Héroes de esta ruta» no es
+         información, es un hueco. */
+      caja.parentNode.hidden = true;
+    }
     if (vuelo && vuelo.origen)  $('a-origen').textContent  = vuelo.origen;
     if (vuelo && vuelo.destino) $('a-destino').textContent = vuelo.destino;
   }

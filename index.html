@@ -1502,7 +1502,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof m === 'number' && m > 0) {
       pon('meta-osos', enEspanol(m));
       if (typeof a === 'number' && a >= 0) {
-        pct = Math.round(a / m * 1000) / 10;
+        /* ⚠️ TOPADO EN 100, IGUAL QUE LA APP. Sin el tope, pasarse de la meta
+           —que es el objetivo— sacaba la línea naranja fuera del riel y al
+           avión más allá del rombo de meta, además de un «106,7 % de la meta»
+           que nadie entiende como una buena noticia. La app ya topa
+           (`Math.min(…, 100)` en `app.js`); la portada no. */
+        pct = Math.min(Math.round(a / m * 1000) / 10, 100);
         pon('faltan', enEspanol(Math.max(m - a, 0)));
       }
     }
@@ -1600,7 +1605,12 @@ document.addEventListener('DOMContentLoaded', function () {
       // los pisa si carga), así que la animación no necesita saber de dónde salen.
       var subirCifra = function (el) {
         var fin = el.textContent;
-        var n = parseFloat(fin.replace(/[^0-9]/g, ''));
+        /* ⚠️ LA COMA ES UN DECIMAL, NO BASURA. Esto sacaba todo lo que no fuera
+           un dígito: con «44,5» ya pintado se quedaba con «445» y la cifra
+           grande subía hasta cuatrocientos cuarenta y cinco durante 1,1 s antes
+           de saltar a «44,5» en el último cuadro. Desde que un producto de 10
+           vale medio oso, cualquier número de la campaña puede tener medios. */
+        var n = parseFloat(fin.replace(/[^0-9,.]/g, '').replace(/\./g, '').replace(',', '.'));
         if (!isFinite(n) || n <= 0) return;
         var pre = fin.slice(0, fin.search(/[0-9]/));
         var t0 = 0, dur = 1100;
