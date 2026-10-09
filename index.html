@@ -1976,6 +1976,20 @@ document.addEventListener('DOMContentLoaded', function () {
       try {
         if (CXV.guardarPersona) {
           CXV.guardarPersona(valores, { invitadoPor: leer(K_INVITA, '') || '' });
+          /* ⚠️ Y SE BORRA ACÁ MISMO. Esta clave no se borraba nunca, y eso en un
+             teléfono compartido le regalaba un invitado a alguien: una madre
+             entra por el enlace de una amiga y se registra; su hija se registra
+             después en el mismo teléfono y hereda el mismo padrino, que suma
+             dos por una sola invitación. Es el caso que `codigo.gs` describe al
+             explicar por qué un teléfono puede repetirse entre dos personas.
+             La app ya borraba la suya (`cxv.invito`); la portada quedó sin esto.
+
+             ⚠️ SE BORRA DESPUÉS DE PASARLA, NO ANTES DE CONFIRMAR, y acá no hay
+             forma de esperar: tres líneas más abajo esta página se va a `app/`.
+             No se pierde nada igual, porque el dato ya viajó ADENTRO del cuerpo
+             que `guardarPersona` encoló, y esa cola vive en el teléfono y
+             reintenta sola. La clave es un «pendiente de usar», y acá se usó. */
+          try { localStorage.removeItem(K_INVITA); } catch (e2) {}
         }
       } catch (e) {}
 
