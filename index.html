@@ -1618,8 +1618,16 @@ document.addEventListener('DOMContentLoaded', function () {
       /* El histórico del evento es de la campaña. Si lo que llegó no es ella,
          se muestra sólo lo que el servidor contó. */
       var total = (esCampania === false ? 0 : (adoptados || 0)) + auto;
+      /* ⚠️ LA META DE `datos.js` TAMBIÉN ES DE LA CAMPAÑA. La guarda se puso en
+         el histórico y en el nombre de la ruta, y se salteó acá: una ruta de
+         empresa con la celda `meta` vacía se medía contra los 609 de la
+         campaña —«3 de 609 · 0,5 % de la meta»— y, como `pon` pinta todos los
+         `data-cifra` con la misma clave, ese número terminaba también en la
+         tarjeta «Padrino de Ruta Sanitaria», que es la que le dice a una
+         empresa cuántos Héroes cuesta financiar una ruta. `app.js` ya tiene
+         esta misma condición. */
       if (hayM) pintarCifras(total, nm);
-      else if (metaDeDatos) pintarCifras(total, metaDeDatos);
+      else if (esCampania !== false && metaDeDatos) pintarCifras(total, metaDeDatos);
     };
 
     try {

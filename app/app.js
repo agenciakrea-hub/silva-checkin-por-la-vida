@@ -15,6 +15,17 @@
 
   var API = (window.CXV_API || '').trim();
   var TEL = '584241466595';
+  /* El texto de respaldo del «próximo paso», tomado del HTML una sola vez: es
+     lo que se repone cuando la hoja no dice nada, en vez de dejar el de la
+     ruta anterior. */
+  var PROXIMO_RESPALDO = (function () {
+    try { return document.getElementById('proximo').textContent; } catch (e) { return ''; }
+  })();
+  /* Y el del cartel de cierre, por el mismo motivo. */
+  var CIERRE_RESPALDO = (function () {
+    try { return document.getElementById('cierre-nota').textContent; } catch (e) { return ''; }
+  })();
+
   var K_YO = 'cxv.yo';
   var K_DISPOSITIVO = 'cxv.dispositivo';
   var K_PERFIL = 'cxv.perfil';   // lo que dejó el formulario, para pintar sin esperar
@@ -129,17 +140,38 @@
     });
   }
 
+  /**
+   * Cómo se llama una ruta cuando la celda `ruta` está vacía.
+   *
+   * El `id` no es bonito en un boarding pass, pero es el único dato que una
+   * fila recién creada tiene seguro, y es cierto. La alternativa era dejar el
+   * nombre de la campaña, que es de otra ruta.
+   */
+  function nombreDeLaRuta(v) {
+    return (v && (v.ruta || v.id)) || '';
+  }
+
   function pintarVuelo(v, ososActivados) {
     if (!v) return;
-    if (v.titulo)  $('vuelo-titulo').textContent = v.titulo;
-    if (v.origen)  $('origen').textContent  = v.origen;
-    if (v.destino) $('destino').textContent = v.destino;
-    if (v.nota)    $('vuelo-nota').textContent = v.nota;
+    /* ⚠️ CADA UNO CON SU `else`, Y NO ES SIMETRÍA DE MANUAL. Estos cinco eran
+       `if (v.X)` pelado, y eso deja el valor anterior en pantalla en los dos
+       casos que de verdad pasan: la fila nueva que nace con todas las celdas
+       vacías —el respaldo del HTML es el de la campaña, así que el pase de
+       Bancaribe se titulaba «Ruta ONCO 001»— y el teléfono compartido por dos
+       personas registradas, donde la segunda hereda el título, el origen y el
+       destino de la ruta de la primera. Lo que se repone no es el texto de la
+       campaña: es lo único que se sabe de ESTA ruta. */
+    $('vuelo-titulo').textContent = v.titulo || nombreDeLaRuta(v);
+    /* Sin origen ni destino no se inventa ninguno: un guion dice «falta este
+       dato», y el dato lo llena quien crea la ruta (ver `docs/PANEL.md`). */
+    $('origen').textContent  = v.origen  || '—';
+    $('destino').textContent = v.destino || '—';
+    if (v.nota) $('vuelo-nota').textContent = v.nota;
     /* El nombre corto de la ruta, en la barra de abajo. Sale de la celda `ruta`
        de la hoja `vuelo`: cambiarla ahí lo cambia en el sitio Y en la app, sin
        tocar código. Es la misma celda que el cliente usó para pedir que diga
        «Ruta Sanitaria 001» en vez de «ONCO 001». */
-    if (v.ruta && $('rf-ruta')) $('rf-ruta').textContent = v.ruta;
+    if ($('rf-ruta')) $('rf-ruta').textContent = nombreDeLaRuta(v);
     textosDeLaRuta(v);
     // Lo manda el servidor en cada respuesta y la app lo descartaba.
     /* ⚠️ NO SE ESCONDE CON LA CELDA VACÍA, como `vuelo-nota` ocho líneas más
@@ -150,7 +182,17 @@
        algo mejor. (`pintarCierre` sí la esconde, y ahí corresponde: con la ruta
        completada, el «próximo paso» se contradice con el cartel de que
        terminó.) */
+    /* ⚠️ CON `else` QUE REPONE EL RESPALDO, no que esconde. Sin ninguna rama,
+       el «próximo paso» de una ruta se quedaba en pantalla cuando entraba otra
+       persona en el mismo teléfono: «Esperando la confirmación de Bancaribe»
+       para alguien de la campaña. Y escondiéndolo volvía el salto de layout que
+       el respaldo vino a sacar. Se repone el texto del HTML, que vale para
+       cualquier ruta. */
     if (v.proximo) { $('proximo').textContent = v.proximo; $('proximo-caja').hidden = false; }
+    else if ($('proximo')) {
+      $('proximo').textContent = PROXIMO_RESPALDO;
+      $('proximo-caja').hidden = false;
+    }
     $('d-estado').textContent = ESTADOS[v.estado] || v.estado || 'Preparando';
     pintarEtapas(v.estado || 'preparando');
 
@@ -207,18 +249,44 @@
    * —un servidor viejo, una respuesta guardada— queda lo que dice el HTML, que
    * es correcto mientras haya una sola ruta.
    */
-  /* Los seis corredores que publica la campaña, en el mismo orden que el HTML.
-     Es lo único que relaciona la hoja `vuelo` —donde el equipo escribe el
-     origen y el destino a mano— con la lista de «La red completa». */
-  var RUTAS_PUBLICAS = [
-    ['maracaibo', 'caracas'], ['santo domingo del tachira', 'caracas'],
-    ['barinas', 'caracas'],   ['puerto ayacucho', 'caracas'],
-    ['puerto ordaz', 'caracas'], ['guiria', 'caracas']
-  ];
+  /**
+   * Los corredores que publica la campaña, **leídos de la propia lista**.
+   *
+   * ⚠️ ESTABAN ESCRITOS A MANO ACÁ, COPIANDO LOS SEIS `<li>` DEL HTML. Dos
+   * copias del mismo dato en dos archivos: corregir el nombre de una ciudad en
+   * la lista y no acá hacía que la app empezara a decir «fuera de las seis»
+   * para la Ruta 1, en silencio. Es el mismo patrón que se sacó del
+   * `aria-label` del pase, reintroducido en otro archivo. Leyéndolos del DOM no
+   * pueden divergir, y una Ruta 7 agregada a la lista funciona sola.
+   */
+  var _rutasPublicas = null;
+  function rutasPublicas() {
+    if (_rutasPublicas) return _rutasPublicas;
+    _rutasPublicas = [];
+    try {
+      for (var i = 1; i <= 20; i++) {
+        var li = $('red-ruta-' + i);
+        if (!li) break;
+        /* El `<i>` dice «Origen → Destino»; el `<svg>` de la flecha no aporta
+           texto, así que `textContent` deja las dos ciudades pegadas por un
+           espacio. Se parte por el salto que deja el marcado. */
+        var i_ = li.querySelector('i');
+        if (!i_) { _rutasPublicas.push(null); continue; }
+        var partes = i_.textContent.split(/\s{2,}|\n/).map(function (x) { return pelado(x); })
+                       .filter(function (x) { return x; });
+        _rutasPublicas.push(partes.length >= 2 ? [partes[0], partes[partes.length - 1]] : null);
+      }
+    } catch (e) {}
+    return _rutasPublicas;
+  }
 
   /** Sin tildes, sin espacios de sobra y en minúsculas: lo escribe una persona. */
   function pelado(s) {
     var x = String(s == null ? '' : s).trim().toLowerCase();
+    /* ⚠️ LOS ESPACIOS DUROS Y LOS DOBLES TAMBIÉN. Un `\u00A0` queda al pegar de
+       una web y dos espacios seguidos no se ven en la celda: los dos hacían que
+       «Puerto Ordaz» no coincidiera con «Puerto Ordaz». */
+    x = x.replace(/[\u00A0\u2007\u202F]/g, ' ').replace(/\s+/g, ' ');
     return x.normalize ? x.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : x;
   }
 
@@ -226,8 +294,9 @@
   function cualDeLasSeis(v) {
     var o = pelado(v && v.origen), d = pelado(v && v.destino);
     if (!o || !d) return 0;
-    for (var i = 0; i < RUTAS_PUBLICAS.length; i++) {
-      if (RUTAS_PUBLICAS[i][0] === o && RUTAS_PUBLICAS[i][1] === d) return i + 1;
+    var seis = rutasPublicas();
+    for (var i = 0; i < seis.length; i++) {
+      if (seis[i] && seis[i][0] === o && seis[i][1] === d) return i + 1;
     }
     return 0;
   }
@@ -247,17 +316,25 @@
    */
   function textosDeLaRuta(v) {
     var intro = $('red-intro'), sub = $('etapa-1-sub');
-    var cual = cualDeLasSeis(v);
+    var esCampania = !v || v.esCampania !== false;
+    /* ⚠️ LA CAMPAÑA NO PIERDE SU «La tuya» POR LO QUE DIGA UNA CELDA. Esto
+       dependía sólo del cruce de origen y destino, y esas celdas son texto
+       libre: escribir «Maracaibo (SVMC)» —o dejarlas vacías, que es el estado
+       de toda fila nueva— borraba el «La tuya» de la Ruta 1 y cambiaba el texto
+       de «La red completa» para TODA la campaña. La campaña es la Ruta 1 desde
+       que existe el sitio y así está escrito en el HTML; si el cruce no
+       reconoce la celda, manda lo que el HTML ya decía. */
+    var cual = cualDeLasSeis(v) || (esCampania ? 1 : 0);
 
     /* El «La tuya» se pone donde corresponde y se saca de donde no. */
-    for (var i = 1; i <= RUTAS_PUBLICAS.length; i++) {
+    for (var i = 1; i <= rutasPublicas().length; i++) {
       var li = $('red-ruta-' + i);
       if (!li) continue;
       if (i === cual) li.setAttribute('data-tuya', '');
       else li.removeAttribute('data-tuya');
     }
 
-    if (!v || v.esCampania !== false) {
+    if (esCampania) {
       /* La campaña: lo que dice el HTML, que es correcto. Se repone por si
          antes se había pintado otra ruta —un teléfono compartido—. */
       if (intro) intro.textContent = cual
@@ -284,7 +361,17 @@
        más abajo, y desde que una empresa puede patrocinar la MISMA ruta que la
        gente está llenando, es además falso: las adopciones siguen sumando. Lo
        que sí es cierto es quién la acompaña — y sólo si la hoja lo dice. */
-    if (sub && v.patrocina) sub.textContent = 'Con el apoyo de ' + v.patrocina;
+    /* ⚠️ CON `else`, O SE QUEDA EL PATROCINADOR DE LA RUTA ANTERIOR. Teléfono
+       compartido: `#red-intro` deja de nombrar a Bancaribe y esta línea, un
+       centímetro más abajo, lo sigue nombrando — se le atribuye a una empresa
+       una ruta que no financió. Sin `patrocina`, la frase que corresponde no es
+       la de la campaña («Cada adopción suma horas de vuelo» es una de las dos
+       que el docblock de arriba llama falsas para una empresa) sino ninguna
+       promesa sobre quién paga. */
+    if (sub) {
+      sub.textContent = v.patrocina ? 'Con el apoyo de ' + v.patrocina
+                                    : 'Esta ruta tiene su financiamiento aparte';
+    }
   }
 
   /** Una celda de la hoja `vuelo` como número, o null si no lo es. */
@@ -713,7 +800,6 @@
     /* Sin el pase activado, los botones se apagan de verdad. El CSS los pinta
        apagados; esto es lo que impide que respondan al toque. */
     if (!conLlave) {
-      var caja = $('lista-mis');
       var tocables = caja.querySelectorAll('button, input');
       for (var t = 0; t < tocables.length; t++) {
         tocables[t].disabled = true;
@@ -745,13 +831,26 @@
     var frase = $('a-meta-frase'), hayMeta = typeof m === 'number' && m > 0;
     if (hayMeta) $('a-meta').textContent = enEspanol(m);
     if (frase) frase.hidden = !hayMeta;
+    /* ⚠️ EL HTML VIEJO EN LA CACHÉ DEL WORKER NO TIENE `#a-meta-frase`. Es la
+       combinación que este archivo documenta que ya rompió la app una vez: un
+       `index.html` de la versión anterior con el `app.js` nuevo. Sin esta rama,
+       una ruta sin meta mostraba «Los 609 Héroes de esta ruta» con los 609 de
+       la campaña. El camino viejo —esconder el párrafo— existe en las dos
+       versiones del marcado. */
+    else if ($('a-meta') && $('a-meta').parentNode) {
+      $('a-meta').parentNode.hidden = !hayMeta;
+    }
     /* Sin la frase, el párrafo tiene que empezar bien: «de Maracaibo a Caracas»
        no es una oración. */
     var pref = $('a-prefijo');
     if (pref) pref.textContent = hayMeta ? ' de ' : 'Esta ruta vuela de ';
 
-    if (vuelo && vuelo.origen)  $('a-origen').textContent  = vuelo.origen;
-    if (vuelo && vuelo.destino) $('a-destino').textContent = vuelo.destino;
+    /* Con `else`, por lo mismo que en `pintarVuelo`: sin esto, «Tu aporte»
+       decía «Esta ruta vuela de Maracaibo a Caracas» en una ruta cuyas celdas
+       están vacías, y conservaba el trayecto de la otra persona en un teléfono
+       compartido. */
+    $('a-origen').textContent  = (vuelo && vuelo.origen)  || '—';
+    $('a-destino').textContent = (vuelo && vuelo.destino) || '—';
   }
 
   // «Cuándo fue verdad esto» es señal de confianza para quien aportó, y el dato
@@ -777,10 +876,15 @@
        contradicen con el cartel que dice que se completó. */
     $('barra-caja').hidden = true;
     $('proximo-caja').hidden = true;
-    if (vuelo.titulo) $('cierre-titulo').textContent = vuelo.titulo + ' se completó';
+    /* Con `else`, por lo mismo que en `pintarVuelo`: con la celda `titulo`
+       vacía el cartel decía «Ruta ONCO 001 se completó» —el respaldo del
+       HTML— en la ruta de otra. */
+    $('cierre-titulo').textContent = (vuelo.titulo || nombreDeLaRuta(vuelo)) + ' se completó';
     /* El equipo escribe el cierre en la hoja: quiénes viajaron, cómo salió. Sin
-       eso queda un agradecimiento genérico, que es lo justo pero no dice nada. */
-    if (vuelo.cierre) $('cierre-nota').textContent = vuelo.cierre;
+       eso queda un agradecimiento genérico, que es lo justo pero no dice nada.
+       Y se repone, para que en un teléfono compartido no quede el relato de la
+       ruta de la otra persona. */
+    $('cierre-nota').textContent = vuelo.cierre || CIERRE_RESPALDO;
     $('cierre').hidden = false;
   }
 
