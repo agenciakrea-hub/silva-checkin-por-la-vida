@@ -1434,8 +1434,16 @@
     /* ⚠️ CUATRO, Y NADA MÁS. Ni botón de «ver todo» ni texto que se expande:
        el título dice «Top 4» y el componente muestra cuatro, así que no falta
        nada. La escala la sugiere la estructura — tres medallas, un cuarto
-       lugar sin medalla y, debajo del corte, el lugar vacío de quien mira. */
-    var TOPE_VISIBLE = 4;
+       lugar sin medalla y, debajo del corte, el lugar vacío de quien mira.
+
+       ⚠️ PERO EL NÚMERO LO MANDA EL SERVIDOR, que es quien calcula «te faltan
+       N» contra él. Acá había un 4 escrito a mano y allá un 8: dos respuestas
+       a la misma pregunta, y esta app descartaba la del servidor y rehacía la
+       cuenta. El 4 de abajo es el respaldo para un servidor anterior a esto
+       —no manda `podio`—, y mientras ese respaldo exista la app se comporta
+       igual que siempre contra el servidor viejo. */
+    var TOPE_VISIBLE = (r && typeof r.podio === 'number' && r.podio > 0) ? r.podio : 4;
+    var servidorNuevo = !!(r && typeof r.podio === 'number' && r.podio > 0);
     r.lista.slice(0, TOPE_VISIBLE).forEach(function (p, i) {
       var li = document.createElement('li');
       li.setAttribute('data-podio', String(i + 1));
@@ -1483,21 +1491,32 @@
        algo en lo que se puede escalar. */
     var vos = $('rank-vos'), vosTxt = $('rank-vos-txt');
     if (!vos || !vosTxt) return;
-    var estaArriba = r.lista.slice(0, TOPE_VISIBLE).some(function (p) { return p.yo; });
+    /* Con el servidor nuevo, el puesto lo dice él: es el único que vio la lista
+       entera. Recorrer las cuatro que llegaron sólo podía responder «está entre
+       éstas cuatro», que no es lo mismo cuando la persona quedó fuera del
+       envío. */
+    var estaArriba = servidorNuevo
+      ? (r.miPuesto > 0 && r.miPuesto <= TOPE_VISIBLE)
+      : r.lista.slice(0, TOPE_VISIBLE).some(function (p) { return p.yo; });
     if (estaArriba) { vos.hidden = true; return; }
     vos.hidden = false;
     if (r.miCuenta > 0) {
       /* ⚠️ EL `|| {}` DE ANTES NO CUBRÍA NADA, LO DISFRAZABA: evitaba el
          TypeError y dejaba pasar `undefined - n + 1`, o sea `NaN`, que
          `Math.max(NaN, 1)` devuelve tal cual. El texto salía «Con NaN más
-         entras al Top 4». Hoy no se alcanza sólo porque el `TOPE` del servidor
-         (8) es mayor que `TOPE_VISIBLE`; bajarlo a 3 en `codigo.gs` —otro
-         archivo, que se despliega aparte— lo dispara sin que la app se entere. */
+         entras al Top 4». No se alcanzaba sólo porque el `TOPE` del servidor
+         (8) era mayor que el visible; bajarlo en `codigo.gs` —otro archivo, que
+         se despliega aparte— lo disparaba sin que la app se entere.
+         Eso dejó de ser cierto: el servidor manda su `podio` y `faltanPara`
+         calculado contra él, y este cálculo es sólo el respaldo para el
+         servidor viejo. */
       var cuarta = r.lista[TOPE_VISIBLE - 1];
-      var falta = cuarta ? Math.max(cuarta.cuantos - r.miCuenta + 1, 1) : 1;
+      var falta = (servidorNuevo && typeof r.faltanPara === 'number' && r.faltanPara > 0)
+        ? r.faltanPara
+        : (cuarta ? Math.max(cuarta.cuantos - r.miCuenta + 1, 1) : 1);
       vosTxt.innerHTML = 'Vas <b>' + r.miCuenta + ' a bordo</b>. Con '
         + (falta === 1 ? '<b>una persona m\u00e1s</b> entras' : '<b>' + falta + ' m\u00e1s</b> entras')
-        + ' al Top 4.';
+        + ' al Top ' + TOPE_VISIBLE + '.';
     } else {
       /* ⚠️ NO DICE «NO HAS SUMADO A NADIE», Y ES POR UNA CONTRADICCIÓN REAL.
          `miCuenta` es 0 también para quien trajo gente pero no activó su propio
@@ -1506,8 +1525,8 @@
          párrafo, tres centímetros más abajo, «todavía no has sumado a nadie».
          Lo único cierto en las dos situaciones es que no está en el Top 4, y
          eso es lo que dice ahora. */
-      vosTxt.innerHTML = 'Todav\u00eda no entras al Top 4. <b>Comparte tu c\u00f3digo</b> '
-        + 'y empieza a escalar posiciones.';
+      vosTxt.innerHTML = 'Todav\u00eda no entras al Top ' + TOPE_VISIBLE
+        + '. <b>Comparte tu c\u00f3digo</b> y empieza a escalar posiciones.';
     }
   }
 
