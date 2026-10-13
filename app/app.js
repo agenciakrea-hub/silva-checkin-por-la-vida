@@ -1230,14 +1230,36 @@
     }
 
     /* Si ya hay uno andando, este llamado no agrega nada: el que está en vuelo
-       va a pintar lo mismo cuando conteste. */
+       va a pintar lo mismo cuando conteste.
+       ⚠️ SALVO QUE HAYA CAMBIADO EL TOKEN, y eso se resuelve al volver la
+       respuesta, más abajo. */
     if (pidiendoEstado) return;
     pidiendoEstado = true;
 
+    /* El token con el que sale ESTE pedido, para saber al volver si la
+       respuesta todavía es de quien está usando el teléfono. */
+    var tokenEnviado = (yo && yo.token) || '';
+    function tokenCambio() {
+      return (((leer(K_YO, null) || {}).token) || '') !== tokenEnviado;
+    }
+
     latido('yendo');
-    conTope(function (ms) { return alServidor({ action: 'estado', token: (yo && yo.token) || '', ranking: true }, ms); })
+    conTope(function (ms) { return alServidor({ action: 'estado', token: tokenEnviado, ranking: true }, ms); })
       .then(function (r) {
         pidiendoEstado = false;
+        /* ⚠️ SI EL TOKEN CAMBIÓ MIENTRAS ESTE PEDIDO VOLABA, LA RESPUESTA ES DE
+           OTRA IDENTIDAD — o de nadie— y no se pinta: se vuelve a preguntar.
+           Pasaba en el momento más importante de todos, la primera entrada
+           después de registrarse: la portada manda el registro y salta a la
+           app, la app arranca SIN token y pide el estado, y el registro vuelve
+           con el token mientras ese pedido sigue en vuelo. `cxv:alta` llamaba a
+           `arrancar()`, que chocaba con `pidiendoEstado` y se iba sin hacer
+           nada; la respuesta sin token llegaba después y la persona quedaba
+           con su pase a medias —el código de invitación en «—», sin poder
+           compartir— hasta recargar. Medido el 2026-10-13 contra el emulador.
+           Depende del orden de llegada, así que en producción pasa a veces y
+           no siempre, que es la peor clase de bug para encontrar. */
+        if (tokenCambio()) { arrancar(); return; }
         // El servidor no contestó JSON: es un problema de conexión o de
         // despliegue, no que esta persona no exista. Se vuelve a intentar antes
         // de contarle nada a nadie.
@@ -1287,6 +1309,9 @@
            toda la vida de la página, ni al volver del segundo plano. Un cerrojo
            que no se abre en el camino del error es peor que no tenerlo. */
         pidiendoEstado = false;
+        /* Lo mismo si falló: con el token nuevo hay que preguntar de nuevo, no
+           reintentar el pedido de antes. */
+        if (tokenCambio()) { arrancar(); return; }
         if (reintentarEstado()) return;
         latido('mal');
         pintarSinConexion();
@@ -1456,7 +1481,9 @@
       /* El número en negrita y la palabra al lado: «3 a bordo» se lee de un
          vistazo, «3» solo no dice de qué. */
       var b = document.createElement('b');
-      b.textContent = String(p.cuantos);
+      /* Con coma: un «3,5» de la hoja se mostraba «3.5», y en Venezuela el
+         punto separa miles. */
+      b.textContent = enEspanol(p.cuantos);
       c.appendChild(b);
       // «1 a bordo» y «3 a bordo» se dicen igual: el ternario que había acá
       // tenía las dos ramas idénticas.
@@ -1514,8 +1541,8 @@
       var falta = (servidorNuevo && typeof r.faltanPara === 'number' && r.faltanPara > 0)
         ? r.faltanPara
         : (cuarta ? Math.max(cuarta.cuantos - r.miCuenta + 1, 1) : 1);
-      vosTxt.innerHTML = 'Vas <b>' + r.miCuenta + ' a bordo</b>. Con '
-        + (falta === 1 ? '<b>una persona m\u00e1s</b> entras' : '<b>' + falta + ' m\u00e1s</b> entras')
+      vosTxt.innerHTML = 'Vas <b>' + enEspanol(r.miCuenta) + ' a bordo</b>. Con '
+        + (falta === 1 ? '<b>una persona m\u00e1s</b> entras' : '<b>' + enEspanol(falta) + ' m\u00e1s</b> entras')
         + ' al Top ' + TOPE_VISIBLE + '.';
     } else {
       /* ⚠️ NO DICE «NO HAS SUMADO A NADIE», Y ES POR UNA CONTRADICCIÓN REAL.
@@ -1657,12 +1684,22 @@
          decía «2 personas entraron con tu código, y 2 activaron su pase» y, tres
          centímetros abajo, «Vas 6 a bordo». Es la misma contradicción que esta
          fase vino a sacar de la hoja, reaparecida dentro de la app. */
-      var ajuste = Math.max(Number(yo && yo.ajuste) || 0, 0);
+      /* ⚠️ CON SU SIGNO. El servidor lo mandaba recortado en cero y el Top lo
+         usaba con signo: con un −2 que cargó el equipo para corregir un doble
+         conteo, acá decía «8 activaron su pase» y en el Top, abajo, 6, sin
+         ninguna explicación. Ahora los dos dicen el mismo número, que es el
+         que el servidor usa en el Top: lo que entró por el código más el
+         ajuste, nunca menos de cero. */
+      var ajuste = Number(yo && yo.ajuste) || 0;
+      var enElTop = Math.max(abordo + ajuste, 0);
       conteo.hidden = false;
       var sumado = ajuste > 0
-        ? ' <span class="tripu-pend">Y <b>' + ajuste + '</b> '
+        ? ' <span class="tripu-pend">Y <b>' + enEspanol(ajuste) + '</b> '
           + 'm\u00e1s que carg\u00f3 el equipo: '
-          + 'en el Top 4 cuentas <b>' + (abordo + ajuste) + '</b>.</span>'
+          + 'en el Top 4 cuentas <b>' + enEspanol(enElTop) + '</b>.</span>'
+        : ajuste < 0
+        ? ' <span class="tripu-pend">El equipo ajust\u00f3 tu cuenta: '
+          + 'en el Top 4 cuentas <b>' + enEspanol(enElTop) + '</b>.</span>'
         : '';
       if (entraron === 0) {
         conteo.innerHTML = '<b>0</b> personas han entrado con tu c\u00f3digo todav\u00eda.' + sumado;
@@ -1770,6 +1807,8 @@
           m === 'es_de_activacion' ? 'Ese es el código de tu Héroe, para activar tu pase. '
                                    + 'Aquí va el de la persona que te invitó, que lleva su apellido.'
         : m === 'es_el_propio'     ? 'Ese es tu propio código. Pon el de quien te invitó.'
+        : m === 'es_circular'      ? 'Esa persona llegó por tu invitación, así que no puede ser '
+                                   + 'quien te invitó a ti.'
         : m === 'codigo_desconocido' ? 'No encontramos ese código. Revísalo con quien te invitó.'
         : 'No pudimos anotarlo. Intenta de nuevo en un momento.';
       })
