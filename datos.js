@@ -4,28 +4,30 @@
 // publica el cambio.
 //
 // ─── ESTE ARCHIVO ES EL HISTÓRICO, NO EL TOTAL ────────────────────────────
-// Lo de acá abajo es lo que se vendió en el evento del congreso, y NO SE TOCA:
+// Lo de aquí abajo es lo que se vendió en el evento del congreso, y NO SE TOCA:
 // es un número ya publicado. Lo que pasa de ahora en adelante se suma encima,
 // solo, sin que nadie edite nada:
 //
 //        total que ve la web  =  lo de este archivo  +  los códigos activados
 //
-// Cada código impreso lleva anotado en la hoja `codigos` qué producto se
-// entregó con él, y al activarse suma su equivalente en OSOS:
+// Cada código lleva en la columna `producto` de la hoja `codigos` el precio del
+// producto con que se entrega —los de un lote impreso ya nacen con él; ojo:
+// eso NO quiere decir que se hayan vendido, lo vendido es lo que tiene
+// `entregado_a`—, y al activarse suma su equivalente en OSOS:
 //
 //        $10  →  medio oso  (0,5)
 //        $20  →  un oso     (1)
 //        $40  →  dos osos   (2)
 //
-// ⚠️ QUÉ AGREGAR ACÁ Y QUÉ NO, que es lo más importante de este archivo:
+// ⚠️ QUÉ AGREGAR AQUÍ Y QUÉ NO, que es lo más importante de este archivo:
 //
 //   · Alguien compró y activó su código      → NO toques nada. Ya se sumó solo.
-//     Agregarlo acá lo cuenta DOS VECES y nada lo va a avisar.
-//   · Alguien compró y no va a activar nunca → se agrega acá, después del
+//     Agregarlo aquí lo cuenta DOS VECES y nada lo va a avisar.
+//   · Alguien compró y no va a activar nunca → se agrega aquí, después del
 //     evento, cuando ya se sabe quién activó y quién no.
 //   · No se sabe                             → no se agrega todavía. Esperar.
 //
-// Acá va sólo lo que ve el público. El tamaño de cada lote —cuántas unidades
+// Aquí va sólo lo que ve el público. El tamaño de cada lote —cuántas unidades
 // había— es información de inventario, se lleva aparte y no se publica.
 //
 // La fecha va en formato AAAA-MM-DD: si se escribe de otra forma, la página

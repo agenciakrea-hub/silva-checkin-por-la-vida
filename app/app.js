@@ -2139,10 +2139,16 @@
     // Sólo por https o en localhost: en http el navegador lo rechaza sin avisar.
     if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
 
+    /* Se mira ANTES de registrar: es lo que distingue una versión nueva de la
+       primera visita, y dentro de `controllerchange` ya es tarde para saberlo. */
+    var habiaWorker = !!navigator.serviceWorker.controller;
+
     navigator.serviceWorker.register('sw.js', { scope: './' })
       .then(function (reg) {
-        // Si aparece una versión nueva mientras la app está abierta, se avisa y
-        // se deja decidir. Recargar por las malas pierde lo que se esté haciendo.
+        /* El aviso de versión nueva casi no se llega a ver: `sw.js` hace
+           `skipWaiting()` al instalarse, el worker nuevo toma la página y
+           `controllerchange` recarga sola a los pocos segundos. Es a propósito:
+           así un arreglo publicado llega a todos en la próxima apertura. */
         reg.addEventListener('updatefound', function () {
           var nuevo = reg.installing;
           if (!nuevo) return;
@@ -2155,9 +2161,18 @@
       })
       .catch(function () { /* sin service worker la app funciona igual, sólo que sin red no abre */ });
 
+    /* ⚠️ SÓLO SI YA HABÍA UN WORKER. En la primera visita la página no tiene
+       controlador, y cuando el worker recién instalado la toma
+       (`clients.claim()`) Chrome dispara `controllerchange` igual: la app se
+       recargaba entera a los dos segundos de abrirla —medido en producción el
+       2026-10-16, la navegación quedaba como `reload`—. Ahí no hay nada nuevo
+       que traer, es la versión que se acaba de bajar, y la recarga cuesta caro:
+       corta el pedido al servidor que estaba en camino, que en frío tarda hasta
+       20 s y vuelve a empezar de cero, y borra lo que la persona estuviera
+       escribiendo, como el código de su pase. */
     var recargando = false;
     navigator.serviceWorker.addEventListener('controllerchange', function () {
-      if (recargando) return;      // Chrome lo dispara dos veces y recargaría en bucle
+      if (recargando || !habiaWorker) return;  // Chrome lo dispara dos veces y recargaría en bucle
       recargando = true;
       location.reload();
     });

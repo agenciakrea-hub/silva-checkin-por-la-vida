@@ -1339,7 +1339,13 @@
 <footer class="pie">
   <div class="bloque">
     <div class="pie-marca">
-      <img src="img/logo-silva-blanco.png" width="1116" height="1463" alt="Aeroambulancias Silva">
+      <!-- El mismo archivo que el logo del primer pliegue, ya descargado. Acá
+           había un PNG de 1116 px y 27 kB para dibujarse a 46 px, que además se
+           pedía al cargar la página y le competía la red a la foto del oso. -->
+      <picture>
+        <source type="image/avif" srcset="img/logo-silva-blanco-400.avif">
+        <img src="img/logo-silva-blanco-400.webp" width="305" height="400" loading="lazy" alt="Aeroambulancias Silva">
+      </picture>
     </div>
     <div class="pie-grid">
       <div>
