@@ -893,6 +893,14 @@
      necesita—, pero el pase, la ruta y las misiones son de quien adoptó un
      Héroe de verdad. Sin código: el pase se ve a la espera, sin número, y lo
      primero que aparece es cómo activarlo. */
+  /** «onco 4k7m», «ONCO-4K7M», «ONCO_4K7M» → «ONCO-4K7M». Cualquier otra cosa
+      —un número de ticket del evento, por ejemplo— → «». Mismo alfabeto que
+      valida el servidor. */
+  function codigoDeTicket(t) {
+    var m = /^\s*ONCO[\s\-_‐-―]*([23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4})\s*$/i.exec(String(t || ''));
+    return m ? 'ONCO-' + m[1].toUpperCase() : '';
+  }
+
   function pintarActivacion(yo) {
     var activo = !!(yo && yo.activo);
 
@@ -910,6 +918,18 @@
     $('pase-falta').hidden = activo;
     if (activo) $('pase').removeAttribute('data-falta');
     else        $('pase').setAttribute('data-falta', '');
+
+    /* ⚠️ EL CÓDIGO QUE LA PERSONA YA ESCRIBIÓ EN «N.º DE TICKET». El formulario
+       de la portada tiene ese campo, y quien tiene en la mano un pase con su
+       ONCO impreso lo escribe ahí: se guardaba como texto y la app le volvía a
+       pedir el código, como si el primero no hubiera servido. Si tiene forma de
+       código, queda puesto en el campo y alcanza con tocar «Activar». No se
+       activa solo: puede estar mal escrito y la persona tiene que verlo. */
+    if (!activo) {
+      var campoCodigo = $('form-activar') && $('form-activar').elements.codigo;
+      var escrito = codigoDeTicket((leer(K_PERFIL, null) || {}).ticket || (yo && yo.ticket) || '');
+      if (campoCodigo && !campoCodigo.value && escrito) campoCodigo.value = escrito;
+    }
 
     // Las secciones que hablan de «tu» aporte no aplican a quien no aportó.
     var aporte = document.querySelector('.aporte');
@@ -955,7 +975,10 @@
        en la línea que dice «N.º de pase» se lee como un error del sistema.
        Lo que va acá es lo que la persona tiene escrito en algún lado: el
        número del pase de papel si lo vinculó, o su código de activación. */
-    $('d-pase').textContent = yo.activo ? (yo.ticket || yo.codigo || '—') : '—';
+    /* Si lo que escribió en «N.º de ticket» era su ONCO —ver `pintarActivacion`—,
+       va el código como lo guardó el servidor y no «onco gb75» tal cual. */
+    var ticketReal = codigoDeTicket(yo.ticket) ? '' : yo.ticket;
+    $('d-pase').textContent = yo.activo ? (ticketReal || yo.codigo || '—') : '—';
     // El nombre arriba del todo: es el pase de esa persona, no un pase genérico.
     var pila = primerNombre(yo.nombre || yo.nombreCompleto || '');
     $('pase-rotulo').textContent = pila ? ('Boarding de ' + pila) : 'Boarding Pass solidario';
@@ -1943,7 +1966,8 @@
     });
     var yo = leer(K_YO, null), perfil = leer(K_PERFIL, null);
     var quien = (perfil && perfil.nombre) ? ('Soy ' + perfil.nombre + '. ') : '';
-    var pase = (yo && yo.id) ? ('\n\nMi pase: ' + (perfil && perfil.ticket ? perfil.ticket : yo.id)) : '';
+    var pase = (yo && yo.id) ? ('\n\nMi pase: ' + (perfil && perfil.ticket
+      ? (codigoDeTicket(perfil.ticket) || perfil.ticket) : yo.id)) : '';
     var d = destinoElegido();
     window.open(waALaEmpresa(
       'Hola, vengo de mi Boarding Pass de Un Check-in por la Vida. ' + quien +
