@@ -400,6 +400,12 @@
     if (Object.prototype.toString.call(d.productos) === '[object Array]') {
       adoptados = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
     }
+    /* Y lo vendido de un lote que nadie activó, que `datos.js` lleva YA EN
+       OSOS (`ososSinActivar`). Se suma acá porque `adoptados` es sólo la parte
+       «a mano» del avance: en la app no pinta ninguna cifra del evento. */
+    var sinActivar = (typeof d.ososSinActivar === 'number' && isFinite(d.ososSinActivar)
+                      && d.ososSinActivar >= 0) ? d.ososSinActivar : 0;
+    if (adoptados !== null) adoptados += sinActivar;
     return (meta !== null && adoptados !== null) ? { adoptados: adoptados, meta: meta } : null;
   }
 

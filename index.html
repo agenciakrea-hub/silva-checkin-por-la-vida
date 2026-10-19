@@ -1503,6 +1503,13 @@ document.addEventListener('DOMContentLoaded', function () {
      que están arriba de él, así que no se pueden separar: si alguien corrige
      `vendidas` en `datos.js`, los cuatro números se mueven juntos. */
   if (adoptados !== null) pon('evento', String(adoptados));
+  /* ⚠️ EL AVANCE NO ES SÓLO EL EVENTO. Se le suma lo vendido de un lote que
+     nadie activó, que `datos.js` lleva ya en OSOS (`ososSinActivar`) —sumarlo
+     en `vendidas` contaba cada toalla como un oso entero—. `adoptados` queda
+     para la cifra del evento, que es en unidades y no cambia; `aMano` es lo
+     que se suma al avance, acá y en `usar()`. */
+  var sinActivar = num(d.ososSinActivar) ? d.ososSinActivar : 0;
+  var aMano = adoptados === null ? null : adoptados + sinActivar;
   var metaDeDatos = (num(d.metaOsos) && d.metaOsos > 0) ? d.metaOsos : null;
   /* El pintado vive más abajo, en `pintarCifras`, porque necesita `ponAvance`
      —que se define después— y porque ahora hay DOS orígenes para estos
@@ -1583,7 +1590,7 @@ document.addEventListener('DOMContentLoaded', function () {
     pon('progreso-sr', 'Progreso hacia el primer vuelo solidario: ' + String(pct).replace('.', ',') + ' por ciento de la meta.');
     ponAvance(pct);
   }
-  pintarCifras(adoptados, metaDeDatos);
+  pintarCifras(aMano, metaDeDatos);
   ponEnRotulosInicial();          // el respaldo del rótulo, del mismo molde
 
   /* ── Y si el Sheet dice otra cosa, el Sheet manda ──────────────────────
@@ -1623,7 +1630,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!isFinite(auto) || auto < 0) auto = 0;
       /* El histórico del evento es de la campaña. Si lo que llegó no es ella,
          se muestra sólo lo que el servidor contó. */
-      var total = (esCampania === false ? 0 : (adoptados || 0)) + auto;
+      var total = (esCampania === false ? 0 : (aMano || 0)) + auto;
       /* ⚠️ LA META DE `datos.js` TAMBIÉN ES DE LA CAMPAÑA. La guarda se puso en
          el histórico y en el nombre de la ruta, y se salteó acá: una ruta de
          empresa con la celda `meta` vacía se medía contra los 609 de la

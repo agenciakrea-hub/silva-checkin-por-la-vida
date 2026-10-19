@@ -38,6 +38,17 @@ window.CAMPANA = {
   // Osos que se planifica vender para cubrir la ruta ONCO 001.
   metaOsos: 609,
 
+  // ⚠️ EN OSOS, NO EN UNIDADES. Lo que se vendió de un lote impreso por precio
+  // y nadie activó, convertido a osos: toalla ($10) 0,5 · llavero ($20) 1 ·
+  // oso grande ($40) 2. Se carga UNA vez, cuando se deja de vender el lote:
+  //   vendidos de un precio  =  pases pedidos  −  pases que sobraron
+  //   sin activar            =  vendidos  −  «Activados · $N» del panel
+  //   osos                   =  sin activar  ×  0,5 / 1 / 2
+  // Ejemplo: 300 toallas pedidas, 40 sobraron, 200 activadas → 60 sin activar
+  // → 30 osos. Si después alguien activa uno de esos pases, cuenta DOS VECES y
+  // nada lo avisa: por eso se carga al final y no antes.
+  ososSinActivar: 0,
+
   // ⚠️ `vendidas` son UNIDADES y se suman tal cual: 27 toallas cuentan 27.
   // Es el criterio con el que se publicó el número del evento y se mantiene
   // para no reescribir hacia atrás una cifra que la gente ya vio. La
