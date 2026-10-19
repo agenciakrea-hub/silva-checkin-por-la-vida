@@ -933,7 +933,15 @@
        activa solo: puede estar mal escrito y la persona tiene que verlo. */
     if (!activo) {
       var campoCodigo = $('form-activar') && $('form-activar').elements.codigo;
-      var escrito = codigoDeTicket((leer(K_PERFIL, null) || {}).ticket || (yo && yo.ticket) || '');
+      /* ⚠️ SÓLO CON LA RESPUESTA DEL SERVIDOR, NUNCA EN EL PINTADO LOCAL. Ese
+         primer pintado (`yoLocal`, marcado `local`) sale de `cxv.perfil`, que
+         la portada escribe en cada registro y no está atado a la identidad
+         guardada: en un teléfono compartido, mientras viaja el alta de Beto,
+         el pase de la pantalla es de Ana y el ticket es el de Beto, y
+         precargarlo dejaba el código de Beto a un toque de activarse en la
+         cuenta de Ana. Lo marcó la revisión del 2026-10-19. El `yo` del
+         servidor es el de quien de verdad está en pantalla. */
+      var escrito = (yo && !yo.local) ? codigoDeTicket(yo.ticket || '') : '';
       if (campoCodigo && !campoCodigo.value && escrito) campoCodigo.value = escrito;
     }
 
@@ -984,7 +992,10 @@
     /* Si lo que escribió en «N.º de ticket» era su ONCO —ver `pintarActivacion`—,
        va el código como lo guardó el servidor y no «onco gb75» tal cual. */
     var ticketReal = codigoDeTicket(yo.ticket) ? '' : yo.ticket;
-    $('d-pase').textContent = yo.activo ? (ticketReal || yo.codigo || '—') : '—';
+    /* Y si no hay código activado —alguien activado a mano por el equipo—, el
+       del ticket normalizado antes que «—». Lo marcó la revisión. */
+    $('d-pase').textContent = yo.activo
+      ? (ticketReal || yo.codigo || codigoDeTicket(yo.ticket) || '—') : '—';
     // El nombre arriba del todo: es el pase de esa persona, no un pase genérico.
     var pila = primerNombre(yo.nombre || yo.nombreCompleto || '');
     $('pase-rotulo').textContent = pila ? ('Boarding de ' + pila) : 'Boarding Pass solidario';
@@ -1202,7 +1213,7 @@
       var yoLocal = { nombre: primerNombre(perfil.nombre), nombreCompleto: perfil.nombre,
                       ticket: perfil.ticket || '', id: (leer(K_YO, {}) || {}).id || '',
                       codigo: perfil.codigo || '', activo: !!perfil.codigo,
-                      tripulacion: 0 };
+                      tripulacion: 0, local: true };
       pintarPersona(yoLocal);
       /* ⚠️ Y LAS MISIONES TAMBIÉN. `pintarPersona` muestra el bloque, pero
          dibujarlo es otra función: sin esta línea, quien se acababa de
@@ -2050,9 +2061,13 @@
         }
         var motV = (r && r.motivo) || '';
         if (!NO_ES_EL_CODIGO[motV]) campo.setAttribute('aria-invalid', 'true');
+        /* `error_servidor` NO sale de `MOTIVOS`: ahí dice «No pudimos
+           activarlo», que es el mensaje de activar y no el de vincular. */
         aviso.textContent = motV === 'ticket_invalido'
           ? 'Ese número no parece un Boarding Pass. Revísalo.'
-          : (MOTIVOS[motV] || 'No pudimos vincularlo. Intenta de nuevo en un momento.');
+          : motV === 'error_servidor'
+            ? 'No pudimos vincularlo por un problema nuestro, no de tu número. Intenta de nuevo en un momento.'
+            : (MOTIVOS[motV] || 'No pudimos vincularlo. Intenta de nuevo en un momento.');
       })
       .catch(function () { aviso.textContent = 'No pudimos conectarnos. Revisa tu conexión.'; });
   }
