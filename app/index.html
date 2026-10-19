@@ -30,15 +30,22 @@
 <meta name="apple-mobile-web-app-title" content="Mi Boarding Pass">
 <style>
   /* Las fuentes son las del sitio. Se cargan de ../fonts para no duplicarlas:
-     quien llega acá desde la campaña ya las tiene en caché. */
+     quien llega acá desde la campaña ya las tiene en caché.
+     ⚠️ `optional`, NO `swap` COMO EN LA PORTADA. Con `swap`, en una primera
+     visita directa las fuentes llegaban a los dos segundos y el texto se
+     reacomodaba entero: 0,12 de CLS con Slow 4G (2026-10-19). Precargarlas lo
+     escondía atrasando 300 ms el primer pintado para todos. Con `optional` el
+     navegador usa la fuente si ya la tiene —quien viene de la portada, y
+     cualquiera desde la segunda visita, con el service worker— y si no, se
+     queda con la de respaldo esa vez, sin salto. «La carga rápida manda». */
   @font-face{font-family:'Big Shoulders';src:url('../fonts/BigShoulders-700-latin.woff2') format('woff2');
-             font-weight:700;font-display:swap;}
+             font-weight:700;font-display:optional;}
   @font-face{font-family:'Martian';src:url('../fonts/MartianMono-700-cifras.woff2') format('woff2');
-             font-weight:700;font-display:swap;}
+             font-weight:700;font-display:optional;}
   @font-face{font-family:'Source Sans';src:url('../fonts/SourceSans3-400-latin.woff2') format('woff2');
-             font-weight:400;font-display:swap;}
+             font-weight:400;font-display:optional;}
   @font-face{font-family:'Source Sans';src:url('../fonts/SourceSans3-600-latin.woff2') format('woff2');
-             font-weight:600;font-display:swap;}
+             font-weight:600;font-display:optional;}
 
   :root{
     color-scheme:only light;
@@ -1227,6 +1234,42 @@
          siquiera registrado— y `pintarActivacion` le pone el «Tu» a quien se lo
          ganó. Al revés, quien nunca completa el formulario no pasa por ninguna
          función de pintado y se queda con lo que diga el HTML. -->
+    <!-- ⚠️ EL PRIMER PINTADO, ANTES DE QUE LLEGUE `app.js`. En una red lenta
+         `app.js` llega a los dos o tres segundos, y hasta entonces todo lo de
+         arriba estaba oculto: cuando llegaba, el pase y el bloque de activar
+         —o «entrar», sin perfil— aparecían ENCIMA de lo que la persona ya
+         estaba mirando y empujaban el vuelo para abajo. CLS medido el
+         2026-10-19 con Slow 4G: 0,576 al llegar de la portada recién
+         registrado, 0,283 sin perfil. Esto deja esas secciones como las va a
+         dejar `app.js` ANTES de que se pinte el vuelo, que todavía no se leyó.
+         ⚠️ ESPEJO DE `pintarActivacion` Y DE `ponerBuscando` (`app.js`): si
+         cambia lo que muestran u ocultan, se cambia acá también, o el salto
+         vuelve. Sin `localStorage` no hace nada y la app arranca como antes. -->
+    <script>
+    (function () {
+      try {
+        var d = document, perfil = null;
+        try { perfil = JSON.parse(localStorage.getItem('cxv.perfil') || 'null'); } catch (e) {}
+        if (perfil && perfil.nombre) {
+          var activo = !!perfil.codigo;
+          d.getElementById('pase').hidden = false;
+          d.getElementById('pase-falta').hidden = activo;
+          if (!activo) d.getElementById('pase').setAttribute('data-falta', '');
+          d.getElementById('activar-pase').hidden = false;
+          d.getElementById('activar-form').hidden = activo;
+          d.getElementById('activar-listo').hidden = !activo;
+          d.getElementById('t-activar').textContent = activo ? 'Tu Boarding Pass de papel'
+                                                             : 'Activa tu Boarding Pass';
+          var aporte = d.querySelector('.aporte');
+          if (aporte) aporte.hidden = !activo;
+        } else {
+          var boton = d.querySelector('#form-entrar button[type="submit"]');
+          d.getElementById('entrar').hidden = false;
+          if (boton) { boton.disabled = true; boton.textContent = 'Buscando tu pase…'; }
+        }
+      } catch (e) {}
+    })();
+    </script>
     <section class="vuelo enPapel" id="vuelo" aria-labelledby="t-vuelo">
       <h2 id="t-vuelo">El oncovuelo</h2>
       <!-- ⚠️ EL RESPALDO NO PUEDE NOMBRAR UNA RUTA. Decía «para la primera

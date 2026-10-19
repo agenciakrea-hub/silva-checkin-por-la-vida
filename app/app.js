@@ -855,8 +855,15 @@
        decía «Esta ruta vuela de Maracaibo a Caracas» en una ruta cuyas celdas
        están vacías, y conservaba el trayecto de la otra persona en un teléfono
        compartido. */
-    $('a-origen').textContent  = (vuelo && vuelo.origen)  || '—';
-    $('a-destino').textContent = (vuelo && vuelo.destino) || '—';
+    /* ⚠️ SIN DATOS TODAVÍA —`null`, al arrancar— SE DEJA EL RESPALDO DEL HTML,
+       que es la ruta de la campaña y nunca la de otra persona. Ponía «—» hasta
+       que contestaba el servidor: el párrafo se achicaba una línea y volvía a
+       crecer, y todo lo de abajo saltaba dos veces (0,13 de CLS con la letra de
+       respaldo, medido el 2026-10-19). */
+    if (vuelo) {
+      $('a-origen').textContent  = vuelo.origen  || '—';
+      $('a-destino').textContent = vuelo.destino || '—';
+    }
   }
 
   // «Cuándo fue verdad esto» es señal de confianza para quien aportó, y el dato
@@ -907,6 +914,10 @@
     return m ? 'ONCO-' + m[1].toUpperCase() : '';
   }
 
+  /* ⚠️ LO QUE ESTO MUESTRA U OCULTA ARRIBA DEL VUELO —el pase, «Falta
+     activación», el bloque de activar y el del aporte— lo repite el script en
+     línea de `app/index.html` para el primer pintado, antes de que llegue este
+     archivo. Si cambia acá, se cambia allá, o vuelve el salto de 0,57. */
   function pintarActivacion(yo) {
     var activo = !!(yo && yo.activo);
 
@@ -1018,6 +1029,9 @@
     if (perfil && perfil.nombre) return;
     $('pase').hidden   = true;
     $('entrar').hidden = false;
+    /* Sin servidor configurado se llega acá sin pasar por `limpiarSinConexion`,
+       y el botón quedaba en «Buscando…» para siempre. */
+    ponerBuscando(false);
     // Sin pase no hay misiones que mostrar: son de la persona, no de la ruta.
     $('misiones').hidden = true;
   }
@@ -1090,6 +1104,24 @@
       'Escribe el teléfono con el que te registraste y lo recuperamos.';
     $('form-entrar').hidden = false;
     $('btn-reintentar').hidden = true;
+    ponerBuscando(false);
+  }
+
+  /* «entrar» mientras el servidor mira si este teléfono ya tiene un pase: el
+     formulario a la vista y el botón deshabilitado, diciendo que busca.
+     ⚠️ ANTES SE ESCONDÍA EL FORMULARIO y título y texto pasaban a
+     «Buscando…» / «Un momento.»: al contestar el servidor aparecía el
+     formulario, la sección crecía y empujaba todo lo de abajo (0,15 de CLS,
+     medido el 2026-10-19). Con el formulario siempre puesto, lo único que
+     cambia es el botón. Deshabilitado, además, Enter en el teléfono no manda
+     nada mientras tanto.
+     ⚠️ ESPEJO del script en línea de `app/index.html`, que lo deja así antes
+     de que esto cargue. */
+  function ponerBuscando(si) {
+    var boton = document.querySelector('#form-entrar button[type="submit"]');
+    if (!boton) return;
+    boton.disabled = !!si;
+    boton.textContent = si ? 'Buscando tu pase…' : 'Buscar mi pase';
   }
 
   /* ⚠️ `arrancar()` SE LLAMABA UNA SOLA VEZ. Si ese pedido fallaba —y Apps
@@ -1264,9 +1296,7 @@
     var perfilLocal = leer(K_PERFIL, null);
     if (!perfilLocal) {
       $('entrar').hidden = false;
-      $('entrar-titulo').textContent = 'Buscando tu Boarding Pass…';
-      $('entrar-texto').textContent = 'Un momento.';
-      $('form-entrar').hidden = true;
+      ponerBuscando(true);
     }
 
     /* Si ya hay uno andando, este llamado no agrega nada: el que está en vuelo
