@@ -2052,12 +2052,19 @@
                         + 'Tu código sigue siendo válido: espera unos segundos y '
                         + 'vuelve a intentar con el mismo.',
     respuesta_no_json:  'El servidor está con mucha gente. Tu código sigue siendo '
-                        + 'válido: espera un momento y vuelve a intentar con el mismo.'
+                        + 'válido: espera un momento y vuelve a intentar con el mismo.',
+    /* ⚠️ FALTABA, Y FUE LO QUE VIERON LAS CINCO PRIMERAS PERSONAS REALES
+       (2026-10-17/18): el servidor fallaba al marcar el código y la app decía
+       el genérico de abajo con el campo en rojo, como si el código estuviera
+       mal escrito. Desde `@76` un fallo así no gasta el código. */
+    error_servidor:     'No pudimos activarlo por un problema nuestro, no de tu código. '
+                        + 'Intenta de nuevo en un momento con el mismo.'
   };
 
   /* Los motivos que NO son culpa de lo que la persona escribió. Marcar el campo
      en rojo ahí es decirle que su código está mal cuando no lo está. */
-  var NO_ES_EL_CODIGO = { ocupado: 1, respuesta_no_json: 1, sin_token: 1, token_invalido: 1 };
+  var NO_ES_EL_CODIGO = { ocupado: 1, respuesta_no_json: 1, sin_token: 1, token_invalido: 1,
+                          error_servidor: 1 };
 
   al('form-activar', 'submit', function (e) {
     e.preventDefault();
