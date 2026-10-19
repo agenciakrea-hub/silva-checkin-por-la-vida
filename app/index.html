@@ -1251,7 +1251,7 @@
         var d = document, perfil = null;
         try { perfil = JSON.parse(localStorage.getItem('cxv.perfil') || 'null'); } catch (e) {}
         if (perfil && perfil.nombre) {
-          var activo = !!perfil.codigo;
+          var activo = perfil.activo === true || !!perfil.codigo;
           d.getElementById('pase').hidden = false;
           d.getElementById('pase-falta').hidden = activo;
           if (!activo) d.getElementById('pase').setAttribute('data-falta', '');

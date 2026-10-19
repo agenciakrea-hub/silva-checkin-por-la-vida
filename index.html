@@ -785,20 +785,23 @@
   </a>
   <!-- El mismo pase que gira más abajo, en miniatura, aprovechando el hueco
        que queda entre la marca y los botones. Decorativo: `aria-hidden`, y
-       `loading="eager"` porque está en el primer pliegue. -->
+       `loading="eager"` porque está en el primer pliegue.
+       ⚠️ LA DE 240 Y NO LA DE 700: se dibuja a 74 px (222 en densidad 3), y
+       con la de 700 bajaban ~30 kB en el primer pliegue compitiendo con la foto
+       del oso. Las dos caras de 240 pesan ~5 kB. -->
   <div class="cab-pase" aria-hidden="true">
     <div class="pase3d-flota">
       <div class="pase3d-pieza">
         <div class="pase3d-cara pase3d-frente">
           <picture>
-            <source type="image/avif" srcset="img/pase-frente-700.avif">
-            <img src="img/pase-frente-700.webp" width="1100" height="433" decoding="async" alt="">
+            <source type="image/avif" srcset="img/pase-frente-240.avif">
+            <img src="img/pase-frente-240.webp" width="240" height="95" decoding="async" alt="">
           </picture>
         </div>
         <div class="pase3d-cara pase3d-dorso">
           <picture>
-            <source type="image/avif" srcset="img/pase-dorso-700.avif">
-            <img src="img/pase-dorso-700.webp" width="1100" height="433" decoding="async" alt="">
+            <source type="image/avif" srcset="img/pase-dorso-240.avif">
+            <img src="img/pase-dorso-240.webp" width="240" height="95" decoding="async" alt="">
           </picture>
         </div>
       </div>

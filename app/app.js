@@ -1024,6 +1024,33 @@
   // guarda el pase aparecía con su nombre y se borraba solo un instante
   // después, dejándole un formulario de «entra a tu pase» al que acababa de
   // registrarse.
+  /* «maría  Pérez » y «María Pérez» son la misma persona para comparar. */
+  function nombreParaComparar(n) {
+    var t = String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    return typeof t.normalize === 'function' ? t.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : t;
+  }
+
+  /* ⚠️ EL ESTADO DE ACTIVACIÓN QUE DICE EL SERVIDOR, GUARDADO EN EL TELÉFONO.
+     `perfil.codigo` se escribía sólo cuando la activación salía del botón de
+     esta app. Quien quedó activa por otro camino —su ONCO en «N.º de ticket»,
+     la reparación del 2026-10-19, el equipo a mano u otro teléfono— abría la
+     app y en cada apertura en frío veía «Activa tu pase» hasta que contestaba
+     el servidor, y el primer pintado saltaba. Se copia sólo si el perfil es de
+     la misma persona que contestó el servidor: en un teléfono compartido el
+     perfil puede ser de otra. */
+  function sincronizarPerfil(yoServidor) {
+    var perfil = leer(K_PERFIL, null);
+    if (!perfil || !perfil.nombre || !yoServidor) return;
+    if (nombreParaComparar(perfil.nombre) !==
+        nombreParaComparar(yoServidor.nombreCompleto || yoServidor.nombre)) return;
+    var activo = !!yoServidor.activo;
+    var codigo = activo ? String(yoServidor.codigo || '') : '';
+    if (perfil.activo === activo && (perfil.codigo || '') === codigo) return;
+    perfil.activo = activo;
+    perfil.codigo = codigo;
+    escribir(K_PERFIL, perfil);
+  }
+
   function pintarDesconocido() {
     var perfil = leer(K_PERFIL, null);
     if (perfil && perfil.nombre) return;
@@ -1244,7 +1271,7 @@
          durante los veinte segundos que Apps Script tarda en despertar. */
       var yoLocal = { nombre: primerNombre(perfil.nombre), nombreCompleto: perfil.nombre,
                       ticket: perfil.ticket || '', id: (leer(K_YO, {}) || {}).id || '',
-                      codigo: perfil.codigo || '', activo: !!perfil.codigo,
+                      codigo: perfil.codigo || '', activo: perfil.activo === true || !!perfil.codigo,
                       tripulacion: 0, local: true };
       pintarPersona(yoLocal);
       /* ⚠️ Y LAS MISIONES TAMBIÉN. `pintarPersona` muestra el bloque, pero
@@ -1358,6 +1385,7 @@
             yo.invitacion = r.yo.invitacion;
             escribir(K_YO, yo);
           }
+          sincronizarPerfil(r.yo);
           pintarPersona(r.yo);
           pintarInvitacion(r.yo);
           pintarAvisos(r.yo);
