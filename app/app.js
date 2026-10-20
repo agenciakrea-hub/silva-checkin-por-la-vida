@@ -2161,13 +2161,18 @@
        el genérico de abajo con el campo en rojo, como si el código estuviera
        mal escrito. Desde `@76` un fallo así no gasta el código. */
     error_servidor:     'No pudimos activarlo por un problema nuestro, no de tu código. '
-                        + 'Intenta de nuevo en un momento con el mismo.'
+                        + 'Intenta de nuevo en un momento con el mismo.',
+    /* El servidor frena una hora a quien prueba diez códigos distintos que no
+       existen (2026-10-20). El que escribió ahora puede estar bien: no se
+       marca en rojo. */
+    demasiados_intentos: 'Se probaron varios códigos que no existen. Por seguridad, '
+                        + 'espera una hora y vuelve a intentarlo con el código de tu Héroe.'
   };
 
   /* Los motivos que NO son culpa de lo que la persona escribió. Marcar el campo
      en rojo ahí es decirle que su código está mal cuando no lo está. */
   var NO_ES_EL_CODIGO = { ocupado: 1, respuesta_no_json: 1, sin_token: 1, token_invalido: 1,
-                          error_servidor: 1 };
+                          error_servidor: 1, demasiados_intentos: 1 };
 
   al('form-activar', 'submit', function (e) {
     e.preventDefault();
