@@ -19,7 +19,7 @@
  */
 'use strict';
 
-const VERSION = 'v59';
+const VERSION = 'v60';
 const CACHE   = 'checkin-app-' + VERSION;
 
 /* Lo que hace falta para que la pantalla se dibuje entera sin red. Las cifras
@@ -235,14 +235,23 @@ self.addEventListener('push', event => {
        teléfono de alguien que está en dos rutas —la campaña y la de su
        empresa— se callaba el segundo «tu ruta está en el aire» porque ya había
        visto el de la otra. */
+    /* ⚠️ Y AHORA HACE ALGO (pendiente 14 de la auditoría del push). Este `if`
+       tenía el cuerpo vacío y guardaba UNA sola etapa, no una por ruta como
+       dice el comentario de arriba: la casilla del plan afirmaba un arreglo que
+       no existía. Igual HAY QUE MOSTRAR ALGO —un `push` atendido sin
+       notificación hace que el navegador muestre la suya—, así que lo que se
+       puede hacer es que la etapa ya vista de ESA ruta llegue EN SILENCIO: con
+       el mismo `tag` reemplaza a la anterior, y si la persona ya la había
+       cerrado, aparece sin volver a sonar ni vibrar. La marca vieja —una sola
+       clave— se ignora: a lo sumo suena una vez más. */
     const visto = await leerBD('visto');
-    const clave = (vuelo || '') + '|' + estado;
-    if (estado && visto && visto.estado === clave) {
-      /* Ya se avisó de esta etapa. Igual HAY QUE MOSTRAR ALGO: un `push`
-         atendido sin notificación hace que el navegador muestre la suya. Se
-         muestra el mismo, con el mismo `tag`, así que reemplaza y no suma. */
+    const vistas = (visto && visto.porRuta && typeof visto.porRuta === 'object') ? visto.porRuta : {};
+    const ruta = vuelo || '-';
+    const yaVisto = !!estado && vistas[ruta] === estado;
+    if (estado && !yaVisto) {
+      vistas[ruta] = estado;
+      await guardarBD({ id: 'visto', porRuta: vistas });
     }
-    if (estado) await guardarBD({ id: 'visto', estado: clave });
 
     return self.registration.showNotification(aviso.titulo, {
       body: aviso.texto,
@@ -252,8 +261,14 @@ self.addEventListener('push', event => {
          de la ruta de una empresa REEMPLAZABA en el teléfono al de la campaña
          —el navegador trata el mismo `tag` como el mismo aviso— y la persona
          veía uno solo donde había dos noticias distintas. */
+      /* ⚠️ SIN RESPUESTA DEL SERVIDOR —el `fetch` cortado a los 8 s— el `tag`
+         queda en `cxv-vuelo` para todas las rutas, y es a propósito: sin
+         respuesta no se sabe de qué ruta es el push (llega vacío), el texto es
+         el genérico e idéntico para todas, así que juntarlos no esconde nada,
+         y evita apilar el mismo push entregado dos veces. */
       tag: 'cxv-vuelo' + (vuelo ? '-' + vuelo : '') + (estado ? '-' + estado : ''),
       renotify: false,
+      silent: yaVisto,
       data: { url: './' }
     });
   })());
