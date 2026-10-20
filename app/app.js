@@ -37,10 +37,16 @@
   /* El último ranking que contestó el servidor. Apps Script en frío tarda
      entre 15 y 20 segundos y el panel no tiene valores de respaldo en el HTML
      como sí los tienen las cifras: sin esto, quién abre la app y mira no ve
-     nada y cierra antes de que llegue. Mismo patrón que la portada usa para
-     «44 de 609», con localStorage en vez de sessionStorage porque acá lo que
-     importa es la visita de mañana, no la navegación de ahora. */
+     nada y cierra antes de que llegue. En `localStorage` porque lo que
+     importa es la visita de mañana, no la navegación de ahora: el mismo motivo
+     por el que `cxv.cifras`, abajo, dejó el `sessionStorage` de la portada. */
   var K_RANKING = 'cxv.ranking';
+  /* ⚠️ EL ÚLTIMO AVANCE DE LA CAMPAÑA QUE CONTESTÓ EL SERVIDOR, compartido con
+     la portada (misma clave, mismo origen). Sin esto la app arrancaba siempre
+     en el número de `datos.js` —44— y recién lo cambiaba cuando Apps Script
+     contestaba: «el monto no sube» (Krea, 2026-10-20). Sólo la ruta de la
+     campaña: el avance de la ruta de una empresa no es el de nadie más. */
+  var K_CIFRAS = 'cxv.cifras';
   var RANKING_VIVE_MS = 24 * 60 * 60 * 1000;
 
   var $ = function (id) { return document.getElementById(id); };
@@ -868,10 +874,16 @@
 
   // «Cuándo fue verdad esto» es señal de confianza para quien aportó, y el dato
   // ya viene en datos.js: el sitio lo muestra y la app lo ignoraba.
-  function pintarFecha() {
+  /* La más nueva entre la de `datos.js` y la del servidor —el día de la
+     última activación que movió el avance—. Con sólo la de `datos.js`, el pie
+     decía «6 de octubre» con el número subiendo arriba. */
+  function pintarFecha(delServidor) {
     var d = window.CAMPANA;
-    if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d.actualizado || '')) return;
-    var partes = d.actualizado.split('-');
+    var ok = function (x) { return /^\d{4}-\d{2}-\d{2}$/.test(x || ''); };
+    var fecha = ok(d && d.actualizado) ? d.actualizado : '';
+    if (ok(delServidor) && delServidor > fecha) fecha = delServidor;
+    if (!fecha) return;
+    var partes = fecha.split('-');
     var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
                  'septiembre','octubre','noviembre','diciembre'];
     var mes = meses[parseInt(partes[1], 10) - 1];
@@ -1251,8 +1263,16 @@
     // portada y tienen que coincidir con ella aunque Apps Script no conteste.
     var c = cifrasDeLaCampana();
     if (c) pintarAvance(c.adoptados, c.meta);
+    /* Y encima, lo último que contó el servidor, aunque sea de otra visita:
+       siempre está más cerca que `datos.js` solo. Cuando conteste, se repinta. */
+    var guardadas = leer(K_CIFRAS, null);
+    if (c && guardadas && guardadas.t && guardadas.c !== false) {
+      var aG = numeroDeHoja(guardadas.a), mG = numeroDeHoja(guardadas.m);
+      if (aG !== null && mG !== null && mG > 0) pintarAvance(aG, mG);
+      else pintarAvance(avanceTotal(guardadas.o), (mG !== null && mG > 0) ? mG : c.meta);
+    }
     pintarAporte(null);
-    pintarFecha();
+    pintarFecha(guardadas && guardadas.c !== false ? guardadas.f : '');
 
     // ⚠️ SE PINTA EL PASE ANTES DE HABLAR CON EL SERVIDOR, con lo que el
     // formulario acaba de guardar en el teléfono. Apps Script en frío tarda más
@@ -1374,6 +1394,11 @@
         latido('listo', horaCorta());
         pintarRanking(r.ranking);
         pintarVuelo(r.vuelo, r.ososActivados);
+        if (r.vuelo && r.vuelo.esCampania !== false) {
+          escribir(K_CIFRAS, { t: Date.now(), a: r.vuelo.adoptados, m: r.vuelo.meta, r: r.vuelo.ruta,
+                               o: r.ososActivados, c: true, f: r.actualizado || '' });
+          pintarFecha(r.actualizado);
+        }
         pintarAporte(r.vuelo);
         pintarCierre(r.vuelo);
         if (r.yo) {

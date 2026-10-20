@@ -1541,12 +1541,22 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   // Sólo se acepta AAAA-MM-DD. El cliente edita datos.js a mano desde la web de
   // GitHub, y con «19/09/2026» esto publicaba «Actualizado el NaN de undefined».
-  if (/^\d{4}-\d{2}-\d{2}$/.test(d.actualizado || '')) {
-    var f = d.actualizado.split('-');
+  /* ⚠️ Y LA FECHA MÁS NUEVA, NUNCA LA PRIMERA QUE LLEGA. Desde que el avance
+     suma solo los códigos activados, la de `datos.js` se quedaba en el día en
+     que alguien la escribió a mano: «Actualizado el 6 de octubre» con el número
+     subiendo por debajo, y la web parecía congelada (Krea, 2026-10-20). El
+     servidor manda el día de la última activación, y gana la más nueva. */
+  var fechaPintada = '';
+  var ponActualizado = function (iso) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '') || (fechaPintada && iso <= fechaPintada)) return;
+    var f = iso.split('-');
     var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
     var mes = meses[Number(f[1]) - 1];
-    if (mes) pon('actualizado', 'Actualizado el ' + Number(f[2]) + ' de ' + mes + ' de ' + f[0]);
-  }
+    if (!mes) return;
+    fechaPintada = iso;
+    pon('actualizado', 'Actualizado el ' + Number(f[2]) + ' de ' + mes + ' de ' + f[0]);
+  };
+  ponActualizado(d.actualizado);
   (d.productos || []).forEach(function (p) {
     var el = document.querySelector('[data-precio="' + p.id + '"]');
     if (el) el.textContent = '$' + p.precio;
@@ -1606,13 +1616,19 @@ document.addEventListener('DOMContentLoaded', function () {
      de banda con las imágenes, y el arranque en frío pasa de 20 segundos. No hay
      ninguna cifra que valga eso.
 
-     ⚠️ Y SE GUARDA DIEZ MINUTOS EN `sessionStorage`. Sin esto, cada navegación
-     a la portada despierta Apps Script otra vez y quema cuota de ejecuciones
-     —que es diaria y se agota— para mostrar un número que casi siempre es el
-     mismo. Diez minutos es lo que GitHub Pages ya cachea del resto del sitio. */
+     ⚠️ Y SE GUARDA EN EL TELÉFONO (`localStorage`, `cxv.cifras`), COMPARTIDO
+     CON LA APP. Diez minutos sin volver a preguntar, como antes: cada visita
+     despierta Apps Script y quema cuota diaria. Pero además se pinta AL
+     ARRANCAR aunque sea viejo: estaba en `sessionStorage`, que se borra al
+     cerrar la pestaña, así que cada visita nueva arrancaba en el número de
+     `datos.js` —44— y recién cambiaba cuando Apps Script contestaba, a los 4 a
+     25 segundos, o nunca si pasaban 30. «El monto no sube en la web» (Krea,
+     2026-10-20) era eso: subía, pero sólo para quien esperaba. Un número viejo
+     del servidor siempre está más cerca que el de `datos.js` solo, porque el
+     avance no baja salvo una corrección a mano, y apenas contesta se repinta. */
   (function () {
     if (!window.CXV || !window.CXV.alServidor || !window.CXV_API) return;
-    var CLAVE = 'cxv-cifras', VIDA = 600000;
+    var CLAVE = 'cxv.cifras', VIDA = 600000;
 
     var usar = function (a, m, ososActivados, esCampania) {
       var na = Number(a), nm = Number(m);
@@ -1647,11 +1663,12 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     try {
-      var g = JSON.parse(sessionStorage.getItem(CLAVE) || 'null');
-      if (g && (Date.now() - g.t) < VIDA) {
+      var g = JSON.parse(localStorage.getItem(CLAVE) || 'null');
+      if (g && g.t) {
         usar(g.a, g.m, g.o, g.c);
         if (g.c !== false && g.r) { pon('ruta', String(g.r)); ponEnRotulos(String(g.r)); }
-        return;
+        if (g.c !== false) ponActualizado(g.f);
+        if ((Date.now() - g.t) < VIDA) return;
       }
     } catch (e) {}
 
@@ -1663,10 +1680,11 @@ document.addEventListener('DOMContentLoaded', function () {
       window.CXV.alServidor({ action: 'estado' }).then(function (r) {
         clearTimeout(reloj);
         if (!vale || !r || !r.ok || !r.vuelo) return;
-        try { sessionStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados,
+        try { localStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados,
               m: r.vuelo.meta, r: r.vuelo.ruta, o: r.ososActivados,
-              c: r.vuelo.esCampania })); } catch (e) {}
+              c: r.vuelo.esCampania, f: r.actualizado || '' })); } catch (e) {}
         usar(r.vuelo.adoptados, r.vuelo.meta, r.ososActivados, r.vuelo.esCampania);
+        if (r.vuelo.esCampania !== false) ponActualizado(r.actualizado);
         /* ⚠️ SÓLO SI ES LA RUTA DE LA CAMPAÑA. La portada pide `estado` sin
            token, así que hoy el servidor siempre le contesta la predeterminada
            y esto nunca se salta. Pero toda esta página habla de UNA ruta —las
