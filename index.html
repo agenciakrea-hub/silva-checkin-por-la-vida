@@ -1629,8 +1629,9 @@ document.addEventListener('DOMContentLoaded', function () {
     /* `avance`: el número de la web ya sumado por el servidor —congreso + códigos
        vendidos + ventas sin código, las tres filas numeradas de la hoja
        `resumen`— (ADR 0004). Un servidor anterior no lo manda: ahí se suma acá
-       el congreso con `vendidos.pasajeros`, o con `ososActivados` si es más
-       viejo todavía. */
+       el congreso con `vendidos.pasajeros`. `ososActivados` no se usa para
+       contar: viene en osos, y una caché de la `v62` pintaba «46,5 pasajeros»
+       (revisión del 2026-10-23). */
     var usar = function (a, m, ososActivados, esCampania, vendidos, avance) {
       var na = Number(a), nm = Number(m);
       var hayA = String(a == null ? '' : a).trim() !== '' && isFinite(na) && na >= 0;
@@ -1644,8 +1645,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var total;
       if (avance && num(avance.pasajeros)) total = avance.pasajeros;
       else {
-        var auto = vendidos && num(vendidos.pasajeros) ? vendidos.pasajeros : Number(ososActivados);
-        if (!isFinite(auto) || auto < 0) auto = 0;
+        var auto = vendidos && num(vendidos.pasajeros) ? vendidos.pasajeros : 0;
         /* El congreso es de la campaña. Si lo que llegó no es ella, se muestra
            sólo lo que el servidor contó. */
         total = (deLaCampania ? (aMano || 0) : 0) + auto;
@@ -1665,7 +1665,10 @@ document.addEventListener('DOMContentLoaded', function () {
         usar(g.a, g.m, g.o, g.c, g.v, g.p);
         if (g.c !== false && g.r) { pon('ruta', String(g.r)); ponEnRotulos(String(g.r)); }
         if (g.c !== false) ponActualizado(g.f);
-        if ((Date.now() - g.t) < VIDA) return;
+        /* ⚠️ SIN `p`, SE VUELVE A PEDIR YA. Una caché de la `v63` no trae
+           `avance`: pintada sola durante diez minutos, mostraba el congreso más
+           los códigos y se olvidaba de las ventas sin código. */
+        if ((Date.now() - g.t) < VIDA && g.p) return;
       }
     } catch (e) {}
 

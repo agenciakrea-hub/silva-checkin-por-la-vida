@@ -160,7 +160,8 @@
   /* `avance`: el número de la web ya sumado por el servidor —congreso + códigos
      vendidos + ventas sin código, las tres filas numeradas de la hoja
      `resumen`— (ADR 0004). Un servidor anterior no lo manda: ahí se suma acá el
-     congreso con `vendidos.pasajeros`, o con `ososActivados` si es más viejo. */
+     congreso con `vendidos.pasajeros`. `ososActivados` no se usa para contar:
+     viene en osos. */
   function pintarVuelo(v, ososActivados, vendidos, avance) {
     if (!v) return;
     /* ⚠️ CADA UNO CON SU `else`, Y NO ES SIMETRÍA DE MANUAL. Estos cinco eran
@@ -222,8 +223,9 @@
          se usa para corregir el avance a mano sin tocar el repo. */
       pintarAvance(a, m);
     } else {
-      /* El camino normal: los osos que el servidor contó de los códigos
-         activados, más el ajuste de `datos.js`. */
+      /* El camino normal: el número que armó el servidor, `avance`, que ya
+         trae el congreso, los códigos vendidos y las ventas sin código
+         (ADR 0004). */
       /* ⚠️ LA META DE `datos.js` ES DE LA CAMPAÑA. Sin esta condición, una ruta
          de empresa con la celda `meta` vacía se medía contra los 609 de la
          campaña: «3 de 609 · faltan 606», con la barra en 0,5 %. Y con la meta
@@ -243,7 +245,11 @@
       var suyos;
       if (avance && typeof avance.pasajeros === 'number') suyos = avance.pasajeros;
       else {
-        var vp = vendidos && typeof vendidos.pasajeros === 'number' ? vendidos.pasajeros : ososActivados;
+        /* ⚠️ NUNCA `ososActivados` ACÁ: viene en osos —una toalla, medio— y
+           esto cuenta pasajeros. Un servidor que mande sólo eso ya no existe;
+           una caché de la `v62` sí, y pintaba «46,5 pasajeros» (revisión del
+           2026-10-23). Sin `vendidos`, el congreso solo. */
+        var vp = vendidos && typeof vendidos.pasajeros === 'number' ? vendidos.pasajeros : 0;
         suyos = v.esCampania === false ? Number(vp) || 0 : avanceTotal(vp);
       }
       pintarAvance(suyos, meta, v.esCampania === false);
@@ -1281,7 +1287,7 @@
       else if (guardadas.p && typeof guardadas.p.pasajeros === 'number') pintarAvance(guardadas.p.pasajeros, metaG);
       else {
         var vG = guardadas.v || null;
-        pintarAvance(avanceTotal(vG && typeof vG.pasajeros === 'number' ? vG.pasajeros : guardadas.o), metaG);
+        pintarAvance(avanceTotal(vG && typeof vG.pasajeros === 'number' ? vG.pasajeros : 0), metaG);
       }
     }
     pintarAporte(null);
