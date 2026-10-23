@@ -867,8 +867,8 @@
       <h2 class="sr" id="t-datos">Lo que lleva la campaña</h2>
       <div class="datos-cifras">
         <p class="cifra"><b data-cifra="meta-osos">609</b><span>meta</span></p>
-        <p class="cifra cifra--centro"><b data-cifra="heroes">34,5</b><span>Héroes adoptados</span></p>
-        <p class="cifra cifra--der"><b data-cifra="faltan">574,5</b><span>faltan</span></p>
+        <p class="cifra cifra--centro"><b data-cifra="pasajeros">44</b><span>pasajeros de honor</span></p>
+        <p class="cifra cifra--der"><b data-cifra="faltan">565</b><span>faltan</span></p>
       </div>
 
       <div class="pista" id="pista">
@@ -892,10 +892,10 @@
           <span class="pista-meta" aria-hidden="true"></span>
         </div>
         <div class="pista-pie">
-          <span data-cifra="porcentaje-texto">5,7&nbsp;% de la meta</span>
+          <span data-cifra="porcentaje-texto">7,2&nbsp;% de la meta</span>
           <span data-cifra="actualizado">Actualizado el 19 de septiembre de 2026</span>
         </div>
-        <p class="sr" data-cifra="progreso-sr">Progreso hacia el primer vuelo solidario: 5,7 por ciento de la meta.</p>
+        <p class="sr" data-cifra="progreso-sr">Progreso hacia el primer vuelo solidario: 7,2 por ciento de la meta.</p>
       </div>
     </div>
   </section>
@@ -1397,7 +1397,7 @@
      existen en el índice de la página. -->
 <aside class="barra" id="barra" aria-label="Avance de la campaña" hidden>
   <div class="barra-datos">
-    <p class="barra-cifras"><b data-cifra="heroes">34,5</b> <span>de</span> <b data-cifra="meta-osos">609</b> <span>Héroes</span></p>
+    <p class="barra-cifras"><b data-cifra="pasajeros">44</b> <span>de</span> <b data-cifra="meta-osos">609</b></p>
     <div class="barra-riel" aria-hidden="true"><div class="barra-avance" id="barra-avance"></div></div>
     <!-- La celda `ruta` de la hoja `vuelo` dice, en su propia explicación, que
          «sale en la barra de abajo del sitio». No salía: esto estaba quemado, y
@@ -1491,41 +1491,23 @@ document.addEventListener('DOMContentLoaded', function () {
   // —el arranque de una campaña, que es un dato tan real como cualquier otro—
   // no se publicaba y la página seguía mostrando las cifras viejas del evento.
   var num = function (v) { return typeof v === 'number' && isFinite(v) && v >= 0; };
-  // La campaña se cuenta en OSOS: adoptados, meta y diferencia. El único número
-  // que se edita a mano es la meta; los otros dos salen de sumar las unidades
-  // vendidas y de restar. Así las tres cifras no pueden contradecirse.
-  /* ⚠️ ESTO SUMA UNIDADES, Y ES A PROPÓSITO. Es el número del evento ya
-     ocurrido —el histórico— y Krea pidió que no se toque: se quedó en 44 y ahí
-     se queda. Lo que viene DESPUÉS sí se cuenta en osos, lo suma el servidor
-     con la equivalencia de cada código (10 = medio, 20 = uno, 40 = dos), y se
-     agrega encima de este número en `usar()`. Convertir también el histórico lo
-     bajaba de 44 a 34,5 y reescribía hacia atrás una cifra que ya se publicó. */
-  /* ⚠️ DOS MEDIDAS, CADA UNA EN SU UNIDAD (ADR 0003). «Pasajeros de honor» son
-     personas: una por producto vendido, y el congreso son 44 —el número que
-     Krea pidió no tocar—. La barra contra la meta va en Héroes, que miden
-     plata: toalla ½, llavero 1, oso grande 2; el congreso son 34,5 ahí. Antes
-     era UN número que sumaba los 44 en productos con lo nuevo en osos, y no
-     cuadraba con nada: la misma toalla valía 1 o ½ según cuándo se vendió. */
-  var OSOS = { 10: 0.5, 20: 1, 40: 2 };
-  var adoptados = null, heroesBase = null, pct = 5.7;
+  /* ⚠️ UNA SOLA CIFRA: PASAJEROS DE HONOR, UN PRODUCTO VENDIDO = 1 (ADR 0004).
+     Es como contaba la web antes del 2026-10-20. Se probaron dos cifras
+     —pasajeros y «Héroes» con toalla ½, llavero 1, oso 2— y Krea pidió volver:
+     «héroes, osos, no se entiende».
+     Acá sale el congreso de septiembre, de `datos.js`: 44, el número que no se
+     toca. Lo vendido después —con código, del stand, del Drive, o sin código—
+     lo suma el servidor y llega ya sumado en `avance` (ver `usar()`); la hoja
+     `resumen` arma la misma cuenta, paso por paso. */
+  var adoptados = null, pct = 7.2;
   if (Array.isArray(d.productos)) {
     adoptados = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
-    heroesBase = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0) * (OSOS[p.precio] || 0); }, 0);
   }
   /* El total del evento sale de la MISMA suma que las tres cifras por producto
      que están arriba de él, así que no se pueden separar: si alguien corrige
      `vendidas` en `datos.js`, los cuatro números se mueven juntos. */
   if (adoptados !== null) pon('evento', String(adoptados));
-  /* ⚠️ EL AVANCE NO ES SÓLO EL EVENTO. Se le suma lo vendido de un lote que
-     nadie activó, que `datos.js` lleva ya en OSOS (`ososSinActivar`) —sumarlo
-     en `vendidas` contaba cada toalla como un oso entero—. `adoptados` queda
-     para la cifra del evento, que es en unidades y no cambia; `aMano` es lo
-     que se suma al avance, acá y en `usar()`. */
-  /* `ososSinActivar` está en osos: suma a los Héroes. Desde la ADR 0003 es sólo
-     para una venta que no tenga código; lo normal es marcar el código en la
-     hoja, que suma en las dos medidas. */
-  var sinActivar = num(d.ososSinActivar) ? d.ososSinActivar : 0;
-  var aMano = heroesBase === null ? null : heroesBase + sinActivar;
+  var aMano = adoptados;
   var metaDeDatos = (num(d.metaOsos) && d.metaOsos > 0) ? d.metaOsos : null;
   /* El pintado vive más abajo, en `pintarCifras`, porque necesita `ponAvance`
      —que se define después— y porque ahora hay DOS orígenes para estos
@@ -1598,11 +1580,9 @@ document.addEventListener('DOMContentLoaded', function () {
     return (r % 1 === 0 ? String(r) : String(r).replace('.', ','));
   }
 
-  /* `pas`: pasajeros de honor (personas). `a`: Héroes, lo que se mide contra la
-     meta `m`. */
-  function pintarCifras(pas, a, m) {
-    if (typeof pas === 'number' && pas >= 0) pon('pasajeros-texto', enEspanol(pas));
-    if (typeof a === 'number' && a >= 0) pon('heroes', enEspanol(a));
+  /* `a`: pasajeros de honor, el número de la web. `m`: la meta. */
+  function pintarCifras(a, m) {
+    if (typeof a === 'number' && a >= 0) { pon('pasajeros', enEspanol(a)); pon('pasajeros-texto', enEspanol(a)); }
     if (typeof m === 'number' && m > 0) {
       pon('meta-osos', enEspanol(m));
       if (typeof a === 'number' && a >= 0) {
@@ -1619,7 +1599,7 @@ document.addEventListener('DOMContentLoaded', function () {
     pon('progreso-sr', 'Progreso hacia el primer vuelo solidario: ' + String(pct).replace('.', ',') + ' por ciento de la meta.');
     ponAvance(pct);
   }
-  pintarCifras(adoptados, aMano, metaDeDatos);
+  pintarCifras(aMano, metaDeDatos);
   ponEnRotulosInicial();          // el respaldo del rótulo, del mismo molde
 
   /* ── Y si el Sheet dice otra cosa, el Sheet manda ──────────────────────
@@ -1646,47 +1626,43 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!window.CXV || !window.CXV.alServidor || !window.CXV_API) return;
     var CLAVE = 'cxv.cifras', VIDA = 600000;
 
-    /* `vendidos`: los códigos vendidos de la ruta en las dos medidas, sin el
-       congreso (ADR 0003). Un servidor anterior no lo manda: ahí se usa
-       `ososActivados` para los Héroes y las personas se quedan en el congreso. */
-    var usar = function (a, m, ososActivados, esCampania, vendidos) {
+    /* `avance`: el número de la web ya sumado por el servidor —congreso + códigos
+       vendidos + ventas sin código, las tres filas numeradas de la hoja
+       `resumen`— (ADR 0004). Un servidor anterior no lo manda: ahí se suma acá
+       el congreso con `vendidos.pasajeros`, o con `ososActivados` si es más
+       viejo todavía. */
+    var usar = function (a, m, ososActivados, esCampania, vendidos, avance) {
       var na = Number(a), nm = Number(m);
       var hayA = String(a == null ? '' : a).trim() !== '' && isFinite(na) && na >= 0;
       var hayM = String(m == null ? '' : m).trim() !== '' && isFinite(nm) && nm > 0;
       var deLaCampania = esCampania !== false;
-      var vp = vendidos && num(vendidos.pasajeros) ? vendidos.pasajeros : 0;
-      var pas = (deLaCampania ? (adoptados || 0) : 0) + vp;
       /* ⚠️ SE PREGUNTA POR EL TEXTO VACÍO ANTES DE CONVERTIR. La celda
-         `adoptados` nace en blanco a propósito —en blanco significa «manda
-         `datos.js`»— y `Number('')` da 0, no NaN. Sin este chequeo, una hoja
-         recién creada pinta la campaña en cero y borra el avance de verdad.
-         Escrita, pisa los Héroes de la barra; las personas no. */
-      if (hayA && hayM) { pintarCifras(pas, na, nm); return; }
-      /* ⚠️ EL AVANCE SON DOS MITADES: el congreso, que pone `datos.js`, y los
-         códigos vendidos —activados o con `entregado_a` en la hoja—, que cuenta
-         el servidor, cada uno una vez. Lo que no se puede hacer es cargar
-         también en `datos.js` una venta que tiene código: cuenta dos veces. */
-      var auto = vendidos && num(vendidos.heroes) ? vendidos.heroes : Number(ososActivados);
-      if (!isFinite(auto) || auto < 0) auto = 0;
-      /* El histórico del evento es de la campaña. Si lo que llegó no es ella,
-         se muestra sólo lo que el servidor contó. */
-      var total = (deLaCampania ? (aMano || 0) : 0) + auto;
-      /* ⚠️ LA META DE `datos.js` TAMBIÉN ES DE LA CAMPAÑA. La guarda se puso en
-         el histórico y en el nombre de la ruta, y se salteó acá: una ruta de
-         empresa con la celda `meta` vacía se medía contra los 609 de la
-         campaña —«3 de 609 · 0,5 % de la meta»— y, como `pon` pinta todos los
-         `data-cifra` con la misma clave, ese número terminaba también en la
-         tarjeta «Padrino de Ruta Sanitaria», que es la que le dice a una
-         empresa cuántos Héroes cuesta financiar una ruta. `app.js` ya tiene
-         esta misma condición. */
-      if (hayM) pintarCifras(pas, total, nm);
-      else if (deLaCampania && metaDeDatos) pintarCifras(pas, total, metaDeDatos);
+         `adoptados` nace en blanco a propósito —en blanco significa «manda la
+         cuenta»— y `Number('')` da 0, no NaN. Sin este chequeo, una hoja recién
+         creada pinta la campaña en cero y borra el avance de verdad. */
+      if (hayA && hayM) { pintarCifras(na, nm); return; }
+      var total;
+      if (avance && num(avance.pasajeros)) total = avance.pasajeros;
+      else {
+        var auto = vendidos && num(vendidos.pasajeros) ? vendidos.pasajeros : Number(ososActivados);
+        if (!isFinite(auto) || auto < 0) auto = 0;
+        /* El congreso es de la campaña. Si lo que llegó no es ella, se muestra
+           sólo lo que el servidor contó. */
+        total = (deLaCampania ? (aMano || 0) : 0) + auto;
+      }
+      /* ⚠️ LA META DE `datos.js` TAMBIÉN ES DE LA CAMPAÑA. Una ruta de empresa
+         con la celda `meta` vacía se medía contra los 609 de la campaña —«3 de
+         609 · 0,5 % de la meta»— y, como `pon` pinta todos los `data-cifra` con
+         la misma clave, ese número terminaba también en la tarjeta «Padrino de
+         Ruta Sanitaria». `app.js` tiene esta misma condición. */
+      if (hayM) pintarCifras(total, nm);
+      else if (deLaCampania && metaDeDatos) pintarCifras(total, metaDeDatos);
     };
 
     try {
       var g = JSON.parse(localStorage.getItem(CLAVE) || 'null');
       if (g && g.t) {
-        usar(g.a, g.m, g.o, g.c, g.v);
+        usar(g.a, g.m, g.o, g.c, g.v, g.p);
         if (g.c !== false && g.r) { pon('ruta', String(g.r)); ponEnRotulos(String(g.r)); }
         if (g.c !== false) ponActualizado(g.f);
         if ((Date.now() - g.t) < VIDA) return;
@@ -1703,8 +1679,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!vale || !r || !r.ok || !r.vuelo) return;
         try { localStorage.setItem(CLAVE, JSON.stringify({ t: Date.now(), a: r.vuelo.adoptados,
               m: r.vuelo.meta, r: r.vuelo.ruta, o: r.ososActivados,
-              c: r.vuelo.esCampania, f: r.actualizado || '', v: r.vendidos || null })); } catch (e) {}
-        usar(r.vuelo.adoptados, r.vuelo.meta, r.ososActivados, r.vuelo.esCampania, r.vendidos);
+              c: r.vuelo.esCampania, f: r.actualizado || '', v: r.vendidos || null,
+              p: r.avance || null })); } catch (e) {}
+        usar(r.vuelo.adoptados, r.vuelo.meta, r.ososActivados, r.vuelo.esCampania, r.vendidos, r.avance);
         if (r.vuelo.esCampania !== false) ponActualizado(r.actualizado);
         /* ⚠️ SÓLO SI ES LA RUTA DE LA CAMPAÑA. La portada pide `estado` sin
            token, así que hoy el servidor siempre le contesta la predeterminada

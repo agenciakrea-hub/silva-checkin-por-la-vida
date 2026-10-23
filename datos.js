@@ -8,26 +8,20 @@
 // es un número ya publicado. Lo que se vende después se suma encima, solo,
 // desde la hoja de cálculo.
 //
-// La web muestra DOS cifras, cada una en su unidad:
+// La web muestra UNA cifra: pasajeros de honor. Cada producto vendido es un
+// pasajero, sea toalla, llavero u oso grande:
 //
-//   · Pasajeros de honor = personas: una por producto vendido.
-//       congreso (la suma de `vendidas`)  +  1 por cada código vendido
-//   · Héroes = lo que llena la barra contra la meta:
-//       toalla ($10) medio · llavero ($20) uno · oso grande ($40) dos
-//       congreso (cada `vendidas` × su equivalencia)  +  los de cada código vendido
+//        congreso (la suma de `vendidas`, 44)
+//      + cada código vendido (activado en la app o anotado en la hoja)
+//      + cada venta sin código (una fila en la pestaña «ventas_sin_codigo»)
 //
-// Un código está VENDIDO si alguien lo activó en la app o si en la hoja
-// `codigos` tiene escrito a quién se entregó (`entregado_a`). Cuenta una sola
-// vez, aunque después se active, y suma cuando tiene su producto anotado.
+// La pestaña «resumen» de la hoja hace esta misma cuenta, paso por paso.
 //
 // ⚠️ QUÉ AGREGAR AQUÍ Y QUÉ NO, que es lo más importante de este archivo:
 //
-//   · Una venta con código      → NO toques nada. Se marca el código en la hoja
-//     y suma solo. Agregarla aquí también la cuenta DOS VECES y nada lo avisa.
-//   · Una venta SIN ningún código → lo mejor es igual marcar en la hoja un
-//     código libre de ese precio: suma en las dos cifras. Si no se puede, va en
-//     `ososSinActivar`, EN OSOS, y sólo suma a los Héroes.
-//   · No se sabe                 → no se agrega todavía. Esperar.
+//   · Una venta, con o sin código → NO va aquí. Se carga en la hoja y suma
+//     sola. Agregarla aquí también la cuenta DOS VECES y nada lo avisa.
+//   · El congreso                → ya está, y no se toca.
 //
 // Aquí va sólo lo que ve el público. El tamaño de cada lote —cuántas unidades
 // había— es información de inventario, se lleva aparte y no se publica.
@@ -38,22 +32,12 @@
 window.CAMPANA = {
   actualizado: "2026-10-06",
 
-  // Héroes que hacen falta para cubrir la ruta ONCO 001: es la meta de la
-  // barra. Un Héroe es un producto de $20.
+  // Pasajeros de honor que se quieren reunir para la ruta ONCO 001: es la
+  // meta de la barra.
   metaOsos: 609,
 
-  // ⚠️ EN OSOS, NO EN UNIDADES, y sólo para ventas que no tienen ningún
-  // código: una venta con código se marca en la hoja y suma sola. Suma a los
-  // Héroes de la barra, no a los pasajeros de honor.
-  //   toalla ($10) medio · llavero ($20) uno · oso grande ($40) dos
-  // Ejemplo con números inventados: 6 toallas sin código → 3.
-  // ⚠️ EL DECIMAL VA CON PUNTO: 30.5, no 30,5. Con coma este archivo deja de
-  // funcionar entero y la página pierde todas sus cifras.
-  ososSinActivar: 0,
-
-  // ⚠️ `vendidas` son UNIDADES del congreso: 27 toallas son 27 pasajeros de
-  // honor y, en la barra, 13,5 Héroes. La web hace la cuenta sola con el precio
-  // de cada producto; aquí no se convierte nada a mano.
+  // ⚠️ `vendidas` son las unidades del congreso: 27 toallas son 27 pasajeros
+  // de honor. Se suman tal cual.
   productos: [
     { id: "toalla",  nombre: "Toalla tipo oso", precio: 10, vendidas: 27 },
     { id: "llavero", nombre: "Llavero",         precio: 20, vendidas: 13 },

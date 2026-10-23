@@ -157,10 +157,11 @@
     return (v && (v.ruta || v.id)) || '';
   }
 
-  /* `vendidos`: los códigos vendidos de la ruta en personas y en Héroes, sin el
-     congreso (ADR 0003). Un servidor anterior no lo manda: ahí se usa
-     `ososActivados` para los Héroes, como antes. */
-  function pintarVuelo(v, ososActivados, vendidos) {
+  /* `avance`: el número de la web ya sumado por el servidor —congreso + códigos
+     vendidos + ventas sin código, las tres filas numeradas de la hoja
+     `resumen`— (ADR 0004). Un servidor anterior no lo manda: ahí se suma acá el
+     congreso con `vendidos.pasajeros`, o con `ososActivados` si es más viejo. */
+  function pintarVuelo(v, ososActivados, vendidos, avance) {
     if (!v) return;
     /* ⚠️ CADA UNO CON SU `else`, Y NO ES SIMETRÍA DE MANUAL. Estos cinco eran
        `if (v.X)` pelado, y eso deja el valor anterior en pantalla en los dos
@@ -216,14 +217,10 @@
        es una precaución de más: sin eso, una celda en blanco pinta la campaña
        en cero y borra el avance real de la portada. */
     var a = numeroDeHoja(v.adoptados), m = numeroDeHoja(v.meta);
-    /* Las personas: las de esta ruta, más el congreso si es la campaña. */
-    var vp = vendidos && typeof vendidos.pasajeros === 'number' ? vendidos.pasajeros : 0;
-    var pas = v.esCampania === false ? vp : (cifrasDeLaCampana() || { pasajeros: 0 }).pasajeros + vp;
     if (a !== null && m !== null && m > 0) {
-      /* La celda `adoptados` de la hoja, si está escrita, es la palabra final
-         sobre los Héroes: se usa para corregir el avance a mano sin tocar el
-         repo. Las personas no se pisan. */
-      pintarAvance(a, m, false, pas);
+      /* La celda `adoptados` de la hoja, si está escrita, es la palabra final:
+         se usa para corregir el avance a mano sin tocar el repo. */
+      pintarAvance(a, m);
     } else {
       /* El camino normal: los osos que el servidor contó de los códigos
          activados, más el ajuste de `datos.js`. */
@@ -243,10 +240,13 @@
          Sin la bandera —una respuesta vieja, o el servidor sin desplegar— se
          suma, que es como se comportó siempre y es correcto mientras haya una
          sola ruta. */
-      var vh = vendidos && typeof vendidos.heroes === 'number' ? vendidos.heroes : ososActivados;
-      var suyos = v.esCampania === false ? Number(vh) || 0
-                                         : avanceTotal(vh);
-      pintarAvance(suyos, meta, v.esCampania === false, pas);
+      var suyos;
+      if (avance && typeof avance.pasajeros === 'number') suyos = avance.pasajeros;
+      else {
+        var vp = vendidos && typeof vendidos.pasajeros === 'number' ? vendidos.pasajeros : ososActivados;
+        suyos = v.esCampania === false ? Number(vp) || 0 : avanceTotal(vp);
+      }
+      pintarAvance(suyos, meta, v.esCampania === false);
     }
   }
 
@@ -403,30 +403,21 @@
    * sin pasar por la web no está registrada en ningún lado. Contar registros
    * daba un número más chico que el de la portada para la misma cosa.
    */
-  /* ⚠️ DOS MEDIDAS, CADA UNA EN SU UNIDAD (ADR 0003). `pasajeros`: personas,
-     una por producto vendido —el congreso son 44, el número que no se toca—.
-     `heroes`: lo que se mide contra la meta, en plata —toalla ½, llavero 1,
-     oso grande 2; el congreso son 34,5—. Antes era UN número que sumaba los 44
-     en productos con lo nuevo en osos, y no cuadraba con nada. */
-  var OSOS_POR_PRECIO = { 10: 0.5, 20: 1, 40: 2 };
+  /* ⚠️ UNA SOLA CIFRA: PASAJEROS DE HONOR, UN PRODUCTO VENDIDO = 1 (ADR 0004),
+     como la web antes del 2026-10-20. Se probaron dos cifras —pasajeros y
+     «Héroes» con toalla ½, llavero 1, oso 2— y Krea pidió volver: «héroes,
+     osos, no se entiende». Acá sale el congreso de septiembre (44, el número
+     que no se toca) y la meta; lo vendido después lo suma el servidor y llega
+     ya sumado en `avance`. */
   function cifrasDeLaCampana() {
     var d = window.CAMPANA;
     if (!d) return null;
     var meta = (typeof d.metaOsos === 'number' && d.metaOsos > 0) ? d.metaOsos : null;
-    var pasajeros = null, heroes = null;
+    var pasajeros = null;
     if (Object.prototype.toString.call(d.productos) === '[object Array]') {
       pasajeros = d.productos.reduce(function (s, p) { return s + (Number(p.vendidas) || 0); }, 0);
-      heroes = d.productos.reduce(function (s, p) {
-        return s + (Number(p.vendidas) || 0) * (OSOS_POR_PRECIO[p.precio] || 0);
-      }, 0);
     }
-    /* Lo vendido sin ningún código, que `datos.js` lleva en OSOS
-       (`ososSinActivar`): suma a los Héroes. Lo normal, desde la ADR 0003, es
-       marcar el código en la hoja, que suma en las dos medidas. */
-    var sinActivar = (typeof d.ososSinActivar === 'number' && isFinite(d.ososSinActivar)
-                      && d.ososSinActivar >= 0) ? d.ososSinActivar : 0;
-    if (heroes !== null) heroes += sinActivar;
-    return (meta !== null && heroes !== null) ? { pasajeros: pasajeros, heroes: heroes, meta: meta } : null;
+    return (meta !== null && pasajeros !== null) ? { pasajeros: pasajeros, meta: meta } : null;
   }
 
   /**
@@ -443,7 +434,7 @@
    */
   function avanceTotal(delServidor) {
     var c = cifrasDeLaCampana();
-    var aMano = c ? c.heroes : 0;
+    var aMano = c ? c.pasajeros : 0;
     var auto = Number(delServidor);
     if (!isFinite(auto) || auto < 0) auto = 0;
     return aMano + auto;
@@ -480,14 +471,13 @@
    * el equipo escribía la celda `meta`, el resto de la pantalla se corregía, y
    * esa línea se quedaba invisible hasta que la persona recargara.
    */
-  /* `adoptados`: Héroes, contra la `meta`. `pasajeros`: personas, para «Ya
-     somos N pasajeros de honor»; sin él, esa cifra no se toca. */
-  function pintarAvance(adoptados, meta, sinMetaPropia, pasajeros) {
+  /* `adoptados`: los pasajeros de honor, el número de la web, contra la `meta`. */
+  function pintarAvance(adoptados, meta, sinMetaPropia) {
     if (typeof adoptados !== 'number') return;
     var hayMeta = typeof meta === 'number' && meta > 0;
     var resto = $('c-faltan') && $('c-faltan').parentNode;
 
-    if (typeof pasajeros === 'number' && $('c-pasajeros')) $('c-pasajeros').textContent = enEspanol(pasajeros);
+    if ($('c-pasajeros')) $('c-pasajeros').textContent = enEspanol(adoptados);
     if (resto) resto.hidden = !hayMeta;
 
     if (!hayMeta) {
@@ -497,7 +487,7 @@
       if ($('barra')) $('barra').style.transform = 'scaleX(0)';
       if ($('barra-caja')) {
         $('barra-caja').setAttribute('aria-label',
-          enEspanol(adoptados) + ' Héroes de Rescate adoptados en esta ruta');
+          enEspanol(adoptados) + ' pasajeros de honor en esta ruta');
       }
       pintarBarraAvance(adoptados, null, 0);
       return;
@@ -519,7 +509,7 @@
        «cuarenta y cinco mil quinientos». Es el mismo arreglo que ya se hizo en
        el texto visible y en la barra fija; éste quedó porque no se ve. */
     $('barra-caja').setAttribute('aria-label',
-      enEspanol(adoptados) + ' de ' + enEspanol(meta) + ' Héroes de Rescate adoptados');
+      enEspanol(adoptados) + ' de ' + enEspanol(meta) + ' pasajeros de honor');
     pintarBarraAvance(adoptados, meta, ancho);
   }
 
@@ -1278,17 +1268,21 @@
     // Las cifras primero y sin depender del servidor: son las mismas que la
     // portada y tienen que coincidir con ella aunque Apps Script no conteste.
     var c = cifrasDeLaCampana();
-    if (c) pintarAvance(c.heroes, c.meta, false, c.pasajeros);
+    if (c) pintarAvance(c.pasajeros, c.meta);
     /* Y encima, lo último que contó el servidor, aunque sea de otra visita:
-       siempre está más cerca que `datos.js` solo. Cuando conteste, se repinta. */
+       siempre está más cerca que `datos.js` solo. Cuando conteste, se repinta.
+       Se lee lo más nuevo que haya guardado: el número ya sumado (`p`, desde
+       `v64`), o lo de antes. */
     var guardadas = leer(K_CIFRAS, null);
     if (c && guardadas && guardadas.t && guardadas.c !== false) {
-      var vG = guardadas.v || null;
-      var pasG = c.pasajeros + (vG && typeof vG.pasajeros === 'number' ? vG.pasajeros : 0);
-      var heroesG = vG && typeof vG.heroes === 'number' ? vG.heroes : guardadas.o;
       var aG = numeroDeHoja(guardadas.a), mG = numeroDeHoja(guardadas.m);
-      if (aG !== null && mG !== null && mG > 0) pintarAvance(aG, mG, false, pasG);
-      else pintarAvance(avanceTotal(heroesG), (mG !== null && mG > 0) ? mG : c.meta, false, pasG);
+      var metaG = (mG !== null && mG > 0) ? mG : c.meta;
+      if (aG !== null && mG !== null && mG > 0) pintarAvance(aG, mG);
+      else if (guardadas.p && typeof guardadas.p.pasajeros === 'number') pintarAvance(guardadas.p.pasajeros, metaG);
+      else {
+        var vG = guardadas.v || null;
+        pintarAvance(avanceTotal(vG && typeof vG.pasajeros === 'number' ? vG.pasajeros : guardadas.o), metaG);
+      }
     }
     pintarAporte(null);
     pintarFecha(guardadas && guardadas.c !== false ? guardadas.f : '');
@@ -1412,10 +1406,11 @@
         ultimoEstadoOk = Date.now();
         latido('listo', horaCorta());
         pintarRanking(r.ranking);
-        pintarVuelo(r.vuelo, r.ososActivados, r.vendidos);
+        pintarVuelo(r.vuelo, r.ososActivados, r.vendidos, r.avance);
         if (r.vuelo && r.vuelo.esCampania !== false) {
           escribir(K_CIFRAS, { t: Date.now(), a: r.vuelo.adoptados, m: r.vuelo.meta, r: r.vuelo.ruta,
-                               o: r.ososActivados, c: true, f: r.actualizado || '', v: r.vendidos || null });
+                               o: r.ososActivados, c: true, f: r.actualizado || '', v: r.vendidos || null,
+                               p: r.avance || null });
           pintarFecha(r.actualizado);
         }
         pintarAporte(r.vuelo);
