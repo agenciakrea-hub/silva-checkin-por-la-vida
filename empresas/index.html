@@ -9,6 +9,7 @@
      corporativa, y la barra del navegador es lo primero que lo dice. -->
 <meta name="theme-color" content="#091d40">
 <meta name="color-scheme" content="light dark">
+<meta name="darkreader-lock">
 <link rel="canonical" href="https://uncheckinporlavida.aeroambulanciasilva.com/empresas/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Aeroambulancias Silva">
@@ -595,7 +596,24 @@
      (Ajustes → Labs → «Usar tema oscuro del sitio web»). */
   @media (prefers-color-scheme:dark){
     :root{color-scheme:light dark;}
+    /* Lo que el navegador dibuja solo, con los colores que tiene en modo claro:
+       el texto de ayuda de los campos, el relleno automático —que en oscuro
+       pinta el campo oscuro con el texto azul encima— y la barra de
+       desplazamiento de la computadora. */
+    ::placeholder{color:#757575;}
+    input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{
+      -webkit-text-fill-color:#0e2a5c;caret-color:#0e2a5c;box-shadow:0 0 0 1000px #e8f0fe inset;}
+    html{scrollbar-color:#c1c1c1 #f1f1f1;}
   }
+  /* El aviso de cuando el navegador oscurece la página a la fuerza: ver
+     `avisoSiOscurecen` en el script. Fijo arriba para no correr el contenido. */
+  .aviso-oscuro{position:fixed;left:8px;right:8px;top:8px;z-index:1000;display:flex;gap:12px;
+    align-items:center;max-width:560px;margin:0 auto;padding:12px 12px 12px 16px;border-radius:12px;
+    background:#fff;color:#0e2a5c;box-shadow:0 6px 24px rgba(0,0,0,.25);
+    font:400 .92rem/1.4 var(--sans,system-ui,sans-serif);}
+  .aviso-oscuro p{margin:0;flex:1;}
+  .aviso-oscuro button{flex:none;min-height:44px;padding:0 16px;border:0;border-radius:999px;
+    background:#0e2a5c;color:#fff;font:600 .9rem/1 var(--sans,system-ui,sans-serif);cursor:pointer;}
 </style>
 </head>
 <body>
@@ -1082,6 +1100,41 @@
 <script src="../config.js" defer></script>
 <script src="../cola.js" defer></script>
 <script>
+/* ⚠️ EL AVISO DEL OSCURECIMIENTO FORZADO (2026-10-23). Hay navegadores que
+   repintan la página con colores oscuros aunque ella diga que es clara:
+   Samsung Internet en su modo por defecto lo hace con todas, y ningún sitio lo
+   puede impedir. No se evita; se avisa. La sonda es la que documenta Chrome
+   (developer.chrome.com/blog/auto-dark-theme): un elemento de esquema claro con
+   el color «canvas» sale blanco, salvo que el navegador lo esté oscureciendo.
+   Con el teléfono en modo oscuro la página se protege sola —`light dark`—,
+   salvo en Samsung, que no respeta la declaración. Un navegador que no conoce
+   «canvas» da transparente y no avisa.
+   Probado en Chrome 156 sin ventana: normal y en modo oscuro, sin aviso; con el
+   oscurecimiento forzado y el teléfono en claro, con aviso. En Samsung, sin
+   probar: no se sabe si la sonda salta. */
+function avisoSiOscurecen() {
+  try { if (localStorage.getItem('cxv.avisoOscuro') === 'cerrado') return; } catch (e) {}
+  var sonda = document.createElement('div');
+  sonda.style.cssText = 'color-scheme:light;background-color:canvas;position:absolute;left:-99px;top:0;width:1px;height:1px';
+  document.body.appendChild(sonda);
+  var fondo = getComputedStyle(sonda).backgroundColor;
+  document.body.removeChild(sonda);
+  if (fondo === 'rgb(255, 255, 255)' || /rgba\(0, 0, 0, 0\)|transparent/.test(fondo)) return;
+  var oscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (oscuro && !/SamsungBrowser/i.test(navigator.userAgent)) return;
+  var aviso = document.createElement('div');
+  aviso.className = 'aviso-oscuro';
+  aviso.setAttribute('role', 'status');
+  aviso.innerHTML = '<p>Su navegador está cambiando los colores de esta página. Para verla como es, desactive el modo oscuro para sitios web en la configuración del navegador.</p><button type="button">Entendido</button>';
+  aviso.querySelector('button').addEventListener('click', function () {
+    if (aviso.parentNode) aviso.parentNode.removeChild(aviso);
+    try { localStorage.setItem('cxv.avisoOscuro', 'cerrado'); } catch (e) {}
+  });
+  document.body.appendChild(aviso);
+}
+document.addEventListener('DOMContentLoaded', function () {
+  try { avisoSiOscurecen(); } catch (e) {}
+});
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var TEL = '584241466595';

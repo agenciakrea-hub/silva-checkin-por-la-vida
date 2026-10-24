@@ -2503,6 +2503,40 @@
   registrarServicio();
   refrescarDatosDelWorker();
   pintarTienda();
+  /* ⚠️ EL AVISO DEL OSCURECIMIENTO FORZADO (2026-10-23). Hay navegadores que
+     repintan la página con colores oscuros aunque ella diga que es clara:
+     Samsung Internet en su modo por defecto lo hace con todas, y ningún sitio lo
+     puede impedir. No se evita; se avisa. La sonda es la que documenta Chrome
+     (developer.chrome.com/blog/auto-dark-theme): un elemento de esquema claro con
+     el color «canvas» sale blanco, salvo que el navegador lo esté oscureciendo.
+     Con el teléfono en modo oscuro la página se protege sola —`light dark`—,
+     salvo en Samsung, que no respeta la declaración. Un navegador que no conoce
+     «canvas» da transparente y no avisa.
+     Probado en Chrome 156 sin ventana: normal y en modo oscuro, sin aviso; con el
+     oscurecimiento forzado y el teléfono en claro, con aviso. En Samsung, sin
+     probar: no se sabe si la sonda salta. */
+  function avisoSiOscurecen() {
+    try { if (localStorage.getItem('cxv.avisoOscuro') === 'cerrado') return; } catch (e) {}
+    var sonda = document.createElement('div');
+    sonda.style.cssText = 'color-scheme:light;background-color:canvas;position:absolute;left:-99px;top:0;width:1px;height:1px';
+    document.body.appendChild(sonda);
+    var fondo = getComputedStyle(sonda).backgroundColor;
+    document.body.removeChild(sonda);
+    if (fondo === 'rgb(255, 255, 255)' || /rgba\(0, 0, 0, 0\)|transparent/.test(fondo)) return;
+    var oscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (oscuro && !/SamsungBrowser/i.test(navigator.userAgent)) return;
+    var aviso = document.createElement('div');
+    aviso.className = 'aviso-oscuro';
+    aviso.setAttribute('role', 'status');
+    aviso.innerHTML = '<p>Tu navegador está cambiando los colores de esta página. Para verla como es, desactiva el modo oscuro para sitios web en la configuración del navegador.</p><button type="button">Entendido</button>';
+    aviso.querySelector('button').addEventListener('click', function () {
+      if (aviso.parentNode) aviso.parentNode.removeChild(aviso);
+      try { localStorage.setItem('cxv.avisoOscuro', 'cerrado'); } catch (e) {}
+    });
+    document.body.appendChild(aviso);
+  }
+
   window.CXV.arrancarCola();
   arrancar();
+  try { avisoSiOscurecen(); } catch (e) {}
 })();
