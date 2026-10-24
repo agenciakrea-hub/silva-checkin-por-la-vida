@@ -8,7 +8,7 @@
 <!-- El tema es navy y no celeste: esta página no es la campaña, es su puerta
      corporativa, y la barra del navegador es lo primero que lo dice. -->
 <meta name="theme-color" content="#091d40">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
 <link rel="canonical" href="https://uncheckinporlavida.aeroambulanciasilva.com/empresas/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Aeroambulancias Silva">
@@ -47,7 +47,8 @@
   @font-face{font-family:'Source Sans';src:url('../fonts/SourceSans3-600-latin.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
 
   :root{
-    color-scheme:only light;
+    /* `light dark` y no `only light`: ver el bloque de `prefers-color-scheme` */
+    color-scheme:light dark;
     --celeste:#29b9e9; --celeste-hondo:#1596c2; --celeste-papel:#e2f3fc;
     --navy:#0e2a5c; --navy-deep:#091d40; --navy-soft:#1e4ba8;
     --paper:#f6f1e7; --paper-edge:#e7ddc8; --ink:#3d4a66; --ink-soft:#5c6883;
@@ -577,6 +578,23 @@
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto;}
     .btn{transition:none;}
+  }
+  /* ⚠️ CON EL TELÉFONO EN MODO OSCURO, LA PÁGINA SIGUE CLARA (2026-10-23).
+     `light dark` en `:root` no es un modo oscuro: es lo único que respetan
+     Samsung Internet —en su modo «adaptativo» o con «Usar tema oscuro del sitio
+     web» en Labs— y los demás navegadores para no oscurecer la página por su
+     cuenta. Con `only light` Samsung la oscurecía igual: fondo azul fuerte y
+     textos blancos, en el teléfono de una persona del equipo. Este bloque es el
+     «estilo para modo oscuro» que buscan, y no cambia nada a la vista: repite
+     la declaración. ⚠️ NO FIJAR `color-scheme:light` EN LOS CAMPOS: el modo
+     oscuro forzado de Chromium oscurece justo lo que queda en esquema claro, y
+     el campo del teléfono salía negro (probado en Chrome 156). Los campos ya
+     traen su fondo y su color.
+     ⚠️ Samsung Internet en su modo por defecto («Force Dark») oscurece TODAS
+     las páginas y ningún sitio lo puede impedir: ahí se arregla en el teléfono
+     (Ajustes → Labs → «Usar tema oscuro del sitio web»). */
+  @media (prefers-color-scheme:dark){
+    :root{color-scheme:light dark;}
   }
 </style>
 </head>

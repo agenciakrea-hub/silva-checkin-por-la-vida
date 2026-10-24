@@ -8,8 +8,10 @@
 <meta name="theme-color" content="#29b9e9">
 <!-- Los navegadores de Xiaomi, Samsung y Chrome Android reescriben los colores de
      una página que no declara esquema: el celeste se ensucia y el blanco se apaga.
-     Declarar el esquema desactiva esa inversión automática. -->
-<meta name="color-scheme" content="light">
+     `light dark` —con el bloque de `prefers-color-scheme` del CSS, que la deja
+     clara— es lo que respetan para no hacerlo. `only light` no alcanzaba en
+     Samsung Internet (2026-10-23). -->
+<meta name="color-scheme" content="light dark">
 <link rel="canonical" href="https://uncheckinporlavida.aeroambulanciasilva.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Aeroambulancias Silva">
@@ -45,8 +47,8 @@
      navegador lo resuelve como 400. Por eso el cuerpo va 400 y el énfasis 600. */
 
   :root{
-    /* only light, no light a secas: frena el modo oscuro automático del navegador */
-    color-scheme:only light;
+    /* `light dark` y no `only light`: ver el bloque de `prefers-color-scheme` */
+    color-scheme:light dark;
     /* Tonos de marca (2026-09-22): celeste y naranja */
     --celeste:#29b9e9; --celeste-hondo:#1596c2;
     /* Celeste de papel: la misión iba azul oscuro sobre azul claro y, aunque el
@@ -754,6 +756,23 @@
     .hero-marca{animation:sello var(--dur-3) var(--ease) backwards;}
     .cupon[data-ver]{animation:entra var(--dur-2) var(--ease) backwards;}
     .pista-avion[data-vuela] svg{animation:despega .6s var(--ease) var(--dur-3);}
+  }
+  /* ⚠️ CON EL TELÉFONO EN MODO OSCURO, LA PÁGINA SIGUE CLARA (2026-10-23).
+     `light dark` en `:root` no es un modo oscuro: es lo único que respetan
+     Samsung Internet —en su modo «adaptativo» o con «Usar tema oscuro del sitio
+     web» en Labs— y los demás navegadores para no oscurecer la página por su
+     cuenta. Con `only light` Samsung la oscurecía igual: fondo azul fuerte y
+     textos blancos, en el teléfono de una persona del equipo. Este bloque es el
+     «estilo para modo oscuro» que buscan, y no cambia nada a la vista: repite
+     la declaración. ⚠️ NO FIJAR `color-scheme:light` EN LOS CAMPOS: el modo
+     oscuro forzado de Chromium oscurece justo lo que queda en esquema claro, y
+     el campo del teléfono salía negro (probado en Chrome 156). Los campos ya
+     traen su fondo y su color.
+     ⚠️ Samsung Internet en su modo por defecto («Force Dark») oscurece TODAS
+     las páginas y ningún sitio lo puede impedir: ahí se arregla en el teléfono
+     (Ajustes → Labs → «Usar tema oscuro del sitio web»). */
+  @media (prefers-color-scheme:dark){
+    :root{color-scheme:light dark;}
   }
 </style>
 <script type="application/ld+json">

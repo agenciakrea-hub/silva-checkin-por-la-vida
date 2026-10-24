@@ -17,7 +17,7 @@
      Los tres valores —este, el `theme_color` y el `background_color`— tienen que
      seguir siendo el mismo que el `body`, o el salto vuelve. -->
 <meta name="theme-color" content="#091d40">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
 <!-- noindex a propósito: esto es la pantalla de una persona, no una página de
      la campaña. Lighthouse lo cuenta como falla de SEO; es la decisión correcta. -->
 <meta name="robots" content="noindex">
@@ -48,7 +48,8 @@
              font-weight:600;font-display:optional;}
 
   :root{
-    color-scheme:only light;
+    /* `light dark` y no `only light`: ver el bloque de `prefers-color-scheme` */
+    color-scheme:light dark;
     --celeste:#29b9e9; --celeste-hondo:#1596c2; --celeste-papel:#e2f3fc;
     --navy:#0e2a5c; --navy-deep:#091d40; --navy-soft:#1e4ba8;
     --paper:#f6f1e7; --paper-edge:#e7ddc8; --ink:#3d4a66; --ink-soft:#5c6883;
@@ -552,7 +553,19 @@
                      text-transform:uppercase;color:var(--ink-soft);}
   .para-quien label{display:flex;align-items:center;gap:10px;min-height:44px;
                     font:400 .98rem/1.3 var(--sans);color:var(--navy);cursor:pointer;}
-  .para-quien input{width:20px;height:20px;accent-color:var(--navy);flex:none;}
+  /* ⚠️ DIBUJADOS A MANO, NO EL RADIO DEL NAVEGADOR (2026-10-23). Con
+     `color-scheme:light dark` —ver el bloque de `prefers-color-scheme`—, un
+     teléfono en modo oscuro pintaba gris oscuro el «Es un regalo» sin marcar.
+     Y `color-scheme:light` en el radio lo marca para el oscurecimiento forzado
+     de Chromium, que lo pintaba negro. Así se ven igual en cualquier modo. */
+  .para-quien input{appearance:none;-webkit-appearance:none;margin:0;width:20px;height:20px;flex:none;
+                    display:inline-grid;place-content:center;border:2px solid #767676;
+                    border-radius:50%;background:#fff;}
+  .para-quien input::before{content:"";width:10px;height:10px;border-radius:50%;
+                            background:var(--navy);transform:scale(0);transition:transform .12s;}
+  .para-quien input:checked{border-color:var(--navy);}
+  .para-quien input:checked::before{transform:scale(1);}
+  .para-quien input:focus-visible{outline:2px solid var(--navy);outline-offset:2px;}
 
   .total{display:flex;justify-content:space-between;align-items:baseline;
          margin:24px 0 0;padding-top:16px;border-top:1.5px solid var(--paper-edge);
@@ -1023,6 +1036,23 @@
   /* El contenido nace visible: si el script falla o tarda, se ve el respaldo
      del HTML en vez de una pantalla en blanco. Sólo se anima la entrada. */
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+  /* ⚠️ CON EL TELÉFONO EN MODO OSCURO, LA PÁGINA SIGUE CLARA (2026-10-23).
+     `light dark` en `:root` no es un modo oscuro: es lo único que respetan
+     Samsung Internet —en su modo «adaptativo» o con «Usar tema oscuro del sitio
+     web» en Labs— y los demás navegadores para no oscurecer la página por su
+     cuenta. Con `only light` Samsung la oscurecía igual: fondo azul fuerte y
+     textos blancos, en el teléfono de una persona del equipo. Este bloque es el
+     «estilo para modo oscuro» que buscan, y no cambia nada a la vista: repite
+     la declaración. ⚠️ NO FIJAR `color-scheme:light` EN LOS CAMPOS: el modo
+     oscuro forzado de Chromium oscurece justo lo que queda en esquema claro, y
+     el campo del teléfono salía negro (probado en Chrome 156). Los campos ya
+     traen su fondo y su color.
+     ⚠️ Samsung Internet en su modo por defecto («Force Dark») oscurece TODAS
+     las páginas y ningún sitio lo puede impedir: ahí se arregla en el teléfono
+     (Ajustes → Labs → «Usar tema oscuro del sitio web»). */
+  @media (prefers-color-scheme:dark){
+    :root{color-scheme:light dark;}
+  }
 </style>
 </head>
 <body>
