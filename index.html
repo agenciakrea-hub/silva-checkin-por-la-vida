@@ -360,8 +360,13 @@
      izquierda, encima del contenido y debajo de la barra (z-index 40). Ni se
      toca ni lo lee un lector de pantalla. Entra con un rebote —la curva pasa
      de 1— y, al llegar, mueve la cabeza una vez. */
-  .asoma{position:fixed;left:0;bottom:calc(5.25rem + env(safe-area-inset-bottom,0px));z-index:35;
-    width:clamp(5.5rem,26vw,9rem);pointer-events:none;transform-origin:0 100%;
+  /* z-index 29: debajo de la cabecera (30) y de la barra (40), encima del
+     contenido, donde el máximo es 1. El ancho mira también el ALTO de la
+     pantalla: con sólo `26vw`, en un teléfono en horizontal (667×375) medía
+     300 px de alto, el 86 % de la pantalla, y se montaba sobre la cabecera
+     (lo encontró el verificador, 2026-11-19). */
+  .asoma{position:fixed;left:0;bottom:calc(5.25rem + env(safe-area-inset-bottom,0px));z-index:29;
+    width:clamp(4rem,min(26vw,21vh),9rem);pointer-events:none;transform-origin:0 100%;
     transform:translateX(calc(-100% - 2rem));transition:transform .35s cubic-bezier(.5,0,.75,0);}
   /* Escondido, 2rem más allá del borde y no justo en él: la sombra del oso
      se asomaba uno o dos píxeles por la izquierda de la pantalla. */
@@ -373,8 +378,10 @@
   .asoma img{width:100%;height:auto;transform-origin:50% 100%;
     filter:drop-shadow(0 6px 10px rgba(8,50,70,.28));}
   /* Mientras se escribe en un campo se esconde: con el teclado abierto, en un
-     teléfono queda poco alto y el oso caía encima del formulario. */
-  html:has(input:focus,textarea:focus,select:focus) .asoma{visibility:hidden;}
+     teléfono queda poco alto y el oso caía encima del formulario. Y con foco de
+     teclado en cualquier cosa: un enlace o un botón enfocado con el teclado
+     quedaba medio debajo del oso. */
+  html:has(input:focus,textarea:focus,select:focus,:focus-visible) .asoma{visibility:hidden;}
 
   .cupon{display:grid;grid-template-columns:auto 1fr;gap:.6rem 1rem;align-items:start;
          padding:1.4rem 0;border-top:1.5px dashed var(--paper-edge);}
@@ -1996,9 +2003,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var asomaImg = document.getElementById('asoma-img');
     var osoHero = document.querySelector('.hero-oso');
     if (asoma && asomaImg && asomaImg.content && osoHero) {
-      var osoFuera = false, pieALaVista = false, asomaLista = false;
+      var osoFuera = false, pieALaVista = false, formALaVista = false, asomaLista = false;
       var verAsoma = function () {
-        asoma.toggleAttribute('data-ver', asomaLista && osoFuera && !pieALaVista);
+        asoma.toggleAttribute('data-ver', asomaLista && osoFuera && !pieALaVista && !formALaVista);
       };
       // Sólo entra con la imagen ya decodificada: si no, deslizaría una caja
       // vacía y el oso aparecería de golpe, quieto, al terminar de bajar.
@@ -2020,6 +2027,16 @@ document.addEventListener('DOMContentLoaded', function () {
         pieALaVista = e[0].isIntersecting;
         verAsoma();
       }, { threshold: 0 }).observe(document.querySelector('.pie'));
+      // También se guarda mientras se ve el formulario del pase: le tapaba la
+      // etiqueta y el borde al campo «Nombre y apellido» (lo encontró el
+      // verificador, 2026-11-19), y ese formulario es lo que la página busca.
+      var formPaseVista = document.getElementById('form-pase');
+      if (formPaseVista) {
+        new IntersectionObserver(function (e) {
+          formALaVista = e[0].isIntersecting;
+          verAsoma();
+        }, { threshold: 0 }).observe(formPaseVista);
+      }
       if (document.readyState === 'complete') bajarAsoma();
       else window.addEventListener('load', bajarAsoma);
     }
