@@ -117,6 +117,23 @@
   var waAUnContacto = function (m) {
     return 'https://wa.me/?text=' + encodeURIComponent(m);
   };
+  /* El ícono de WhatsApp, para los botones que se arman acá y abren
+     WhatsApp: todo botón que saca de la app lo muestra (2026-11-19). Es el
+     mismo trazo que el de los botones del HTML. */
+  var TRAZO_WA = 'M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z';
+  var iconoWhatsApp = function () {
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('width', '17');
+    svg.setAttribute('height', '17');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('aria-hidden', 'true');
+    var trazo = document.createElementNS(ns, 'path');
+    trazo.setAttribute('d', TRAZO_WA);
+    svg.appendChild(trazo);
+    return svg;
+  };
 
   // ── Pintar ───────────────────────────────────────────────────────────────
 
@@ -796,6 +813,7 @@
         btn.type = 'button';
         btn.className = 'mis-accion' + (m.accion.suave ? ' suave' : '');
         btn.textContent = m.accion.texto;
+        if (m.accion.como === 'regalar') btn.insertBefore(iconoWhatsApp(), btn.firstChild);
         btn.addEventListener('click', function () {
           if (m.accion.como === 'invitar') invitar();
           if (m.accion.como === 'regalar') regalar();

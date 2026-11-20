@@ -245,6 +245,9 @@
   .btn{display:flex;align-items:center;justify-content:center;gap:9px;
        font:600 1rem/1 var(--sans);text-decoration:none;padding:15px 18px;
        min-height:52px;border-radius:999px;border:0;cursor:pointer;text-align:center;}
+  /* Todo botón que saca de la app a WhatsApp lleva su ícono (2026-11-19):
+     «Adopta un héroe», en naranja, no decía que te sacaba afuera. */
+  .btn svg,.mis-accion svg{flex:none;}
   .btn-1{background:var(--orange);color:var(--tinta-boton);}
   /* Por defecto va sobre el navy del fondo. */
   .btn-2{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55);}
@@ -496,7 +499,7 @@
      mismo marrón. La regla va acotada al estado bloqueado porque sobre el fondo
      del estado normal el crema ya pasa y es el tono de la tarjeta. */
   .misiones[data-bloqueada] .mis-cuerpo p{color:#fff;}
-  .mis-accion{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;
+  .mis-accion{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
               min-height:44px;padding:0 18px;border-radius:999px;border:0;cursor:pointer;
               font:600 .95rem/1 var(--sans);background:#fff;color:var(--orange-papel);}
   .mis-accion:hover{background:#fff6e8;}
@@ -1190,7 +1193,7 @@
     <section class="cierre enPapel" id="cierre" hidden aria-labelledby="cierre-titulo">
       <h2 id="cierre-titulo">La ruta se completó</h2>
       <p id="cierre-nota">Gracias. Tu Héroe de Rescate ayudó a que esta ruta despegara.</p>
-      <button class="btn btn-1" id="btn-otra-ruta" type="button">Sumarme a la próxima ruta</button>
+      <button class="btn btn-1" id="btn-otra-ruta" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Sumarme a la próxima ruta</button>
     </section>
 
     <!-- ── Activación ──────────────────────────────────────────────────────
@@ -1523,7 +1526,7 @@
         <label><input type="radio" name="destino" value="donar"> Que lo reciba un paciente</label>
       </fieldset>
 
-      <button class="btn btn-1" id="btn-encargar" type="button" disabled>Encargar por WhatsApp</button>
+      <button class="btn btn-1" id="btn-encargar" type="button" disabled><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Encargar por WhatsApp</button>
     </section>
 
     <!-- ── La red completa ─────────────────────────────────────────────────
@@ -1559,15 +1562,15 @@
         impacto ESG.</p>
       <button class="plan" type="button" data-plan="padrino">
         <span><b>Padrino de Ruta Sanitaria</b><span>Una misión completa, con asociación nominal de su marca</span></span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
       </button>
       <button class="plan" type="button" data-plan="copiloto">
         <span><b>Copiloto Solidario</b><span>Por tramos y asientos médicos, con reporte ESG semestral</span></span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
       </button>
       <button class="plan" type="button" data-plan="lotes">
         <span><b>Kits Pedelton con propósito</b><span>$10 – $40 · el Héroe de Rescate en empaque estéril, o Kits Sensoriales TEA</span></span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5.5l7 6.5-7 6.5V5.5z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>
       </button>
       <!-- ⚠️ ES UN <a>, NO UN .plan. Los tres de arriba son botones que abren
            WhatsApp; éste navega a otra página, y darle la misma forma haría que
@@ -1643,7 +1646,7 @@
     </div>
     <a class="rf-cta" href="#tienda">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      <span>Aportar Kit</span>
+      <span>Adopta un héroe</span>
     </a>
   </aside>
 
