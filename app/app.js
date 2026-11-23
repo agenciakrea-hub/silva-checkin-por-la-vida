@@ -1432,6 +1432,10 @@
         intento = 0;
         if (!r.ok) { pintarDesconocido(); return; }
         ultimoEstadoOk = Date.now();
+        /* El servidor contestó: si quedó un alta esperando en la cola —señal
+           débil al registrarse—, que salga ahora. Sin esto la app decía «Al
+           día» con la persona sin registrar (2026-11-23). */
+        try { if (window.CXV.leerCola().length) window.CXV.enviarPendientes(); } catch (eC) {}
         latido('listo', horaCorta());
         pintarRanking(r.ranking);
         pintarVuelo(r.vuelo, r.ososActivados, r.vendidos, r.avance);
@@ -1668,6 +1672,12 @@
        `total`: se queda corto, pero nunca inventa gente que no existe. */
     var mas = $('rank-mas');
     var fuera = (typeof r.total === 'number' ? r.total : r.lista.length) - TOPE_VISIBLE;
+    /* Quien mira y quedó fuera del Top tiene su propio renglón abajo («Vas N a
+       bordo…»): no es «un oncoaliado más». Contarlo decía «Y un oncoaliado más
+       que también trajo gente» cuando el único fuera era la propia persona
+       (prueba en el navegador, 2026-11-23). Sólo con el servidor nuevo, que
+       dice el puesto. */
+    if (servidorNuevo && r.miPuesto > TOPE_VISIBLE) fuera -= 1;
     if (mas && fuera > 0) {
       mas.hidden = false;
       mas.textContent = fuera === 1
@@ -2254,6 +2264,9 @@
     var yo = leer(K_YO, null);
     if (!yo || !yo.token) {
       aviso.textContent = MOTIVOS.sin_token;
+      /* Y se empuja la cola: si el alta está ahí esperando, que salga ya, en
+         vez de pedirle a la persona que espere algo que no estaba pasando. */
+      try { window.CXV.enviarPendientes(); } catch (eC) {}
       return;
     }
     aviso.textContent = 'Activando…';

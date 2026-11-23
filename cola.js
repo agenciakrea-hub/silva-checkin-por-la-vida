@@ -189,6 +189,20 @@
     return escribir(K_PENDIENTES, despues);
   }
 
+  /* ⚠️ SIN RESPUESTA, SE VUELVE A PROBAR SOLA, cada vez más espaciado: 5, 10,
+     20 y 40 segundos, y después cada minuto mientras la página siga abierta.
+     Antes un error de red dejaba el envío esperando un `online` que con señal
+     débil nunca llega —el teléfono cree que tiene red—, y la persona se quedaba
+     sin alta con la app diciendo «Al día» hasta cambiar de app o recargar
+     (prueba en el navegador del 2026-11-23). No cuenta como intento: el
+     servidor no contestó, así que no hay de qué rendirse. */
+  var esperaRed = 0, relojRed = null;
+  function reintentarPorRed() {
+    if (relojRed) return;
+    esperaRed = Math.min(esperaRed ? esperaRed * 2 : 5000, 60000);
+    relojRed = setTimeout(function () { relojRed = null; enviarPendientes(); }, esperaRed);
+  }
+
   var enviando = false;
   function enviarPendientes() {
     if (!hayRed() || enviando) return;
@@ -224,6 +238,7 @@
     enviando = true;
     alServidor(pendiente.cuerpo)
       .then(function (r) {
+        esperaRed = 0;                 // contestó: la próxima falta de red arranca de cero
         var listo = r && r.ok;
         /* ⚠️ CASI NADA SE DESCARTA POR «INVÁLIDO». Eso costó un registro real:
            el servidor rechazaba un teléfono argentino, el cliente leía
@@ -270,7 +285,7 @@
         enviando = false;
         enviarPendientes();
       })
-      .catch(function () { enviando = false; });   // sin señal: queda para la próxima
+      .catch(function () { enviando = false; reintentarPorRed(); });   // sin señal: ver `reintentarPorRed`
   }
 
   // Sin esto, «se reintenta la próxima vez que abra el sitio» es una promesa

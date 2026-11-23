@@ -2391,21 +2391,28 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
     formPase.addEventListener('submit', function (e) {
       e.preventDefault();
-      var faltan = [], datos = [], valores = {};
+      var faltan = [], datos = [], valores = {}, correoMal = false;
       campos.forEach(function (c) {
         var el = formPase.elements[c[0]], obligatorio = c[2];
         var v = (el.value || '').trim();
-        // Un campo opcional vacío no es un error; uno opcional mal escrito sí.
-        var mal = obligatorio ? (!v || (c[0] === 'correo' && v.indexOf('@') < 1))
-                              : false;
-        el.setAttribute('aria-invalid', mal ? 'true' : 'false');
-        if (mal) faltan.push(c[1]);
+        /* ⚠️ VACÍO Y MAL ESCRITO SON DOS COSAS. Decía «Falta completar: Correo»
+           con el correo escrito y sin arroba, y «x@» pasaba y se guardaba
+           (prueba en el navegador, 2026-11-23). Un correo pide algo antes y
+           después de la arroba, y un punto en lo de después. */
+        var vacio = obligatorio && !v;
+        var malo = !vacio && c[0] === 'correo' && !!v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        el.setAttribute('aria-invalid', (vacio || malo) ? 'true' : 'false');
+        if (vacio) faltan.push(c[1]);
+        else if (malo) correoMal = true;
         else if (v) { datos.push(c[1] + ': ' + v); valores[c[0]] = v; }
       });
-      if (faltan.length) {
-        errorPase.textContent = faltan.length === 1
+      if (faltan.length || correoMal) {
+        var partes = [];
+        if (faltan.length) partes.push(faltan.length === 1
           ? 'Falta completar: ' + faltan[0] + '.'
-          : 'Faltan completar: ' + faltan.join(', ') + '.';
+          : 'Faltan completar: ' + faltan.join(', ') + '.');
+        if (correoMal) partes.push('Revisa el correo: tiene que ser como nombre@correo.com.');
+        errorPase.textContent = partes.join(' ');
         errorPase.hidden = false;
         var primero = formPase.querySelector('[aria-invalid="true"]');
         if (primero) primero.focus();
