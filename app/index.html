@@ -653,6 +653,7 @@
   .activar-listo b{font-weight:600;color:var(--navy);}
   .activar-sin{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--paper-edge);
                font-size:.9rem;color:var(--ink);}
+  .activar-sin + .activar-sin{margin-top:10px;padding-top:0;border-top:0;}
   /* ⚠️ EL ÁREA TÁCTIL SE DA CON UN PSEUDO-ELEMENTO, NO CON `min-height` NI CON
      PADDING. Las dos formas obvias fallan, y fallan distinto:
 
@@ -1254,6 +1255,14 @@
         <button class="btn btn-1" type="submit">Activar</button>
       </form>
       <p class="aviso" id="activar-aviso" role="alert"></p>
+      <!-- ⚠️ EL CÓDIGO NO SIEMPRE SE ENTREGA (Krea, 2026-11-23): quien ya
+           compró y no lo recibió no tiene nada que escribir arriba. Lo pide por
+           WhatsApp, con su nombre y el id de su pase, y el equipo le manda el
+           suyo. Activar solo por teléfono se descartó: ver «crucesPorTelefono»
+           en docs/PANEL.md (un pase para regalar se lo quedaría el comprador). -->
+      <p class="activar-sin">¿Ya adoptaste tu Héroe y no te dieron el código?
+        <button type="button" id="btn-sin-codigo">Pídelo por WhatsApp</button>
+        y te lo enviamos para activar tu pase.</p>
       <p class="activar-sin">¿Todavía no tienes uno?
         <button type="button" id="btn-quiero">Adopta tu Héroe de Rescate</button>
         y te lo enviamos por WhatsApp.</p>

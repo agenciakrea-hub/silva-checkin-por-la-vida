@@ -2337,6 +2337,19 @@
       });
   });
 
+  /* Quien ya adoptó y no recibió el código —el stand no siempre lo da— no
+     tiene nada que escribir en «Activar». Le escribe al equipo, que busca su
+     venta y le manda el código. Va el id del pase: con un teléfono compartido,
+     el nombre solo no alcanza para encontrar la fila. */
+  al('btn-sin-codigo', 'click', function () {
+    var perfil = leer(K_PERFIL, null) || {};
+    var yo = leer(K_YO, null) || {};
+    window.open(waALaEmpresa('Hola, vengo de Un Check-in por la Vida. Ya adopté mi Héroe de Rescate '
+      + 'y no me dieron el código para activar mi Boarding Pass.'
+      + (perfil.nombre ? ' Soy ' + perfil.nombre + '.' : '')
+      + (yo.id ? ' Mi pase: ' + yo.id + '.' : '')), '_blank', 'noopener');
+  });
+
   al('btn-quiero', 'click', function () {
     var perfil = leer(K_PERFIL, null);
     var quien = (perfil && perfil.nombre) ? (' Soy ' + perfil.nombre + '.') : '';
