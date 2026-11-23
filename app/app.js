@@ -2001,7 +2001,7 @@
   // catálogo con precios viejos que una sección vacía.
   var RESPALDO = [
     { id: 'toalla',  nombre: 'Toalla tipo oso', precio: 10 },
-    { id: 'llavero', nombre: 'Llavero',         precio: 20 },
+    { id: 'llavero', nombre: 'Llavero u oso de acompañamiento', precio: 20 },
     { id: 'oso',     nombre: 'Oso grande',      precio: 40 }
   ];
 

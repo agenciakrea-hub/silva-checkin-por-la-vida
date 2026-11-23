@@ -40,7 +40,9 @@ window.CAMPANA = {
   // de honor. Se suman tal cual.
   productos: [
     { id: "toalla",  nombre: "Toalla tipo oso", precio: 10, vendidas: 27 },
-    { id: "llavero", nombre: "Llavero",         precio: 20, vendidas: 13 },
+    // El de $20 es el llavero O el oso de acompañamiento (Krea, 2026-11-23).
+    // `vendidas` sigue siendo lo del congreso, que fueron 13 llaveros.
+    { id: "llavero", nombre: "Llavero u oso de acompañamiento", precio: 20, vendidas: 13 },
     { id: "oso",     nombre: "Oso grande",      precio: 40, vendidas: 4  }
   ]
 };

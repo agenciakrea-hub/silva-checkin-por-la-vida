@@ -140,7 +140,7 @@
        apagan las transiciones y el scroll suave que quedaban sueltos. */
     html{scroll-behavior:auto;}
     .cab,.cab-marca,.btn,.barra,.pista-avance,.barra-avance,
-    .faq-cuerpo,.cupon-foto img,.hero-silva img{transition:none!important;animation:none!important;}
+    .faq-cuerpo,.cupon-foto img,.hero-silva img,.activar-flecha,.pie-subir{transition:none!important;animation:none!important;}
   }
   .cab-btn{display:inline-flex;align-items:center;gap:.4rem;font:600 .82rem/1 var(--sans);
            text-decoration:none;padding:.6rem .9rem;border-radius:999px;min-height:44px;}
@@ -295,7 +295,9 @@
   .bloque{max-width:64rem;margin:0 auto;padding:3rem var(--gutter);}
   /* La cabecera es sticky y mide 63 px: sin esto, saltar a un ancla deja el
      título de la sección debajo de ella. Se nota en los accesos del hero. */
-  section[id],div[id]{scroll-margin-top:4.6rem;}
+  /* `form[id]` desde el 2026-11-23: «Activa tu Boarding Pass» lleva a
+     `#form-pase`, y el título del formulario quedaba debajo de la cabecera. */
+  section[id],div[id],form[id]{scroll-margin-top:4.6rem;}
   .bloque h2{font-size:clamp(2.2rem,7vw,3.4rem);margin-bottom:.6rem;}
   .bajada{color:var(--ink);max-width:48ch;margin-bottom:2rem;font-size:1.08rem;font-weight:600;}
   .rotulo{font:600 .8rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);}
@@ -486,6 +488,41 @@
      costados asomaba el celeste del body en una línea de 1 px de borde a borde.
      El punteado se centra dentro. */
   .corte{background:var(--paper);}
+
+  /* Quienes ya se sumaron (2026-11-23): ver el comentario de la sección.
+     Quieta por defecto —sin JS o con «reducir movimiento»—: la lista centrada,
+     que baja de renglón si no entra. Con `data-corre`, que pone el script, es
+     una cinta de dos mitades iguales que se corre la mitad de su ancho y
+     vuelve sin salto. La velocidad (`--vuelta`) la calcula el script por el
+     ancho, para que sea la misma en un teléfono y en una pantalla grande. */
+  .participan{padding:2.2rem 0 2.4rem;}
+  .participan-cab{max-width:64rem;margin:0 auto 1.3rem;padding:0 var(--gutter);
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;}
+  .participan-cab .rotulo{margin:0;}
+  .participan-pausa{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:999px;
+    border:1.5px solid var(--paper-edge);background:#fffdf8;color:var(--navy);cursor:pointer;}
+  @media (hover:hover){.participan-pausa:hover{border-color:var(--navy);}}
+  .participan-pausa .ico-sigue,.participan[data-pausa] .participan-pausa .ico-pausa{display:none;}
+  .participan[data-pausa] .participan-pausa .ico-sigue{display:block;}
+  .participan-ventana{max-width:72rem;margin:0 auto;overflow:hidden;}
+  .participan-cinta{display:flex;justify-content:center;}
+  .participan-lista{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+    gap:1.4rem clamp(2.4rem,7vw,4.5rem);margin:0;padding:0 var(--gutter);list-style:none;}
+  .participan-lista li{flex:none;}
+  /* Alto por logo, no uno solo: a la misma altura, los apaisados (Comic Con,
+     Helitec) se ven el doble que los altos (Sports Club, Aerocentro). Cada uno
+     va a 60 px × proporción^-0,4, que los empareja a ojo. */
+  .participan-lista img{height:var(--h);width:auto;max-width:none;}
+  .p-vaac{--h:3.4rem;} .p-comic{--h:2.75rem;} .p-sports{--h:4.05rem;} .p-helitec{--h:2.8rem;} .p-aero{--h:3.95rem;}
+  .participan[data-corre] .participan-ventana{
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+            mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);}
+  .participan[data-corre] .participan-cinta{width:max-content;justify-content:flex-start;
+    animation:desfile var(--vuelta,30s) linear infinite;}
+  .participan[data-corre] .participan-lista{flex-wrap:nowrap;padding:0 calc(clamp(2.4rem,7vw,4.5rem) / 2);}
+  @keyframes desfile{to{transform:translateX(-50%);}}
+  .participan[data-pausa] .participan-cinta,.participan[data-fuera] .participan-cinta{animation-play-state:paused;}
+  @media (hover:hover){.participan-ventana:hover .participan-cinta{animation-play-state:paused;}}
   .corte::before{content:"";display:block;box-sizing:border-box;
                  width:min(64rem,100%);margin:0 auto;padding:0 var(--gutter);
                  border-top:1.5px dashed var(--paper-edge);}
@@ -499,7 +536,12 @@
   .prod .prod-precio{margin:0;flex:none;font-family:var(--cifra);font-weight:700;font-size:1.75rem;
                      color:var(--navy);letter-spacing:-.05em;line-height:1;}
   .prod-accion{margin:1.1rem 0 0;}
-  .prod-accion .btn{width:100%;font-size:1rem;min-height:50px;}
+  /* Interlineado propio: «Llavero u oso de acompañamiento» baja de renglón en
+     un teléfono, y con el 1 del `.btn` las dos líneas se tocaban. */
+  .prod-accion .btn{width:100%;font-size:1rem;min-height:50px;line-height:1.2;text-wrap:balance;text-align:center;}
+  /* Con las tarjetas lado a lado, los tres botones al alto del de dos renglones:
+     si no, el del llavero quedaba más alto que sus vecinos (2026-11-23). */
+  @media (min-width:34rem){.prod-accion .btn{min-height:4.1rem;}}
   .ico-btn{flex:none;opacity:.9;}
   .envio{max-width:62ch;margin-top:1.5rem;font-size:1.02rem;font-weight:400;color:var(--ink);}
 
@@ -593,7 +635,19 @@
     border:1.5px solid var(--paper-edge);border-radius:8px;padding:.6rem .7rem;min-height:44px;}
   .activar input:focus-visible{border-color:var(--navy);}
   .activar input[aria-invalid="true"]{border-color:#a5372b;}
-  .activar .btn{margin-top:.5rem;width:100%;}
+  /* A 320 px «Activar mi Boarding Pass» baja de renglón: con el interlineado 1
+     del `.btn`, las dos líneas se tocaban. */
+  .activar .btn{margin-top:.5rem;width:100%;line-height:1.2;text-wrap:balance;text-align:center;}
+  /* El pliegue: ver el comentario del `<details>` en el HTML. Cerrado es un
+     botón navy; abierto pasa a contorno y dice «Cerrar», para que el botón
+     fuerte sea el de enviar y no haya dos iguales uno arriba del otro. */
+  .activar-abrir{list-style:none;cursor:pointer;}
+  .activar-abrir::-webkit-details-marker{display:none;}
+  .activar-pliegue[open] > .activar-abrir{background:none;color:var(--navy);border:1.8px solid var(--navy);}
+  .activar-pliegue:not([open]) .si-abierto,.activar-pliegue[open] .si-cerrado{display:none;}
+  .activar-flecha{flex:none;transition:transform var(--dur-1) var(--ease);}
+  .activar-pliegue[open] .activar-flecha{transform:rotate(180deg);}
+  .activar-campos{display:flex;flex-direction:column;gap:.7rem;margin-top:1.2rem;}
   .activar-error{margin:0;font-size:.92rem;font-weight:600;color:#a5372b;}
   .activar-vuelve{margin:0;font-size:.92rem;color:var(--ink);}
   .activar-vuelve a{color:var(--navy);font-weight:600;}
@@ -629,14 +683,35 @@
   .rotulo--claro{display:flex;align-items:center;gap:.9rem;color:var(--navy);font-weight:700;margin:2.6rem 0 1rem;}
   .rotulo--claro::after{content:"";flex:1;height:2px;background:rgba(14,42,92,.22);border-radius:2px;}
 
+  /* El «6» grande y, a su derecha, todo el texto a la altura del número (Krea,
+     2026-11-23): el rótulo arriba, a la altura del borde de arriba de la
+     cifra, y la frase abajo, sobre su misma línea de base. La grilla respeta el
+     orden del HTML —rótulo, cifra, frase—, que es lo que lee un lector de
+     pantalla: «El paquete de rutas: 6 rutas cuidadosamente evaluadas…».
+     `text-box` recorta el aire de arriba y de abajo de las letras para que los
+     bordes coincidan de verdad (Chrome 133+); sin él quedan unos píxeles de
+     diferencia, nada más. */
   .mision-meta{margin-top:2rem;padding:1.5rem;border-radius:14px;background:#fff;
-    border:1.5px solid rgba(14,42,92,.1);box-shadow:0 10px 24px rgba(6,42,62,.1);}
-  .mision-meta-rotulo{font:700 .76rem/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;
-    color:var(--orange-papel);margin-bottom:.5rem;}
-  .mision-meta .meta-cifra{font-family:var(--cifra);font-weight:700;font-size:clamp(2.2rem,9vw,3rem);
-    letter-spacing:-.05em;display:block;margin-bottom:.5rem;color:var(--navy);line-height:1;}
+    border:1.5px solid rgba(14,42,92,.1);box-shadow:0 10px 24px rgba(6,42,62,.1);
+    display:grid;grid-template-columns:auto 1fr;grid-template-areas:"cifra rotulo" "cifra frase";
+    column-gap:clamp(1rem,4vw,1.75rem);row-gap:.6rem;align-items:center;}
+  .mision-meta-rotulo{grid-area:rotulo;align-self:start;font:700 .76rem/1.4 var(--sans);letter-spacing:.1em;
+    text-transform:uppercase;color:var(--orange-papel);margin:0;text-box:trim-start cap;}
+  .mision-meta .meta-cifra{grid-area:cifra;font-family:var(--cifra);font-weight:700;
+    font-size:clamp(7.5rem,32vw,9rem);letter-spacing:-.05em;display:block;margin:0;color:var(--navy);
+    line-height:1;text-box:trim-both cap alphabetic;}
   .mision-meta p b{font-family:inherit;font-size:inherit;font-weight:700;display:inline;}
   .mision-meta p{max-width:62ch;color:var(--ink);}
+  .mision-meta > p:last-child{grid-area:frase;align-self:end;font-size:clamp(1rem,2.4vw,1.4rem);
+    line-height:1.4;text-box:trim-end alphabetic;}
+  /* ⚠️ EL TEXTO NUNCA PUEDE SER MÁS ALTO QUE EL NÚMERO, o deja de estar «a su
+     altura»: sobresale arriba y abajo. A 320 px la frase iba en cuatro
+     renglones (116 px) contra un «6» de 83: medido el 2026-11-23. En pantallas
+     angostas, número más grande y frase un poco más chica. */
+  @media (max-width:24rem){
+    .mision-meta{padding:1.1rem;column-gap:.85rem;}
+    .mision-meta > p:last-child{font-size:.94rem;line-height:1.3;}
+  }
 
   .tablero{margin-top:1rem;border-radius:12px;overflow:hidden;background:#fff;
     box-shadow:0 10px 22px rgba(6,42,62,.14);}
@@ -785,7 +860,13 @@
   .faq h3{margin:0;font-family:var(--sans);font-size:1rem;}
 
   .pie{background:var(--navy-deep);color:#d3dcee;font-size:.98rem;font-weight:400;}
-  .pie .bloque{padding-top:2.5rem;padding-bottom:2.5rem;}
+  .pie .bloque{padding-top:2.5rem;padding-bottom:2.5rem;position:relative;}
+  /* La flecha para subir: arriba a la derecha del pie, a la altura del logo,
+     con la misma pinta que los círculos de las redes. */
+  .pie-subir{position:absolute;top:2.5rem;right:var(--gutter);width:48px;height:48px;border-radius:999px;
+    display:grid;place-items:center;color:#d6ddec;border:1.5px solid rgba(246,241,231,.35);
+    transition:border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease);}
+  @media (hover:hover){.pie-subir:hover{border-color:#d6ddec;transform:translateY(-2px);}}
   .pie-marca img{height:3.8rem;width:auto;margin-bottom:1.6rem;}
   .pie-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.8rem;}
   .pie h3{font-family:var(--sans);font-size:.78rem;font-weight:700;letter-spacing:.1em;
@@ -812,6 +893,7 @@
     .hero-marca{animation:sello var(--dur-3) var(--ease) backwards;}
     .cupon[data-ver]{animation:entra var(--dur-2) var(--ease) backwards;}
     .pista-avion[data-vuela] svg{animation:despega .6s var(--ease) var(--dur-3);}
+    .activar-pliegue[open] .activar-campos{animation:entra var(--dur-2) var(--ease) backwards;}
     @keyframes saluda{0%,100%{transform:none;}35%{transform:rotate(-7deg);}70%{transform:rotate(3deg);}}
     .asoma[data-ver] img{animation:saluda .6s var(--ease) .5s both;}
   }
@@ -1028,7 +1110,7 @@
         <span class="cupon-n" aria-hidden="true">01</span>
         <div>
           <h3>Adoptas un Héroe de Rescate</h3>
-          <p>En toalla, llavero u oso grande. <b>Edición limitada</b>, se coordina por WhatsApp y en los <b>puntos de venta</b> que anunciaremos.</p>
+          <p>En toalla, llavero, oso de acompañamiento u oso grande. <b>Edición limitada</b>, se coordina por WhatsApp y en los <b>puntos de venta</b> que anunciaremos.</p>
         </div>
         <div class="cupon-foto">
           <picture>
@@ -1206,23 +1288,76 @@
           <p class="prod-accion"><a class="btn btn-3" data-wa="toalla" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Toalla tipo oso</a></p>
         </article>
         <article class="prod">
-          <h3 class="sr">Llavero</h3>
+          <h3 class="sr">Llavero u oso de acompañamiento</h3>
           <div class="prod-cab">
-            <p class="desc">Oso de bolsillo, <b>tipo llavero</b>, de 8 cm.</p>
+            <p class="desc">Oso de bolsillo, <b>tipo llavero</b>, de 8&nbsp;cm, <b>o tu oso de acompañamiento</b>.</p>
             <p class="prod-precio" data-precio="llavero">$20</p>
           </div>
-          <p class="prod-accion"><a class="btn btn-3" data-wa="llavero" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Llavero</a></p>
+          <p class="prod-accion"><a class="btn btn-3" data-wa="llavero" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Llavero u oso de acompañamiento</a></p>
         </article>
         <article class="prod">
           <h3 class="sr">Oso grande</h3>
           <div class="prod-cab">
-            <p class="desc">El <b>Héroe de Rescate</b>, de 20 cm.</p>
+            <p class="desc">El <b>Héroe de Rescate</b>, de 20&nbsp;cm.</p>
             <p class="prod-precio" data-precio="oso">$40</p>
           </div>
           <p class="prod-accion"><a class="btn btn-3" data-wa="oso" href="https://wa.me/584241466595" target="_blank" rel="noopener"><svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.5 14c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.8 1.9c.1.2 0 .4-.1.5l-.3.4c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6-.1 1.1z"/></svg>Oso grande</a></p>
         </article>
       </div>
       <p class="envio">Coordina el <b>envío</b> y la <b>forma de pago</b> por WhatsApp al adoptar tu héroe.</p>
+    </div>
+  </section>
+
+  <div class="corte" aria-hidden="true"></div>
+
+  <!-- Quienes ya se sumaron (Krea, 2026-11-23: «son las empresas que
+       participaron de momento, hacelo tipo desplazamiento horizontal
+       constante»). El HTML trae UNA lista, con el nombre de cada una en el
+       `alt`: es lo que oye un lector de pantalla y lo que se ve sin JS, quieta
+       y centrada. El desfile lo arma el script, repitiéndola con `aria-hidden`.
+       ⚠️ ES LA ÚNICA ANIMACIÓN DEL SITIO QUE NO TERMINA, contra la regla de
+       «≤ 600 ms»: la pidió el cliente. Por eso tiene botón de pausa —un
+       movimiento de más de cinco segundos lo exige (WCAG 2.2.2)—, se queda
+       quieta con «reducir movimiento» y se detiene fuera de pantalla. -->
+  <section class="papel participan" id="participan" aria-labelledby="t-participan">
+    <div class="participan-cab">
+      <h2 class="rotulo" id="t-participan">Ya se sumaron a la campaña</h2>
+      <button class="participan-pausa" type="button" id="participan-pausa" aria-pressed="false"
+              aria-label="Pausar el desfile de logos" hidden>
+        <svg class="ico-pausa" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        <svg class="ico-sigue" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 001.5.9l10.4-6.5a1 1 0 000-1.8L9.5 4.6A1 1 0 008 5.5z"/></svg>
+      </button>
+    </div>
+    <div class="participan-ventana">
+      <div class="participan-cinta" id="participan-cinta">
+        <ul class="participan-lista">
+          <li class="p-vaac"><picture>
+            <source srcset="img/participantes/vaac-80.avif 1x, img/participantes/vaac-160.avif 2x" type="image/avif">
+            <img src="img/participantes/vaac-80.webp" srcset="img/participantes/vaac-80.webp 1x, img/participantes/vaac-160.webp 2x"
+                 width="105" height="80" loading="lazy" decoding="async" alt="Valle Arriba Athletic Club">
+          </picture></li>
+          <li class="p-comic"><picture>
+            <source srcset="img/participantes/comic-con-80.avif 1x, img/participantes/comic-con-160.avif 2x" type="image/avif">
+            <img src="img/participantes/comic-con-80.webp" srcset="img/participantes/comic-con-80.webp 1x, img/participantes/comic-con-160.webp 2x"
+                 width="169" height="80" loading="lazy" decoding="async" alt="Caracas Comic Con">
+          </picture></li>
+          <li class="p-sports"><picture>
+            <source srcset="img/participantes/sports-club-80.avif 1x, img/participantes/sports-club-160.avif 2x" type="image/avif">
+            <img src="img/participantes/sports-club-80.webp" srcset="img/participantes/sports-club-80.webp 1x, img/participantes/sports-club-160.webp 2x"
+                 width="66" height="80" loading="lazy" decoding="async" alt="Caracas Sports Club">
+          </picture></li>
+          <li class="p-helitec"><picture>
+            <source srcset="img/participantes/helitec-80.avif 1x, img/participantes/helitec-160.avif 2x" type="image/avif">
+            <img src="img/participantes/helitec-80.webp" srcset="img/participantes/helitec-80.webp 1x, img/participantes/helitec-160.webp 2x"
+                 width="165" height="80" loading="lazy" decoding="async" alt="Helitec">
+          </picture></li>
+          <li class="p-aero"><picture>
+            <source srcset="img/participantes/aerocentro-80.avif 1x, img/participantes/aerocentro-160.avif 2x" type="image/avif">
+            <img src="img/participantes/aerocentro-80.webp" srcset="img/participantes/aerocentro-80.webp 1x, img/participantes/aerocentro-160.webp 2x"
+                 width="70" height="80" loading="lazy" decoding="async" alt="Aerocentro">
+          </picture></li>
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -1336,6 +1471,24 @@
                formulario era también para él. -->
           <p class="activar-intro">Completa tus datos y entras: ahí ves la ruta que estás
             financiando, encargas lo que quieras e invitas a otros.</p>
+          <p class="activar-vuelve" id="activar-vuelve" hidden>
+            ¿Ya te registraste? <a href="app/">Abre tu Boarding Pass</a>.
+          </p>
+          <!-- ⚠️ PLEGADO (Krea, 2026-11-23: «el que no tiene no debería ver todo
+               el formulario»). A la vista quedan el título, la bajada y el
+               botón; las tres puertas y los campos aparecen al tocarlo. Es un
+               `<details>` y no un botón con script: se abre sin JS y el lector
+               de pantalla anuncia solo si está abierto o cerrado. El script lo
+               abre cuando se llega con `#form-pase` («Activa tu Boarding Pass»,
+               en el hero) o con una invitación pendiente: ésos vinieron a
+               llenarlo. -->
+          <details class="activar-pliegue" id="activar-pliegue">
+            <summary class="btn btn-3 activar-abrir">
+              <span class="si-cerrado">Completar mis datos</span>
+              <span class="si-abierto">Cerrar el formulario</span>
+              <svg class="activar-flecha" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="activar-campos">
           <ul class="activar-puertas">
             <li><b>¿Ya tienes tu Héroe de Rescate?</b> Adentro activas tu pase con el
               código que vino con él.</li>
@@ -1357,13 +1510,12 @@
             <input name="telefono" type="tel" autocomplete="tel" required>
           </label>
           <p class="activar-error" id="activar-error" role="status" hidden></p>
-          <p class="activar-vuelve" id="activar-vuelve" hidden>
-            ¿Ya te registraste? <a href="app/">Abre tu Boarding Pass</a>.
-          </p>
           <button class="btn btn-3" type="submit">
             <svg class="ico-btn" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>
             Activar mi Boarding Pass
           </button>
+            </div>
+          </details>
         </form>
         <figure class="qr-pieza">
           <picture>
@@ -1460,6 +1612,13 @@
 
 <footer class="pie">
   <div class="bloque">
+    <!-- Para volver arriba sin bajar el dedo once mil píxeles (Krea,
+         2026-11-23). `#top` es el principio del documento por definición: no
+         hace falta ningún elemento con ese id, y el desplazamiento suave lo da
+         el `scroll-behavior` del `html`, que con «reducir movimiento» se apaga. -->
+    <a class="pie-subir" href="#top" aria-label="Volver al inicio de la página">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg>
+    </a>
     <div class="pie-marca">
       <!-- El mismo archivo que el logo del primer pliegue, ya descargado. Acá
            había un PNG de 1116 px y 27 kB para dibujarse a 46 px, que además se
@@ -1597,7 +1756,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ── WhatsApp: un solo número, mensaje según el contexto ──
   var precios = {};
   (d.productos || []).forEach(function (p) { precios[p.id] = p; });
-  var nombres = { toalla: 'la Toalla Héroe de Rescate', llavero: 'el Llavero Héroe de Rescate', oso: 'el Oso Grande Héroe de Rescate' };
+  var nombres = { toalla: 'la Toalla Héroe de Rescate', llavero: 'el Llavero o el Oso de acompañamiento', oso: 'el Oso Grande Héroe de Rescate' };
   var respaldo = { toalla: 10, llavero: 20, oso: 40 };
   var mensajes = {
     general: '¡Hola! Vengo de la web de la campaña Un Check-in por la Vida y quiero adoptar un Héroe de Rescate. ¿Me puedes dar más información?',
@@ -2068,6 +2227,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  // ── Quienes ya se sumaron: el desfile de logos (2026-11-23) ──────────────
+  // El HTML trae la lista una sola vez, con los nombres en el `alt`. Para que
+  // la cinta corra sin cortes necesita DOS mitades iguales, cada una más ancha
+  // que la ventana: se repiten los logos adentro de la lista hasta pasar el
+  // ancho máximo de la ventana (72rem) y después se duplica la lista entera.
+  // Las copias van con `aria-hidden` y `alt=""`: cada nombre se oye una vez.
+  // Con «reducir movimiento» no se arma nada y la lista queda quieta.
+  var participan = document.getElementById('participan');
+  var cinta = document.getElementById('participan-cinta');
+  if (participan && cinta && !reduce) {
+    var listaLogos = cinta.querySelector('.participan-lista');
+    var originales = Array.prototype.slice.call(listaLogos.children);
+    var callar = function (nodo) {
+      nodo.setAttribute('aria-hidden', 'true');
+      Array.prototype.forEach.call(nodo.querySelectorAll('img'), function (im) { im.alt = ''; });
+      return nodo;
+    };
+    // Primero corre, después se mide: quieta, la lista baja de renglón y su
+    // ancho es el de la pantalla, no el de los logos en fila.
+    participan.setAttribute('data-corre', '');
+    var tope = 72 * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16);
+    for (var vuelta = 0; listaLogos.scrollWidth < tope && vuelta < 8; vuelta++) {
+      originales.forEach(function (li) { listaLogos.appendChild(callar(li.cloneNode(true))); });
+    }
+    cinta.appendChild(callar(listaLogos.cloneNode(true)));
+    // La misma velocidad en cualquier pantalla: 45 px por segundo.
+    cinta.style.setProperty('--vuelta', Math.max(12, Math.round(listaLogos.scrollWidth / 45)) + 's');
+
+    var pausa = document.getElementById('participan-pausa');
+    pausa.hidden = false;
+    pausa.addEventListener('click', function () {
+      var quieta = !participan.hasAttribute('data-pausa');
+      participan.toggleAttribute('data-pausa', quieta);
+      pausa.setAttribute('aria-pressed', quieta ? 'true' : 'false');
+    });
+    // Fuera de pantalla se detiene: una animación que nadie ve igual gasta
+    // batería en un teléfono.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (e) {
+        participan.toggleAttribute('data-fuera', !e[0].isIntersecting);
+      }).observe(participan);
+    }
+  }
+
   // ── Compartir ──────────────────────────────────────────────────────────
   // navigator.share y navigator.clipboard sólo existen en contexto seguro y ni
   // así están siempre: los navegadores incrustados de Instagram y Facebook los
@@ -2265,6 +2468,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Quien ya se registró antes en este teléfono llega directo a lo suyo.
     if (leer(K_YO, null)) document.getElementById('activar-vuelve').hidden = false;
+
+    // El formulario está plegado (ver el `<details>`). Se abre solo para quien
+    // vino a llenarlo: el que toca «Activa tu Boarding Pass» en el hero, el que
+    // llega con `#form-pase` en la dirección y el que trae una invitación.
+    var pliegue = document.getElementById('activar-pliegue');
+    if (pliegue) {
+      var abrirSiVino = function () { if (location.hash === '#form-pase') pliegue.open = true; };
+      abrirSiVino();
+      window.addEventListener('hashchange', abrirSiVino);
+      // El hashchange no salta si la dirección ya decía `#form-pase`: el
+      // segundo toque al mismo botón no abriría nada.
+      Array.prototype.forEach.call(document.querySelectorAll('a[href="#form-pase"]'), function (a) {
+        a.addEventListener('click', function () { pliegue.open = true; });
+      });
+      if (leer(K_INVITA, null)) pliegue.open = true;
+    }
   }
 
   var redes = [
