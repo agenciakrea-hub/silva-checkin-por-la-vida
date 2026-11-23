@@ -960,6 +960,14 @@
     return m ? 'ONCO-' + (m[1] + m[2]).toUpperCase() : '';
   }
 
+  /* Lo que se le dice a quien escribió en «N.º de ticket» un código que no
+     sirvió. El motivo lo manda el servidor en `yo.ticketMotivo`, porque al
+     registrarse ya lo probó (ver `motivoDelTicket_` en codigo.gs). */
+  var TICKET_NO_SIRVIO = {
+    codigo_usado: 'El código que escribiste en tu ticket ya se usó. Si crees que es un error, escríbenos.',
+    codigo_desconocido: 'No encontramos el código que escribiste en tu ticket. Revisa que esté bien escrito y toca «Activar».'
+  };
+
   /* ⚠️ LO QUE ESTO MUESTRA U OCULTA ARRIBA DEL VUELO —el pase, «Falta
      activación», el bloque de activar y el del aporte— lo repite el script en
      línea de `app/index.html` para el primer pintado, antes de que llegue este
@@ -1000,6 +1008,18 @@
          servidor es el de quien de verdad está en pantalla. */
       var escrito = (yo && !yo.local) ? codigoDeTicket(yo.ticket || '') : '';
       if (campoCodigo && !campoCodigo.value && escrito) campoCodigo.value = escrito;
+      /* ⚠️ Y POR QUÉ NO SIRVIÓ (2026-11-23). Al registrarse, el código del
+         ticket se activa solo: si quedó escrito acá es que no sirvió, y la
+         persona no se enteraba hasta tocar «Activar». Sólo mientras el campo
+         tenga ese mismo código —si ya escribió otro, no se le habla del
+         anterior— y sin pisar otro aviso, como «Activando…» o un error. */
+      var avisoT = $('activar-aviso');
+      var textoT = (escrito && yo.ticketMotivo && TICKET_NO_SIRVIO) ? TICKET_NO_SIRVIO[yo.ticketMotivo] : '';
+      if (textoT && avisoT && !avisoT.textContent && campoCodigo
+          && codigoDeTicket(campoCodigo.value) === escrito) {
+        avisoT.textContent = textoT;
+        campoCodigo.setAttribute('aria-invalid', 'true');
+      }
     }
 
     // Las secciones que hablan de «tu» aporte no aplican a quien no aportó.
