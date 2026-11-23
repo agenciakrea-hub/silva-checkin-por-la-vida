@@ -750,7 +750,17 @@
      ve espejado encima del frente), y la `perspective` en el padre DIRECTO de
      lo que rota. Está repetido porque este proyecto no tiene build ni hoja
      compartida: cada archivo lleva su CSS, como el resto del sitio. */
-  .pase3d{display:grid;place-items:center;margin:0 0 18px;}
+  /* ⚠️ EL MARGEN DE ARRIBA ES PARA EL GIRO, NO AIRE DE MÁS. Con la
+     `perspective`, el borde que se acerca crece: a 90° y con el flotado
+     arriba, la pieza sube 13 px sobre su lugar quieto a 320 de ancho y 25 px
+     desde 768. Con los 6 px que deja el título, tapaba el pie de «Activa tu
+     Boarding Pass» (medido el 2026-11-23 cada 5°, de 320 a 1280). Lo que
+     sube crece con el ancho de la pieza, y este margen también: el % de un
+     margen se calcula sobre el ANCHO del contenedor, que acá es el de la
+     pieza hasta su tope. Y es TODO el aire, no un agregado: colapsa con el
+     margen de abajo del título y gana el mayor. Deja unos 4 px en el peor
+     ángulo. Abajo pasa lo mismo, sin el flotado. */
+  .pase3d{display:grid;place-items:center;margin:min(7% + 1px, 30px) 0 22px;}
   .pase3d-flota{perspective:1200px;width:min(26rem,100%);
                 animation:pase3d-flota 7s ease-in-out infinite;}
   .pase3d-pieza{position:relative;width:100%;aspect-ratio:1100/433;
