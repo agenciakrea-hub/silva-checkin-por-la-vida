@@ -951,9 +951,13 @@
   /** «onco 4k7m», «ONCO-4K7M», «ONCO_4K7M» → «ONCO-4K7M». Cualquier otra cosa
       —un número de ticket del evento, por ejemplo— → «». Mismo alfabeto que
       valida el servidor. */
+  /* Con o sin «ONCO-» (2026-11-23): la gente escribe el código como lo ve
+     impreso, cuatro caracteres. Es la misma regla que `codigoDeTicket_` del
+     servidor; ver ahí por qué. */
   function codigoDeTicket(t) {
-    var m = /^\s*ONCO[\s\-_‐-―]*([23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4})\s*$/i.exec(String(t || ''));
-    return m ? 'ONCO-' + m[1].toUpperCase() : '';
+    var m = /^\s*(?:ONCO[\s\-_‐-―]*)?([23456789ABCDEFGHJKMNPQRSTUVWXYZ]{2})\s*([23456789ABCDEFGHJKMNPQRSTUVWXYZ]{2})\s*$/i
+              .exec(String(t || ''));
+    return m ? 'ONCO-' + (m[1] + m[2]).toUpperCase() : '';
   }
 
   /* ⚠️ LO QUE ESTO MUESTRA U OCULTA ARRIBA DEL VUELO —el pase, «Falta
