@@ -955,14 +955,45 @@
      impreso, cuatro caracteres. Es la misma regla que `codigoDeTicket_` del
      servidor; ver ahí por qué. */
   function codigoDeTicket(t) {
-    var m = /^\s*(?:ONCO[\s\-_‐-―]*)?([23456789ABCDEFGHJKMNPQRSTUVWXYZ]{2})\s*([23456789ABCDEFGHJKMNPQRSTUVWXYZ]{2})\s*$/i
-              .exec(String(t || ''));
-    return m ? 'ONCO-' + (m[1] + m[2]).toUpperCase() : '';
+    /* Igual que `normalizarCodigo_` + `codigoDeTicket_` del servidor: cero por
+       O en «ONCO», cualquier separador, y cuatro del alfabeto. */
+    var c = String(t == null ? '' : t).trim().toUpperCase().replace(/\s+/g, '')
+      .replace(/[\u2010-\u2015_.\/,:]/g, '-').replace(/^[O0]NC[O0]-?/, '').replace(/-/g, '');
+    return /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4}$/.test(c) ? 'ONCO-' + c : '';
   }
+
 
   /* Lo que se le dice a quien escribió en «N.º de ticket» un código que no
      sirvió. El motivo lo manda el servidor en `yo.ticketMotivo`, porque al
      registrarse ya lo probó (ver `motivoDelTicket_` en codigo.gs). */
+  /* ── La guía del código, debajo de cada campo donde se escribe ──────────
+     Krea, 2026-11-24: «pifian mucho ahí». Vacío, muestra cómo se ve; mientras
+     se escribe, cómo lo leemos —«Leemos ONCO-4K7M»— o qué está mal. Con la
+     misma regla que el servidor (`codigoDeTicket`). La portada tiene su copia. */
+  var GUIA_CODIGO = 'Así se ve: ONCO-4K7M. Puedes escribir solo los cuatro últimos.';
+  function guiaDeCodigo(valor) {
+    var v = String(valor || '').trim();
+    if (!v) return { texto: GUIA_CODIGO, estado: '' };
+    var c = codigoDeTicket(v);
+    if (c) return { texto: 'Leemos ' + c + '.', estado: 'ok' };
+    var resto = v.toUpperCase().replace(/^\s*[O0]NC[O0]/, '').replace(/[\s\-_‐-―.\/,:]/g, '');
+    if (/[0O1IL]/.test(resto)) {
+      return { texto: 'Los códigos no usan 0, O, 1, I ni L: revisa esa letra en tu pase.', estado: 'mal' };
+    }
+    if (resto.length < 4) return { texto: GUIA_CODIGO, estado: '' };
+    return { texto: 'Son cuatro letras o números después de ONCO-, como ONCO-4K7M.', estado: 'mal' };
+  }
+  function guiarCodigo(campo, guia) {
+    if (!campo || !guia) return;
+    var pintar = function () {
+      var g = guiaDeCodigo(campo.value);
+      guia.textContent = g.texto;
+      if (g.estado) guia.setAttribute('data-estado', g.estado); else guia.removeAttribute('data-estado');
+    };
+    campo.addEventListener('input', pintar);
+    pintar();
+  }
+
   /* Sin «en tu ticket» (2026-11-24): el código también llega del alta de la
      propia app, donde el campo se llama «Código de tu Héroe». */
   var TICKET_NO_SIRVIO = {
@@ -1009,7 +1040,12 @@
          cuenta de Ana. Lo marcó la revisión del 2026-10-19. El `yo` del
          servidor es el de quien de verdad está en pantalla. */
       var escrito = (yo && !yo.local) ? codigoDeTicket(yo.ticket || '') : '';
-      if (campoCodigo && !campoCodigo.value && escrito) campoCodigo.value = escrito;
+      if (campoCodigo && !campoCodigo.value && escrito) {
+        campoCodigo.value = escrito;
+        /* Para que la guía de abajo diga cómo lo leemos: cambiar `value` desde
+           el código no dispara `input`. */
+        try { campoCodigo.dispatchEvent(new Event('input')); } catch (eI) {}
+      }
       /* ⚠️ Y POR QUÉ NO SIRVIÓ (2026-11-23). Al registrarse, el código del
          ticket se activa solo: si quedó escrito acá es que no sirvió, y la
          persona no se enteraba hasta tocar «Activar». Sólo mientras el campo
@@ -2397,6 +2433,9 @@
     escribir(K_PERFIL, { nombre: v.nombre, ticket: cod });
     location.href = './?nuevo=1';      // la bienvenida, igual que desde la portada
   });
+
+  guiarCodigo($('form-activar') && $('form-activar').elements.codigo, $('activar-guia'));
+  guiarCodigo($('form-alta') && $('form-alta').elements.codigo, $('alta-guia'));
 
   al('btn-quiero', 'click', function () {
     var perfil = leer(K_PERFIL, null);

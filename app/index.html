@@ -315,6 +315,11 @@
   .alta{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--paper-edge);}
   .alta label + label{margin-top:12px;}
   .alta .opt{font-weight:400;text-transform:none;letter-spacing:0;}
+  /* La guía del código, debajo de cada campo donde se escribe (2026-11-24). */
+  .guia-codigo{margin:6px 0 0;font:400 .85rem/1.4 var(--sans);color:var(--ink-soft);
+               text-transform:none;letter-spacing:0;}
+  .guia-codigo[data-estado="ok"]{color:var(--navy);font-weight:600;}
+  .guia-codigo[data-estado="mal"]{color:#a5372b;font-weight:600;}
   /* ⚠️ `.entrar .aviso`, NO `.aviso` a secas. `.entrar p` tiene más
      especificidad y le ganaba: el mensaje de error salía del mismo color y
      tamaño que la instrucción de arriba, y se leía como una segunda línea de
@@ -1214,8 +1219,10 @@
           </label>
           <label>Código de tu Héroe
             <input name="codigo" type="text" autocomplete="off" autocapitalize="characters"
-                   spellcheck="false" maxlength="20" placeholder="ONCO-4K7M" required>
+                   spellcheck="false" maxlength="20" placeholder="ONCO-4K7M" required
+                   aria-describedby="alta-guia">
           </label>
+          <p class="guia-codigo" id="alta-guia" aria-live="polite">Así se ve: ONCO-4K7M. Puedes escribir solo los cuatro últimos.</p>
           <p class="aviso" id="alta-aviso" role="alert"></p>
           <button class="btn btn-1" type="submit">Activar mi pase</button>
         </form>
@@ -1283,9 +1290,10 @@
       <form class="activar-fila" id="form-activar" novalidate>
         <input name="codigo" type="text" autocomplete="off" autocapitalize="characters"
                spellcheck="false" aria-label="Tu código de activación"
-               placeholder="ONCO-4K7M" maxlength="20">
+               placeholder="ONCO-4K7M" maxlength="20" aria-describedby="activar-guia">
         <button class="btn btn-1" type="submit">Activar</button>
       </form>
+      <p class="guia-codigo" id="activar-guia" aria-live="polite">Así se ve: ONCO-4K7M. Puedes escribir solo los cuatro últimos.</p>
       <p class="aviso" id="activar-aviso" role="alert"></p>
       <!-- ⚠️ EL CÓDIGO NO SIEMPRE SE ENTREGA (Krea, 2026-11-23): quien ya
            compró y no lo recibió no tiene nada que escribir arriba. Lo pide por

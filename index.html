@@ -631,6 +631,11 @@
      legible es 4,5:1. El peso normal y las minúsculas ya lo separan del resto
      de la etiqueta, que va en 600 y en mayúsculas. */
   .activar .opt{font-weight:400;letter-spacing:0;text-transform:none;}
+  /* La guía del código, debajo de cada campo donde se escribe (2026-11-24). */
+  .guia-codigo{margin:6px 0 0;font:400 .85rem/1.4 var(--sans);color:var(--ink-soft);
+               text-transform:none;letter-spacing:0;}
+  .guia-codigo[data-estado="ok"]{color:var(--navy);font-weight:600;}
+  .guia-codigo[data-estado="mal"]{color:#a5372b;font-weight:600;}
   .activar input{font:400 1rem/1.3 var(--sans);color:var(--navy);background:#fff;
     border:1.5px solid var(--paper-edge);border-radius:8px;padding:.6rem .7rem;min-height:44px;}
   .activar input:focus-visible{border-color:var(--navy);}
@@ -1500,9 +1505,11 @@
           <label>Nombre y apellido
             <input name="nombre" type="text" autocomplete="name" required>
           </label>
-          <label><span>N.º de ticket <span class="opt">— solo si ya lo tienes</span></span>
-            <input name="ticket" type="text">
+          <label><span>Código de tu Héroe <span class="opt">— solo si ya lo tienes</span></span>
+            <input name="ticket" type="text" autocomplete="off" autocapitalize="characters"
+                   spellcheck="false" maxlength="20" placeholder="ONCO-4K7M" aria-describedby="ticket-guia">
           </label>
+          <p class="guia-codigo" id="ticket-guia" aria-live="polite">Así se ve: ONCO-4K7M. Puedes escribir solo los cuatro últimos.</p>
           <label>Correo
             <input name="correo" type="email" autocomplete="email" required>
           </label>
@@ -2381,6 +2388,36 @@ document.addEventListener('DOMContentLoaded', function () {
   // quien compró por WhatsApp y no tiene nada físico, y quien todavía no
   // compró. Pidiéndolo obligatorio, las dos últimas no pueden ni empezar.
   var formPase = document.getElementById('form-pase');
+
+  /* ── La guía del código (2026-11-24) ─────────────────────────────────────
+     Krea: «pifian mucho ahí». Debajo del campo, cómo se ve un código; mientras
+     se escribe, cómo lo leemos o qué está mal. ⚠️ LA MISMA REGLA QUE
+     `codigoDeTicket_` DEL SERVIDOR Y `codigoDeTicket` DE LA APP: cero por O en
+     «ONCO» y cualquier separador. Si cambia una, cambian las tres (el caso G de
+     la batería compara esta guía con lo que acepta el servidor). */
+  (function () {
+    var campo = formPase && formPase.elements.ticket, guia = document.getElementById('ticket-guia');
+    if (!campo || !guia) return;
+    var GUIA = 'Así se ve: ONCO-4K7M. Puedes escribir solo los cuatro últimos.';
+    var leer = function (t) {
+      var c = String(t == null ? '' : t).trim().toUpperCase().replace(/\s+/g, '')
+        .replace(/[\u2010-\u2015_.\/,:]/g, '-').replace(/^[O0]NC[O0]-?/, '').replace(/-/g, '');
+      return /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4}$/.test(c) ? 'ONCO-' + c : '';
+    };
+    var pintar = function () {
+      var v = String(campo.value || '').trim(), c = leer(v), texto = GUIA, estado = '';
+      if (c) { texto = 'Leemos ' + c + '.'; estado = 'ok'; }
+      else if (v) {
+        var resto = v.toUpperCase().replace(/^\s*[O0]NC[O0]/, '').replace(/[\s\-_\u2010-\u2015.\/,:]/g, '');
+        if (/[0O1IL]/.test(resto)) { texto = 'Los códigos no usan 0, O, 1, I ni L: revisa esa letra en tu pase.'; estado = 'mal'; }
+        else if (resto.length >= 4) { texto = 'Son cuatro letras o números después de ONCO-, como ONCO-4K7M.'; estado = 'mal'; }
+      }
+      guia.textContent = texto;
+      if (estado) guia.setAttribute('data-estado', estado); else guia.removeAttribute('data-estado');
+    };
+    campo.addEventListener('input', pintar);
+    pintar();
+  })();
   if (formPase) {
     var errorPase = document.getElementById('activar-error');
     var campos = [
