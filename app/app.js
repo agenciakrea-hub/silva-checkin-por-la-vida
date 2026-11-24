@@ -963,9 +963,11 @@
   /* Lo que se le dice a quien escribió en «N.º de ticket» un código que no
      sirvió. El motivo lo manda el servidor en `yo.ticketMotivo`, porque al
      registrarse ya lo probó (ver `motivoDelTicket_` en codigo.gs). */
+  /* Sin «en tu ticket» (2026-11-24): el código también llega del alta de la
+     propia app, donde el campo se llama «Código de tu Héroe». */
   var TICKET_NO_SIRVIO = {
-    codigo_usado: 'El código que escribiste en tu ticket ya se usó. Si crees que es un error, escríbenos.',
-    codigo_desconocido: 'No encontramos el código que escribiste en tu ticket. Revisa que esté bien escrito y toca «Activar».'
+    codigo_usado: 'El código que escribiste ya se usó. Si crees que es un error, escríbenos.',
+    codigo_desconocido: 'No encontramos el código que escribiste. Revisa que esté bien escrito y toca «Activar».'
   };
 
   /* ⚠️ LO QUE ESTO MUESTRA U OCULTA ARRIBA DEL VUELO —el pase, «Falta
@@ -1192,9 +1194,9 @@
   }
 
   function limpiarSinConexion() {
-    $('entrar-titulo').textContent = 'Busca tu Boarding Pass';
+    $('entrar-titulo').textContent = '¿Ya te registraste?';
     $('entrar-texto').textContent =
-      'Escribe el teléfono con el que te registraste y lo recuperamos.';
+      'Escribe el teléfono con el que te registraste y recuperamos tu pase.';
     $('form-entrar').hidden = false;
     $('btn-reintentar').hidden = true;
     ponerBuscando(false);
@@ -2348,6 +2350,52 @@
       + 'y no me dieron el código para activar mi Boarding Pass.'
       + (perfil.nombre ? ' Soy ' + perfil.nombre + '.' : '')
       + (yo.id ? ' Mi pase: ' + yo.id + '.' : '')), '_blank', 'noopener');
+  });
+
+  /* ── Activar dejando los datos ──────────────────────────────────────────
+     Quien llega a la app sin registro y con su código: ver el comentario del
+     bloque en `app/index.html`. Va por la misma cola que el formulario de la
+     portada —se guarda en el teléfono antes de mandar y reintenta solo— y el
+     código viaja como `ticket`, que el servidor activa al registrar. */
+  al('form-alta', 'submit', function (e) {
+    e.preventDefault();
+    var f = this.elements, aviso = $('alta-aviso');
+    var v = { nombre: (f.nombre.value || '').trim(), telefono: (f.telefono.value || '').trim(),
+              correo: (f.correo.value || '').trim(), codigo: (f.codigo.value || '').trim() };
+    ['nombre', 'telefono', 'correo', 'codigo'].forEach(function (k) { f[k].setAttribute('aria-invalid', 'false'); });
+    var faltan = [];
+    if (!v.nombre) faltan.push(['nombre', 'Nombre y apellido']);
+    if (!v.telefono) faltan.push(['telefono', 'Teléfono']);
+    if (!v.codigo) faltan.push(['codigo', 'Código']);
+    var malo = null;
+    if (!faltan.length) {
+      if (v.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.correo)) {
+        malo = ['correo', 'Revisa el correo: tiene que ser como nombre@correo.com.'];
+      } else if (!codigoDeTicket(v.codigo)) {
+        malo = ['codigo', 'Ese código no tiene la forma correcta. Debe ser como ONCO-4K7M.'];
+      }
+    }
+    if (faltan.length || malo) {
+      var marcar = faltan.length ? faltan.map(function (x) { return x[0]; }) : [malo[0]];
+      marcar.forEach(function (k) { f[k].setAttribute('aria-invalid', 'true'); });
+      aviso.textContent = faltan.length
+        ? (faltan.length > 1 ? 'Faltan completar: ' : 'Falta completar: ')
+          + faltan.map(function (x) { return x[1]; }).join(', ') + '.'
+        : malo[1];
+      f[marcar[0]].focus();
+      return;
+    }
+    aviso.textContent = '';
+    var cod = codigoDeTicket(v.codigo);
+    try {
+      window.CXV.guardarPersona({ nombre: v.nombre, telefono: v.telefono, correo: v.correo, ticket: cod },
+                                { origen: 'app' });
+    } catch (eG) {
+      aviso.textContent = 'No pudimos guardar tus datos en este teléfono. Intenta de nuevo.';
+      return;
+    }
+    escribir(K_PERFIL, { nombre: v.nombre, ticket: cod });
+    location.href = './?nuevo=1';      // la bienvenida, igual que desde la portada
   });
 
   al('btn-quiero', 'click', function () {

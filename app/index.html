@@ -310,6 +310,11 @@
                 width:100%;min-height:52px;}
   .entrar input:focus-visible{border-color:var(--navy);}
   .entrar .btn{margin-top:14px;width:100%;}
+  /* El alta va arriba y la búsqueda por teléfono abajo, separadas: son dos
+     caminos, no dos pasos. */
+  .alta{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--paper-edge);}
+  .alta label + label{margin-top:12px;}
+  .alta .opt{font-weight:400;text-transform:none;letter-spacing:0;}
   /* ⚠️ `.entrar .aviso`, NO `.aviso` a secas. `.entrar p` tiene más
      especificidad y le ganaba: el mensaje de error salía del mismo color y
      tamaño que la instrucción de arriba, y se leía como una segunda línea de
@@ -1188,8 +1193,35 @@
     </section>
 
     <section class="entrar enPapel" id="entrar" hidden>
-      <h2 id="entrar-titulo">Busca tu Boarding Pass</h2>
-      <p id="entrar-texto">Escribe el teléfono con el que te registraste y lo recuperamos.</p>
+      <!-- ⚠️ PRIMERO, ACTIVAR DEJANDO LOS DATOS (Krea, 2026-11-24). Quien compró,
+           escaneó el QR y tocó «App» llegaba acá sin registro: sólo podía
+           buscar un pase que no existía, y se iba sin dejar ni el nombre.
+           Ahora deja nombre, teléfono y el código, y se registra y activa en un
+           paso: el código viaja como el «N.º de ticket» de la portada, que el
+           servidor ya activa al registrar. El correo, opcional (Krea). -->
+      <div class="alta" id="alta">
+        <h2>Activa tu Boarding Pass</h2>
+        <p>¿Tienes el código de tu Héroe de Rescate? Déjanos tus datos y tu pase queda activo.</p>
+        <form id="form-alta" novalidate>
+          <label>Nombre y apellido
+            <input name="nombre" type="text" autocomplete="name" maxlength="120" required>
+          </label>
+          <label>Teléfono (WhatsApp)
+            <input name="telefono" type="tel" autocomplete="tel" inputmode="tel" required>
+          </label>
+          <label><span>Correo <span class="opt">(opcional)</span></span>
+            <input name="correo" type="email" autocomplete="email" inputmode="email">
+          </label>
+          <label>Código de tu Héroe
+            <input name="codigo" type="text" autocomplete="off" autocapitalize="characters"
+                   spellcheck="false" maxlength="20" placeholder="ONCO-4K7M" required>
+          </label>
+          <p class="aviso" id="alta-aviso" role="alert"></p>
+          <button class="btn btn-1" type="submit">Activar mi pase</button>
+        </form>
+      </div>
+      <h2 id="entrar-titulo">¿Ya te registraste?</h2>
+      <p id="entrar-texto">Escribe el teléfono con el que te registraste y recuperamos tu pase.</p>
       <form id="form-entrar" novalidate>
         <label>Teléfono
           <input name="telefono" type="tel" autocomplete="tel" inputmode="tel" required>
